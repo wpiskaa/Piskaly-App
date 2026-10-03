@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MyLife" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1a2a6c" />
+  <meta name="description" content="Aplikasi manajemen kehidupan pribadi - jadwal kuliah, tugas, catatan, keuangan, kalender, dan AI assistant" />
+  <title>MyLife - Personal Manager</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png" />
+
+  <!-- Splash Screens for iOS -->
+  <meta name="apple-touch-fullscreen" content="yes" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Icons (Lucide via CDN) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Chart.js for finance charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Main Styles -->
+  <link rel="stylesheet" href="css/style.css?v=3.3" />
+</head>
+<body>
+
+  <!-- App Wrapper -->
+  <div id="app">
+
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="splash-screen">
+      <div class="splash-content">
+        <div class="splash-icon">
+          <div class="splash-icon-inner">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+              <circle cx="30" cy="30" r="28" stroke="white" stroke-width="2.5" stroke-dasharray="4 2"/>
+              <path d="M20 30 Q25 20 30 30 Q35 40 40 30" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <circle cx="30" cy="30" r="4" fill="white"/>
+            </svg>
+          </div>
+        </div>
+        <h1 class="splash-title">MyLife</h1>
+        <p class="splash-sub">Personal Manager</p>
+        <div class="splash-loader">
+          <div class="splash-loader-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div id="main-app" class="hidden">
+
+      <!-- Header (Grid Menu, Centered Home Title, Bell & Theme Button) -->
+      <header id="app-header">
+        <div class="header-left">
+          <button class="header-grid-btn" id="menuBtn" aria-label="Menu" title="Menu Lengkap">
+            <i data-lucide="layout-grid"></i>
+          </button>
+        </div>
+        <div class="header-center">
+          <span id="pageTitle" class="header-title-text">Home</span>
+        </div>
+        <div class="header-right">
+          <button class="header-icon-btn theme-toggle-btn" id="headerThemeBtn" aria-label="Ganti Tema" title="Ganti Mode Terang / Malam">
+            <i data-lucide="moon" id="headerThemeIcon"></i>
+          </button>
+          <button class="header-icon-btn notif-btn" id="notifBtn" aria-label="Notifikasi" onclick="showToast('Semua notifikasi terkini sudah dibaca', 'info')">
+            <i data-lucide="bell"></i>
+            <span class="notif-badge" id="notifBadge">3</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Pages Container -->
+      <main id="pages-container">
+
+        <!-- ===== PAGE: HOME (ONGOING PROJECTS & DASHBOARD UI) ===== -->
+        <section id="page-home" class="page active">
+          <div class="home-canvas">
+
+            <!-- 1. User Greeting -->
+            <div class="home-hero-greeting">
+              <h1 class="home-greeting-name" id="greetingName">Hi Jenifer!</h1>
+              <p class="home-greeting-time" id="greetingTimeSub">Good morning</p>
+            </div>
+
+            <!-- 2. Search Box -->
+            <div class="home-search-box">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="homeSearchInput" placeholder="Search" autocomplete="off" />
+              <button class="search-clear-btn hidden" id="searchClearBtn" aria-label="Hapus Pencarian"><i data-lucide="x"></i></button>
+            </div>
+
+            <!-- 3. Welcome Card with Illustration -->
+            <div class="welcome-banner-card">
+              <div class="welcome-text-col">
+                <h3 class="welcome-title">Welcome!</h3>
+                <p class="welcome-sub">Let's schedule your project.</p>
+              </div>
+              <div class="welcome-illustration-col">
+                <!-- Vector Workstation Illustration matching reference -->
+                <svg class="welcome-svg" viewBox="0 0 150 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Ground shadow -->
+                  <ellipse cx="75" cy="106" rx="60" ry="7" fill="rgba(37,99,235,0.08)"/>
+                  <!-- Desk -->
+                  <rect x="42" y="82" width="94" height="5.5" rx="2.75" fill="#cbd5e1"/>
+                  <rect x="52" y="87.5" width="4.5" height="23" rx="2" fill="#94a3b8"/>
+                  <rect x="126" y="87.5" width="4.5" height="23" rx="2" fill="#94a3b8"/>
+                  <!-- Monitor -->
+                  <rect x="88" y="32" width="48" height="36" rx="5" fill="#3b82f6" fill-opacity="0.12" stroke="#2563eb" stroke-width="2.2"/>
+                  <rect x="92" y="36" width="40" height="28" rx="3" fill="#ffffff"/>
+                  <path d="M92 48h40M112 36v28" stroke="#bfdbfe" stroke-width="1.8"/>
+                  <path d="M112 68v14M104 82h16" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
+                  <rect x="118" y="77" width="16" height="5" rx="1.5" fill="#94a3b8"/>
+                  <!-- Chair -->
+                  <path d="M28 66c0-6 4.5-10 10-10h14v28H38c-5.5 0-10-4.5-10-10v-8z" fill="#475569"/>
+                  <rect x="30" y="84" width="5.5" height="24" rx="2" fill="#334155"/>
+                  <!-- Person -->
+                  <rect x="40" y="60" width="18" height="22" rx="4" fill="#ec4899"/>
+                  <path d="M48 82v18M54 82v18" stroke="#1e293b" stroke-width="3.5" stroke-linecap="round"/>
+                  <path d="M54 68l18 10h12" stroke="#fbcfe8" stroke-width="3.5" stroke-linecap="round"/>
+                  <circle cx="49" cy="46" r="8" fill="#fbcfe8"/>
+                  <path d="M41 44c0-5.5 4-9 9-9 6 0 9 3.5 9 6.5 0 2-2 3.5-4.5 3.5H41z" fill="#1e293b"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- 4. Section: Ongoing Projects (2x2 Grid from reference image) -->
+            <div class="home-projects-sec">
+              <div class="sec-header-row">
+                <h3 class="sec-title">Ongoing Projects</h3>
+                <div class="sec-header-actions">
+                  <button class="add-proj-header-btn" id="addProjectBtn" title="Tambah Proyek Baru" onclick="openAddProjectModal()">
+                    <i data-lucide="plus"></i> Tambah
+                  </button>
+                  <button class="sec-link-btn" onclick="navigateTo('tugas')">View all</button>
+                </div>
+              </div>
+
+              <!-- 2x2 Grid -->
+              <div class="ongoing-projects-grid" id="ongoingProjectsGrid">
+                <!-- Card 1: Highlighted Deep Navy Card -->
+                <div class="proj-card proj-card-navy" onclick="navigateTo('tugas')">
+                  <div class="proj-card-top">
+                    <span class="proj-date" id="projDate1">May 30, 2022</span>
+                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
+                  </div>
+                  <div class="proj-card-main">
+                    <div class="proj-icon-box navy-box">
+                      <i data-lucide="smartphone"></i>
+                    </div>
+                    <div class="proj-info">
+                      <h4 class="proj-title" id="projTitle1">Mobile App</h4>
+                      <p class="proj-sub" id="projSub1">E-commerce</p>
+                    </div>
+                  </div>
+                  <div class="proj-card-bottom">
+                    <div class="proj-progress-header">
+                      <span>Progress</span>
+                      <span class="proj-pct" id="projPct1">56%</span>
+                    </div>
+                    <div class="proj-prog-track">
+                      <div class="proj-prog-fill" id="projFill1" style="width: 56%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Light Card -->
+                <div class="proj-card proj-card-light" onclick="navigateTo('tugas')">
+                  <div class="proj-card-top">
+                    <span class="proj-date" id="projDate2">May 30, 2022</span>
+                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
+                  </div>
+                  <div class="proj-card-main">
+                    <div class="proj-icon-box blue-box">
+                      <i data-lucide="layout"></i>
+                    </div>
+                    <div class="proj-info">
+                      <h4 class="proj-title" id="projTitle2">Dashboard</h4>
+                      <p class="proj-sub" id="projSub2">Home</p>
+                    </div>
+                  </div>
+                  <div class="proj-card-bottom">
+                    <div class="proj-progress-header">
+                      <span>Progress</span>
+                      <span class="proj-pct" id="projPct2">46%</span>
+                    </div>
+                    <div class="proj-prog-track">
+                      <div class="proj-prog-fill" id="projFill2" style="width: 46%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Light Card -->
+                <div class="proj-card proj-card-light" onclick="navigateTo('tugas')">
+                  <div class="proj-card-top">
+                    <span class="proj-date" id="projDate3">May 30, 2022</span>
+                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
+                  </div>
+                  <div class="proj-card-main">
+                    <div class="proj-icon-box red-box">
+                      <i data-lucide="megaphone"></i>
+                    </div>
+                    <div class="proj-info">
+                      <h4 class="proj-title" id="projTitle3">Banner</h4>
+                      <p class="proj-sub" id="projSub3">Marketing</p>
+                    </div>
+                  </div>
+                  <div class="proj-card-bottom">
+                    <div class="proj-progress-header">
+                      <span>Progress</span>
+                      <span class="proj-pct" id="projPct3">87%</span>
+                    </div>
+                    <div class="proj-prog-track">
+                      <div class="proj-prog-fill" id="projFill3" style="width: 87%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Light Card -->
+                <div class="proj-card proj-card-light" onclick="navigateTo('tugas')">
+                  <div class="proj-card-top">
+                    <span class="proj-date" id="projDate4">May 30, 2022</span>
+                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
+                  </div>
+                  <div class="proj-card-main">
+                    <div class="proj-icon-box purple-box">
+                      <i data-lucide="box"></i>
+                    </div>
+                    <div class="proj-info">
+                      <h4 class="proj-title" id="projTitle4">UI/UX</h4>
+                      <p class="proj-sub" id="projSub4">Design</p>
+                    </div>
+                  </div>
+                  <div class="proj-card-bottom">
+                    <div class="proj-progress-header">
+                      <span>Progress</span>
+                      <span class="proj-pct" id="projPct4">24%</span>
+                    </div>
+                    <div class="proj-prog-track">
+                      <div class="proj-prog-fill" id="projFill4" style="width: 24%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Section: Jadwal Perkuliahan Hari Ini -->
+            <div class="home-projects-sec" style="margin-top: 24px;">
+              <div class="sec-header-row">
+                <h3 class="sec-title">Today's Schedule</h3>
+                <button class="sec-link-btn" onclick="navigateTo('jadwal')">View all</button>
+              </div>
+              <div id="todayScheduleList" class="clean-items-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Compatibility elements for background stats -->
+            <span id="statSaldoNum" style="display:none;">Rp 0</span>
+            <span id="statTugasNum" style="display:none;">0</span>
+            <span id="statDeadlineNum" style="display:none;">0</span>
+            <span id="statCatatanNum" style="display:none;">0</span>
+            <span id="homeIncome" style="display:none;">Rp 0</span>
+            <span id="homeExpense" style="display:none;">Rp 0</span>
+            <p id="greetingText" style="display:none;"></p>
+            <p id="greetingDate" style="display:none;"></p>
+            <div id="upcomingDeadlineList" style="display:none;"></div>
+            <div id="homeNotesList" style="display:none;"></div>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: JADWAL KULIAH ===== -->
+        <section id="page-jadwal" class="page hidden">
+          <div class="page-content">
+            <div class="day-tabs" id="dayTabs">
+              <button class="day-tab active" data-day="Senin">Sen</button>
+              <button class="day-tab" data-day="Selasa">Sel</button>
+              <button class="day-tab" data-day="Rabu">Rab</button>
+              <button class="day-tab" data-day="Kamis">Kam</button>
+              <button class="day-tab" data-day="Jumat">Jum</button>
+              <button class="day-tab" data-day="Sabtu">Sab</button>
+            </div>
+            <div id="jadwalList" class="jadwal-list"></div>
+            <button class="fab" id="addJadwalBtn" aria-label="Tambah Jadwal">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: TUGAS ===== -->
+        <section id="page-tugas" class="page hidden">
+          <div class="page-content">
+            <div class="tugas-filter-row">
+              <button class="filter-btn active" data-filter="all">Semua</button>
+              <button class="filter-btn" data-filter="pending">Belum</button>
+              <button class="filter-btn" data-filter="done">Selesai</button>
+            </div>
+            <div id="tugasList" class="tugas-list"></div>
+            <button class="fab" id="addTugasBtn" aria-label="Tambah Tugas">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: CATATAN ===== -->
+        <section id="page-catatan" class="page hidden">
+          <div class="page-content">
+            <div class="notes-search-wrap">
+              <i data-lucide="search"></i>
+              <input type="text" id="notesSearch" placeholder="Cari catatan..." />
+            </div>
+            <div id="catatanGrid" class="catatan-grid"></div>
+            <button class="fab" id="addCatatanBtn" aria-label="Tambah Catatan">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: KEUANGAN ===== -->
+        <section id="page-keuangan" class="page hidden">
+          <div class="page-content">
+            <!-- Modern Horizontal Landscape Card (Persegi Panjang Elegan) -->
+            <div class="fintech-rect-card">
+              <div class="card-glow-bg"></div>
+
+              <!-- Top Row: Cardholder & Masked Card No -->
+              <div class="card-meta-top">
+                <div class="card-brand-group">
+                  <span class="card-brand-title">MyLife Platinum</span>
+                  <span class="card-holder-name" id="atmCardHolder">JENIFER</span>
+                </div>
+                <div class="card-chip-group">
+                  <span class="card-digits-mini">•••• 8829</span>
+                  <div class="card-gold-chip"></div>
+                </div>
+              </div>
+
+              <!-- Middle Row: Balance Label & Big Amount -->
+              <div class="card-balance-section">
+                <span class="card-balance-lbl">Total Saldo Aktif</span>
+                <h2 class="card-main-balance" id="totalBalance">Rp 0</h2>
+              </div>
+
+              <!-- Bottom Row: Income & Expense (Side by Side in 2 Columns) -->
+              <div class="card-cashflow-row">
+                <div class="cashflow-pill income">
+                  <div class="flow-icon-circle green">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m17 7-10 10"/><path d="M17 17H7V7"/></svg>
+                  </div>
+                  <div class="flow-info">
+                    <span class="flow-lbl">Pemasukan</span>
+                    <span class="flow-val" id="totalIncome">Rp 0</span>
+                  </div>
+                </div>
+
+                <div class="cashflow-pill expense">
+                  <div class="flow-icon-circle red">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+                  </div>
+                  <div class="flow-info">
+                    <span class="flow-lbl">Pengeluaran</span>
+                    <span class="flow-val" id="totalExpense">Rp 0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-card">
+              <div class="section-header" style="margin-bottom:12px">
+                <h3 class="section-title">Grafik Keuangan</h3>
+                <select id="chartPeriod" class="period-select">
+                  <option value="week">Minggu ini</option>
+                  <option value="month" selected>Bulan ini</option>
+                </select>
+              </div>
+              <canvas id="financeChart" height="180"></canvas>
+            </div>
+
+            <!-- Category Breakdown Card -->
+            <div class="category-breakdown-card">
+              <div class="section-header">
+                <h3 class="section-title">Per Kategori</h3>
+              </div>
+              <div id="categoryBreakdown" class="category-breakdown"></div>
+            </div>
+
+            <!-- Transactions Section -->
+            <div class="trans-section-block">
+              <div class="section-header" style="margin-bottom: 16px;">
+                <h3 class="section-title">Transaksi Terkini</h3>
+                <div class="trans-type-tabs">
+                  <button class="trans-tab active" data-type="all">Semua</button>
+                  <button class="trans-tab" data-type="income">Masuk</button>
+                  <button class="trans-tab" data-type="expense">Keluar</button>
+                </div>
+              </div>
+              <div id="transactionList" class="transaction-list"></div>
+            </div>
+            <button class="fab" id="addTransaksiBtn" aria-label="Tambah Transaksi">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: KALENDER ===== -->
+        <section id="page-kalender" class="page hidden">
+          <div class="page-content">
+            <div class="calendar-wrap">
+              <div class="cal-header">
+                <button class="cal-nav" id="calPrev" aria-label="Sebelumnya"><i data-lucide="chevron-left"></i></button>
+                <h3 class="cal-month" id="calMonthTitle">Oktober 2026</h3>
+                <button class="cal-nav" id="calNext" aria-label="Berikutnya"><i data-lucide="chevron-right"></i></button>
+              </div>
+              <div class="cal-weekdays">
+                <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+              </div>
+              <div class="cal-grid" id="calGrid"></div>
+            </div>
+            <!-- Selected Day Events -->
+            <div class="cal-events-wrap">
+              <div class="section-header">
+                <h3 class="section-title" id="selectedDayTitle">Events</h3>
+                <button class="section-link" id="addEventOnDay">+ Tambah</button>
+              </div>
+              <div id="selectedDayEvents" class="selected-day-events">
+                <div class="empty-state-small">
+                  <i data-lucide="calendar"></i>
+                  <p>Pilih tanggal untuk melihat event</p>
+                </div>
+              </div>
+            </div>
+            <button class="fab" id="addEventBtn" aria-label="Tambah Event">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: AI ASSISTANT ===== -->
+        <section id="page-ai" class="page hidden">
+          <div class="ai-container">
+            <div class="ai-header-banner">
+              <div class="ai-banner-content">
+                <div class="ai-avatar">
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="14" stroke="white" stroke-width="2"/>
+                    <path d="M10 16 Q13 10 16 16 Q19 22 22 16" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <circle cx="16" cy="16" r="2.5" fill="white"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="ai-name">Aiden AI</h3>
+                  <p class="ai-status"><span class="ai-dot"></span> Online &amp; Siap membantu</p>
+                </div>
+              </div>
+              <div class="ai-model-badge">Gemini</div>
+            </div>
+
+            <!-- API Key Setup -->
+            <div id="apiKeySetup" class="api-setup-card">
+              <div class="api-setup-icon"><i data-lucide="key"></i></div>
+              <h4>Hubungkan Gemini AI</h4>
+              <p>Masukkan Gemini API Key kamu untuk mengaktifkan asisten AI personal.</p>
+              <div class="api-input-row">
+                <input type="password" id="geminiApiKeyInput" placeholder="AIza..." />
+                <button class="api-save-btn" id="saveApiKeyBtn">Simpan</button>
+              </div>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="api-get-link">
+                <i data-lucide="external-link"></i> Dapatkan API Key Gratis
+              </a>
+            </div>
+
+            <!-- Suggestion Chips -->
+            <div class="ai-suggestions" id="aiSuggestions">
+              <p class="suggestions-label">Tanya sesuatu:</p>
+              <div class="chips-row">
+                <button class="chip" onclick="sendSuggestion('Buatkan jadwal belajar efektif untuk minggu ini')">📅 Jadwal belajar</button>
+                <button class="chip" onclick="sendSuggestion('Tips manajemen waktu untuk mahasiswa')">⏰ Tips waktu</button>
+                <button class="chip" onclick="sendSuggestion('Bagaimana cara mengatur keuangan sebagai mahasiswa?')">💰 Tips keuangan</button>
+                <button class="chip" onclick="sendSuggestion('Motivasi untuk belajar hari ini')">✨ Motivasi</button>
+              </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="ai-messages" id="aiMessages">
+              <div class="ai-msg assistant">
+                <div class="msg-avatar"><i data-lucide="sparkles"></i></div>
+                <div class="msg-bubble">
+                  <p>Halo! Aku Aiden, asisten AI personal kamu 🤖✨</p>
+                  <p>Aku bisa bantu kamu dengan jadwal kuliah, tugas, keuangan, atau apapun yang kamu butuhkan. Tanya aja!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Input -->
+            <div class="ai-input-wrap" id="aiInputWrap">
+              <div class="ai-input-row">
+                <textarea id="aiInput" placeholder="Tulis pesanmu..." rows="1"></textarea>
+                <button class="ai-send-btn" id="aiSendBtn" aria-label="Kirim">
+                  <i data-lucide="send"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== PAGE: PROFIL ===== -->
+        <section id="page-profil" class="page hidden">
+          <div class="page-content profil-content">
+            <div class="profil-hero">
+              <div class="profil-avatar-wrap">
+                <div class="profil-avatar" id="profilAvatar">
+                  <span id="profilAvatarInitial">A</span>
+                </div>
+                <button class="avatar-edit-btn" id="changeAvatarBtn">
+                  <i data-lucide="camera"></i>
+                </button>
+              </div>
+              <h3 class="profil-name" id="profilName">Nama Kamu</h3>
+              <p class="profil-sub" id="profilUniv">Universitas / Jurusan</p>
+            </div>
+
+            <div class="profil-stats">
+              <div class="pstat">
+                <span class="pstat-num" id="pstatJadwal">0</span>
+                <span class="pstat-lbl">Jadwal</span>
+              </div>
+              <div class="pstat">
+                <span class="pstat-num" id="pstatTugas">0</span>
+                <span class="pstat-lbl">Tugas</span>
+              </div>
+              <div class="pstat">
+                <span class="pstat-num" id="pstatCatatan">0</span>
+                <span class="pstat-lbl">Catatan</span>
+              </div>
+            </div>
+
+            <div class="profil-form">
+              <!-- Firebase Cloud Database Card -->
+              <div class="firebase-sync-card">
+                <div class="fb-card-top">
+                  <div class="fb-card-title-wrap">
+                    <div class="fb-icon-box">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4.5 15.5 8 3l3.5 6.5" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9.5 15 3l4.5 12.5L12 21 4.5 15.5Z" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div>
+                      <h4 class="fb-card-title">Firebase Cloud Database</h4>
+                      <p class="fb-card-desc" id="firebaseUserLabel">Hubungkan akun Anda untuk sinkronisasi data antar perangkat (HP & Laptop).</p>
+                    </div>
+                  </div>
+                  <div id="firebaseStatusBadge" class="fb-badge unconfigured">
+                    <span class="fb-dot red"></span> Belum Dikonfigurasi
+                  </div>
+                </div>
+
+                <div class="fb-actions-row">
+                  <button type="button" class="fb-btn config-btn" onclick="openFirebaseConfigModal()">
+                    <i data-lucide="settings"></i> Konfigurasi Firebase
+                  </button>
+                  <button type="button" class="fb-btn purge-btn" onclick="FirebaseService.clearAllDummyData()">
+                    <i data-lucide="sparkles"></i> Kosongkan Data Dummy
+                  </button>
+                </div>
+
+                <div class="fb-auth-row" id="firebaseAuthActions">
+                  <button type="button" class="fb-btn google-btn" onclick="FirebaseService.loginWithGoogle()">
+                    <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.7 0 3 .6 4 1.5l3-3C17.2 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z"/></svg>
+                    Masuk dengan Google
+                  </button>
+                  <button type="button" class="fb-btn email-btn" onclick="openFirebaseAuthModal()">
+                    <i data-lucide="mail"></i> Masuk dengan Email
+                  </button>
+                </div>
+
+                <div class="fb-logged-row hidden" id="firebaseLogoutBtn">
+                  <button type="button" class="fb-btn sync-btn" onclick="FirebaseService.syncUploadAll(); showToast('Data berhasil disinkronkan ke Cloud!', 'success');">
+                    <i data-lucide="refresh-cw"></i> Sinkronkan Sekarang
+                  </button>
+                  <button type="button" class="fb-btn logout-btn" onclick="FirebaseService.logout()">
+                    <i data-lucide="log-out"></i> Keluar Akun
+                  </button>
+                </div>
+              </div>
+
+              <h4 class="form-section-title" style="margin-top:24px">Informasi Profil</h4>
+              <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="profileNameInput" placeholder="Nama lengkap kamu" />
+              </div>
+              <div class="form-group">
+                <label>Universitas</label>
+                <input type="text" id="profileUnivInput" placeholder="Nama universitas" />
+              </div>
+              <div class="form-group">
+                <label>Jurusan</label>
+                <input type="text" id="profileJurusanInput" placeholder="Jurusan / Program studi" />
+              </div>
+              <div class="form-group">
+                <label>Semester</label>
+                <input type="number" id="profileSemesterInput" placeholder="Semester ke-" min="1" max="14" />
+              </div>
+
+              <h4 class="form-section-title" style="margin-top:24px">Pengaturan AI</h4>
+              <div class="form-group">
+                <label>Gemini API Key</label>
+                <div class="api-key-row">
+                  <input type="password" id="profileApiKey" placeholder="Masukkan API Key" />
+                  <button class="eye-btn" id="toggleApiKey"><i data-lucide="eye"></i></button>
+                </div>
+              </div>
+
+              <h4 class="form-section-title" style="margin-top:24px">Tampilan</h4>
+              <div class="setting-row">
+                <div class="setting-info">
+                  <span class="setting-title">Mode Gelap</span>
+                  <span class="setting-desc">Tampilan gelap lebih nyaman di malam hari</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="darkModeToggle" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info">
+                  <span class="setting-title">Notifikasi Deadline</span>
+                  <span class="setting-desc">Pengingat deadline tugas</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notifToggle" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <button class="save-profil-btn" id="saveProfilBtn">
+                <i data-lucide="save"></i> Simpan Profil
+              </button>
+
+              <div class="danger-zone">
+                <h4 class="form-section-title danger-title">Zona Berbahaya</h4>
+                <button class="btn-danger" id="clearDataBtn">
+                  <i data-lucide="trash-2"></i> Hapus Semua Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- ===== BOTTOM NAVIGATION (5 ITEMS - MATCHING USER REFERENCE IMAGE) ===== -->
+      <nav id="bottom-nav">
+        <button class="nav-item active" data-page="home" aria-label="Home">
+          <i data-lucide="home"></i>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" data-page="jadwal" aria-label="Jadwal">
+          <i data-lucide="calendar"></i>
+          <span>Jadwal</span>
+        </button>
+        <div class="nav-center-btn-wrap">
+          <button class="nav-center-btn" id="centerActionBtn" aria-label="Tambah Cepat" title="Tambah Cepat">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
+        <button class="nav-item" data-page="tugas" aria-label="Tugas">
+          <i data-lucide="book-check"></i>
+          <span>Tugas</span>
+        </button>
+        <button class="nav-item" data-page="keuangan" aria-label="Cards">
+          <i data-lucide="credit-card"></i>
+          <span>Cards</span>
+        </button>
+      </nav>
+
+      <!-- Modal: Quick Action Sheet (from center + button) -->
+      <div class="modal hidden" id="modalQuickAction">
+        <div class="modal-header">
+          <h3>Tambah Cepat</h3>
+          <button class="modal-close" data-modal="modalQuickAction"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body quick-action-body">
+          <div class="quick-action-options">
+            <button class="qa-item" onclick="closeModal('modalQuickAction'); openModal('modalJadwal');">
+              <div class="qa-icon blue"><i data-lucide="calendar-plus"></i></div>
+              <div class="qa-text">
+                <strong>Jadwal Kuliah</strong>
+                <span>Tambah mata kuliah, jam, dosen &amp; ruangan</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </button>
+            <button class="qa-item" onclick="closeModal('modalQuickAction'); openModal('modalTugas');">
+              <div class="qa-icon red"><i data-lucide="check-square"></i></div>
+              <div class="qa-text">
+                <strong>Tugas Kuliah</strong>
+                <span>Catat deadline &amp; prioritas tugas</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </button>
+            <button class="qa-item" onclick="closeModal('modalQuickAction'); openModal('modalTransaksi');">
+              <div class="qa-icon green"><i data-lucide="dollar-sign"></i></div>
+              <div class="qa-text">
+                <strong>Transaksi Keuangan</strong>
+                <span>Catat pemasukan atau pengeluaran</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </button>
+            <button class="qa-item" onclick="closeModal('modalQuickAction'); openModal('modalCatatan');">
+              <div class="qa-icon amber"><i data-lucide="sticky-note"></i></div>
+              <div class="qa-text">
+                <strong>Catatan &amp; Ide</strong>
+                <span>Simpan ide atau materi kuliah</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </button>
+            <button class="qa-item" onclick="closeModal('modalQuickAction'); navigateTo('ai');">
+              <div class="qa-icon indigo"><i data-lucide="sparkles"></i></div>
+              <div class="qa-text">
+                <strong>Aiden AI</strong>
+                <span>Tanya AI tentang jadwal &amp; saran</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SIDE DRAWER (MENU LENGKAP) ===== -->
+      <div class="drawer-backdrop hidden" id="drawerBackdrop"></div>
+      <aside class="side-drawer hidden" id="sideDrawer">
+        <div class="drawer-header">
+          <div class="drawer-user" id="drawerUser" onclick="navigateTo('profil'); closeDrawer();">
+            <div class="drawer-avatar" id="drawerAvatar">M</div>
+            <div class="drawer-user-info">
+              <h4 id="drawerUserName">Nama Kamu</h4>
+              <p id="drawerUserUniv">Universitas / Jurusan</p>
+            </div>
+          </div>
+          <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Tutup Menu">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="drawer-body">
+          <p class="drawer-section-title">Semua Menu</p>
+          <nav class="drawer-nav">
+            <button class="drawer-nav-item" onclick="navigateTo('home'); closeDrawer();">
+              <i data-lucide="home"></i>
+              <span>Beranda</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('jadwal'); closeDrawer();">
+              <i data-lucide="calendar-days"></i>
+              <span>Jadwal Kuliah</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('tugas'); closeDrawer();">
+              <i data-lucide="book-check"></i>
+              <span>Tugas &amp; Deadline</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('keuangan'); closeDrawer();">
+              <i data-lucide="wallet"></i>
+              <span>Manajemen Uang</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('catatan'); closeDrawer();">
+              <i data-lucide="sticky-note"></i>
+              <span>Catatan &amp; Ide</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('kalender'); closeDrawer();">
+              <i data-lucide="calendar-range"></i>
+              <span>Kalender &amp; Agenda</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('ai'); closeDrawer();">
+              <i data-lucide="sparkles"></i>
+              <span>Aiden AI (Gemini)</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('profil'); closeDrawer();">
+              <i data-lucide="user-circle"></i>
+              <span>Profil &amp; Pengaturan</span>
+            </button>
+            <div class="drawer-nav-divider" style="height:1px;background:var(--border);margin:8px 6px;"></div>
+            <button class="drawer-nav-item" id="drawerThemeBtn" aria-label="Ganti Tema">
+              <i data-lucide="moon" id="drawerThemeIcon"></i>
+              <span id="drawerThemeLabel">Mode Malam</span>
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+    </div><!-- /#main-app -->
+
+  </div><!-- /#app -->
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop hidden" id="modalBackdrop"></div>
+
+  <!-- Modal: Tambah Jadwal -->
+  <div class="modal hidden" id="modalJadwal">
+    <div class="modal-header">
+      <h3 id="modalJadwalTitle">Tambah Jadwal Kuliah</h3>
+      <button class="modal-close" data-modal="modalJadwal"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Mata Kuliah *</label>
+        <input type="text" id="jadwalMatkul" placeholder="Nama mata kuliah" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hari *</label>
+          <select id="jadwalHari">
+            <option value="Senin">Senin</option>
+            <option value="Selasa">Selasa</option>
+            <option value="Rabu">Rabu</option>
+            <option value="Kamis">Kamis</option>
+            <option value="Jumat">Jumat</option>
+            <option value="Sabtu">Sabtu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>SKS</label>
+          <input type="number" id="jadwalSks" placeholder="2" min="1" max="6" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Jam Mulai *</label>
+          <input type="time" id="jadwalJamMulai" />
+        </div>
+        <div class="form-group">
+          <label>Jam Selesai *</label>
+          <input type="time" id="jadwalJamSelesai" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Ruangan</label>
+        <input type="text" id="jadwalRuangan" placeholder="Contoh: Gedung A - 201" />
+      </div>
+      <div class="form-group">
+        <label>Dosen Pengampu</label>
+        <input type="text" id="jadwalDosen" placeholder="Nama dosen" />
+      </div>
+      <div class="form-group">
+        <label>Warna</label>
+        <div class="color-picker" id="jadwalColorPicker">
+          <button class="color-opt active" data-color="#2563eb" style="background:#2563eb"></button>
+          <button class="color-opt" data-color="#7c3aed" style="background:#7c3aed"></button>
+          <button class="color-opt" data-color="#059669" style="background:#059669"></button>
+          <button class="color-opt" data-color="#d97706" style="background:#d97706"></button>
+          <button class="color-opt" data-color="#dc2626" style="background:#dc2626"></button>
+          <button class="color-opt" data-color="#db2777" style="background:#db2777"></button>
+        </div>
+      </div>
+      <input type="hidden" id="jadwalEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalJadwal">Batal</button>
+      <button class="btn-primary" id="saveJadwalBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah Tugas -->
+  <div class="modal hidden" id="modalTugas">
+    <div class="modal-header">
+      <h3 id="modalTugasTitle">Tambah Tugas</h3>
+      <button class="modal-close" data-modal="modalTugas"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nama Tugas *</label>
+        <input type="text" id="tugasNama" placeholder="Nama tugas / judul" />
+      </div>
+      <div class="form-group">
+        <label>Mata Kuliah</label>
+        <input type="text" id="tugasMatkul" placeholder="Nama mata kuliah" />
+      </div>
+      <div class="form-group">
+        <label>Deadline *</label>
+        <input type="datetime-local" id="tugasDeadline" />
+      </div>
+      <div class="form-group">
+        <label>Prioritas</label>
+        <select id="tugasPrioritas">
+          <option value="low">Rendah</option>
+          <option value="medium" selected>Sedang</option>
+          <option value="high">Tinggi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Deskripsi / Catatan</label>
+        <textarea id="tugasDeskripsi" rows="3" placeholder="Detail tugas..."></textarea>
+      </div>
+      <input type="hidden" id="tugasEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalTugas">Batal</button>
+      <button class="btn-primary" id="saveTugasBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah Catatan -->
+  <div class="modal hidden" id="modalCatatan">
+    <div class="modal-header">
+      <h3 id="modalCatatanTitle">Tambah Catatan</h3>
+      <button class="modal-close" data-modal="modalCatatan"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Judul</label>
+        <input type="text" id="catatanJudul" placeholder="Judul catatan" />
+      </div>
+      <div class="form-group">
+        <label>Isi Catatan *</label>
+        <textarea id="catatanIsi" rows="6" placeholder="Tulis catatanmu di sini..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tag / Kategori</label>
+        <input type="text" id="catatanTag" placeholder="Contoh: kuliah, pribadi, ide" />
+      </div>
+      <div class="form-group">
+        <label>Warna Catatan</label>
+        <div class="color-picker" id="catatanColorPicker">
+          <button class="color-opt active" data-color="#2563eb" style="background:#2563eb" title="Royal Blue"></button>
+          <button class="color-opt" data-color="#059669" style="background:#059669" title="Emerald Green"></button>
+          <button class="color-opt" data-color="#d97706" style="background:#d97706" title="Amber Gold"></button>
+          <button class="color-opt" data-color="#7c3aed" style="background:#7c3aed" title="Purple"></button>
+          <button class="color-opt" data-color="#e11d48" style="background:#e11d48" title="Rose Red"></button>
+        </div>
+      </div>
+      <input type="hidden" id="catatanEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalCatatan">Batal</button>
+      <button class="btn-primary" id="saveCatatanBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah Transaksi -->
+  <div class="modal hidden" id="modalTransaksi">
+    <div class="modal-header">
+      <h3 id="modalTransaksiTitle">Tambah Transaksi</h3>
+      <button class="modal-close" data-modal="modalTransaksi"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="trans-type-switch">
+        <button class="type-sw-btn active" data-type="expense" id="swExpense">
+          <i data-lucide="minus-circle"></i> Pengeluaran
+        </button>
+        <button class="type-sw-btn" data-type="income" id="swIncome">
+          <i data-lucide="plus-circle"></i> Pemasukan
+        </button>
+      </div>
+      <div class="form-group">
+        <label>Jumlah (Rp) *</label>
+        <input type="number" id="transJumlah" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Keterangan *</label>
+        <input type="text" id="transKeterangan" placeholder="Keterangan transaksi" />
+      </div>
+      <div class="form-group">
+        <label>Kategori</label>
+        <select id="transKategori">
+          <option value="Makan">🍜 Makan</option>
+          <option value="Transport">🚌 Transport</option>
+          <option value="Belanja">🛍️ Belanja</option>
+          <option value="Hiburan">🎮 Hiburan</option>
+          <option value="Pendidikan">📚 Pendidikan</option>
+          <option value="Kesehatan">❤️ Kesehatan</option>
+          <option value="Uang Saku">💰 Uang Saku</option>
+          <option value="Kerja">💼 Kerja</option>
+          <option value="Lainnya">📦 Lainnya</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tanggal</label>
+        <input type="date" id="transTanggal" />
+      </div>
+      <input type="hidden" id="transEditId" />
+      <input type="hidden" id="transType" value="expense" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalTransaksi">Batal</button>
+      <button class="btn-primary" id="saveTransaksiBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah Event Kalender -->
+  <div class="modal hidden" id="modalEvent">
+    <div class="modal-header">
+      <h3 id="modalEventTitle">Tambah Event</h3>
+      <button class="modal-close" data-modal="modalEvent"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nama Event *</label>
+        <input type="text" id="eventNama" placeholder="Nama kegiatan" />
+      </div>
+      <div class="form-group">
+        <label>Tanggal *</label>
+        <input type="date" id="eventTanggal" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Jam Mulai</label>
+          <input type="time" id="eventJamMulai" />
+        </div>
+        <div class="form-group">
+          <label>Jam Selesai</label>
+          <input type="time" id="eventJamSelesai" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Lokasi</label>
+        <input type="text" id="eventLokasi" placeholder="Lokasi kegiatan" />
+      </div>
+      <div class="form-group">
+        <label>Deskripsi</label>
+        <textarea id="eventDeskripsi" rows="3" placeholder="Deskripsi kegiatan..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Warna</label>
+        <div class="color-picker" id="eventColorPicker">
+          <button class="color-opt active" data-color="#2563eb" style="background:#2563eb"></button>
+          <button class="color-opt" data-color="#7c3aed" style="background:#7c3aed"></button>
+          <button class="color-opt" data-color="#059669" style="background:#059669"></button>
+          <button class="color-opt" data-color="#d97706" style="background:#d97706"></button>
+          <button class="color-opt" data-color="#dc2626" style="background:#dc2626"></button>
+        </div>
+      </div>
+      <input type="hidden" id="eventEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalEvent">Batal</button>
+      <button class="btn-primary" id="saveEventBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah / Edit Ongoing Project -->
+  <div class="modal hidden" id="modalProject">
+    <div class="modal-header">
+      <h3 id="modalProjectTitle">Tambah Proyek Baru</h3>
+      <button class="modal-close" data-modal="modalProject"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nama Proyek *</label>
+        <input type="text" id="projInputTitle" placeholder="Contoh: Mobile App, Tugas Akhir, Redesign..." />
+      </div>
+      <div class="form-group">
+        <label>Sub-judul / Kategori *</label>
+        <input type="text" id="projInputSub" placeholder="Contoh: E-commerce, Marketing, Desain, Kuliah..." />
+      </div>
+      <div class="form-group">
+        <label>Target Tanggal / Periode</label>
+        <input type="text" id="projInputDate" placeholder="Contoh: May 30, 2026 atau Akhir Bulan" />
+      </div>
+      <div class="form-group">
+        <div class="range-label-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="margin-bottom:0;">Progress Pekerjaan</label>
+          <span class="range-val-badge" id="projProgressVal">50%</span>
+        </div>
+        <input type="range" id="projInputProgress" min="0" max="100" value="50" style="width:100%;accent-color:var(--primary-light);cursor:pointer;" oninput="document.getElementById('projProgressVal').textContent = this.value + '%'" />
+      </div>
+      <div class="form-group">
+        <label>Gaya &amp; Warna Kartu</label>
+        <div class="proj-style-picker" id="projStylePicker">
+          <button type="button" class="style-opt-btn active" data-style="navy">
+            <span class="color-dot" style="background: linear-gradient(135deg, #132b5e, #173670);"></span>
+            <span>Navy Gelap (Utama)</span>
+          </button>
+          <button type="button" class="style-opt-btn" data-style="blue">
+            <span class="color-dot" style="background: #2563eb;"></span>
+            <span>Light Blue</span>
+          </button>
+          <button type="button" class="style-opt-btn" data-style="red">
+            <span class="color-dot" style="background: #ef4444;"></span>
+            <span>Light Red</span>
+          </button>
+          <button type="button" class="style-opt-btn" data-style="purple">
+            <span class="color-dot" style="background: #9333ea;"></span>
+            <span>Light Purple</span>
+          </button>
+          <button type="button" class="style-opt-btn" data-style="green">
+            <span class="color-dot" style="background: #059669;"></span>
+            <span>Light Emerald</span>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Pilihan Ikon</label>
+        <div class="icon-picker-grid" id="projIconPicker">
+          <button type="button" class="icon-pick-btn active" data-icon="smartphone"><i data-lucide="smartphone"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="layout"><i data-lucide="layout"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="megaphone"><i data-lucide="megaphone"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="box"><i data-lucide="box"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="code-2"><i data-lucide="code-2"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="graduation-cap"><i data-lucide="graduation-cap"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="rocket"><i data-lucide="rocket"></i></button>
+          <button type="button" class="icon-pick-btn" data-icon="folder"><i data-lucide="folder"></i></button>
+        </div>
+      </div>
+      <input type="hidden" id="projEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger hidden" id="deleteProjectBtn" style="padding: 12px 18px; border-radius: 12px;" onclick="handleDeleteCurrentProject()"><i data-lucide="trash-2"></i> Hapus</button>
+      <button class="btn-secondary" data-modal="modalProject">Batal</button>
+      <button class="btn-primary" id="saveProjectBtn" onclick="handleSaveProject()">Simpan Proyek</button>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Action (+) -->
+  <div class="modal hidden" id="modalQuickAction">
+    <div class="modal-header">
+      <h3>Tambah Cepat</h3>
+      <button class="modal-close" data-modal="modalQuickAction"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="padding: 16px 20px 24px;">
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Pilih apa yang ingin kamu tambahkan sekarang:</p>
+      <div class="quick-action-grid">
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openAddProjectModal();">
+          <div class="quick-act-icon navy-box"><i data-lucide="folder-plus"></i></div>
+          <span class="quick-act-title">Ongoing Project</span>
+          <span class="quick-act-sub">Tambah kotak proyek</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openModal('modalTugas');">
+          <div class="quick-act-icon blue-box"><i data-lucide="book-check"></i></div>
+          <span class="quick-act-title">Tugas Kuliah</span>
+          <span class="quick-act-sub">Catat tugas &amp; deadline</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openModal('modalJadwal');">
+          <div class="quick-act-icon purple-box"><i data-lucide="calendar"></i></div>
+          <span class="quick-act-title">Jadwal Kuliah</span>
+          <span class="quick-act-sub">Mata kuliah mingguan</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openModal('modalTransaksi');">
+          <div class="quick-act-icon green-box"><i data-lucide="wallet"></i></div>
+          <span class="quick-act-title">Keuangan</span>
+          <span class="quick-act-sub">Pemasukan / Pengeluaran</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openModal('modalCatatan');">
+          <div class="quick-act-icon red-box"><i data-lucide="file-text"></i></div>
+          <span class="quick-act-title">Catatan Ide</span>
+          <span class="quick-act-sub">Tulis catatan harian</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openModal('modalEvent');">
+          <div class="quick-act-icon cyan-box"><i data-lucide="calendar-plus"></i></div>
+          <span class="quick-act-title">Agenda Kalender</span>
+          <span class="quick-act-sub">Pengingat kegiatan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Konfigurasi Firebase Project -->
+  <div class="modal hidden" id="modalFirebaseConfig">
+    <div class="modal-header">
+      <h3>Konfigurasi Firebase Database</h3>
+      <button class="modal-close" data-modal="modalFirebaseConfig"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
+        Salin <code>firebaseConfig</code> dari Firebase Console (Project Settings &gt; General &gt; Your apps &gt; Web App) lalu tempelkan di bawah ini:
+      </p>
+
+      <div class="form-group">
+        <label>Paste Objek / JSON Config (Cepat):</label>
+        <textarea id="fbPasteRaw" rows="3" placeholder="const firebaseConfig = { apiKey: '...', projectId: '...' };" style="font-family:monospace; font-size:11.5px;"></textarea>
+        <button type="button" class="btn-secondary" style="margin-top:6px; width:100%; font-size:12px; padding:6px 12px;" onclick="parseFirebaseConfigPaste()">
+          <i data-lucide="check"></i> Terapkan Teks Paste
+        </button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:10px; margin:14px 0;">
+        <hr style="flex:1; border:none; border-top:1px solid var(--border);">
+        <span style="font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Atau Lengkapi Kolom</span>
+        <hr style="flex:1; border:none; border-top:1px solid var(--border);">
+      </div>
+
+      <div class="form-group">
+        <label>API Key *</label>
+        <input type="text" id="fbApiKey" placeholder="AIzaSy..." />
+      </div>
+      <div class="form-group">
+        <label>Auth Domain</label>
+        <input type="text" id="fbAuthDomain" placeholder="project-id.firebaseapp.com" />
+      </div>
+      <div class="form-group">
+        <label>Project ID *</label>
+        <input type="text" id="fbProjectId" placeholder="project-id" />
+      </div>
+      <div class="form-group">
+        <label>Storage Bucket</label>
+        <input type="text" id="fbStorageBucket" placeholder="project-id.appspot.com" />
+      </div>
+      <div class="form-group">
+        <label>Messaging Sender ID</label>
+        <input type="text" id="fbMessagingSenderId" placeholder="123456789" />
+      </div>
+      <div class="form-group">
+        <label>App ID</label>
+        <input type="text" id="fbAppId" placeholder="1:123456789:web:abcdef" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalFirebaseConfig">Batal</button>
+      <button class="btn-primary" id="saveFirebaseConfigBtn" onclick="saveFirebaseConfigFromModal()">
+        <i data-lucide="save"></i> Simpan & Hubungkan
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Login / Register Email Firebase -->
+  <div class="modal hidden" id="modalFirebaseAuth">
+    <div class="modal-header">
+      <h3 id="modalAuthTitle">Masuk dengan Email</h3>
+      <button class="modal-close" data-modal="modalFirebaseAuth"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs" style="display:flex; gap:8px; margin-bottom:16px;">
+        <button type="button" class="auth-tab-btn active" id="authTabLogin" onclick="switchAuthTab('login')">Masuk</button>
+        <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="switchAuthTab('register')">Daftar Akun Baru</button>
+      </div>
+
+      <div class="form-group hidden" id="authNameGroup">
+        <label>Nama Lengkap</label>
+        <input type="text" id="authDisplayName" placeholder="Nama Anda" />
+      </div>
+
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="authEmail" placeholder="nama@email.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" id="authPassword" placeholder="Minimal 6 karakter" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalFirebaseAuth">Batal</button>
+      <button class="btn-primary" id="authSubmitBtn" onclick="handleAuthSubmit()">Masuk</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Firebase SDK (v10 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js?v=3.3"></script>
+  <script src="js/firebase-service.js?v=3.3"></script>
+
+  <!-- Scripts with Cache Busting -->
+  <script src="js/storage.js?v=3.3"></script>
+  <script src="js/app.js?v=3.3"></script>
+  <script src="js/jadwal.js?v=3.3"></script>
+  <script src="js/tugas.js?v=3.3"></script>
+  <script src="js/catatan.js?v=3.3"></script>
+  <script src="js/keuangan.js?v=3.3"></script>
+  <script src="js/kalender.js?v=3.3"></script>
+  <script src="js/ai.js?v=3.3"></script>
+
+  <!-- Register Service Worker & Invalidate Old Caches -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        for (let reg of regs) {
+          reg.update();
+        }
+      });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js?v=3.3').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
