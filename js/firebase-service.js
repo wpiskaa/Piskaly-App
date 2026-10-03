@@ -194,16 +194,16 @@ const FirebaseService = {
     if (!cardStatus) return;
 
     if (status === 'connected' || this.isInitialized) {
-      cardStatus.className = 'fb-badge connected';
-      cardStatus.innerHTML = '<span class="fb-dot green"></span> Sinkron Otomatis (Live)';
+      cardStatus.className = 'fb-badge-mini connected';
+      cardStatus.innerHTML = '<span class="fb-dot green"></span> Live';
       if (userLabel) {
-        userLabel.textContent = 'Tersambung langsung ke Cloud Firestore. Setiap perubahan otomatis tersimpan & sinkron ke iPhone, iPad, dan Laptop Anda.';
+        userLabel.textContent = 'Otomatis sinkron antar perangkat';
       }
     } else {
-      cardStatus.className = 'fb-badge ready';
-      cardStatus.innerHTML = '<span class="fb-dot yellow"></span> Mode Lokal';
+      cardStatus.className = 'fb-badge-mini ready';
+      cardStatus.innerHTML = '<span class="fb-dot yellow"></span> Lokal';
       if (userLabel) {
-        userLabel.textContent = 'Berjalan dalam mode lokal.';
+        userLabel.textContent = 'Mode penyimpanan lokal';
       }
     }
   }
