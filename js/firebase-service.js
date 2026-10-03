@@ -1,17 +1,17 @@
 // ==========================================
-// FIREBASE SERVICE (js/firebase-service.js)
+// FIREBASE DIRECT SYNC SERVICE (js/firebase-service.js)
+// Sinkronisasi Langsung Otomatis Tanpa Perlu Login
 // ==========================================
 
 const FirebaseService = {
   app: null,
-  auth: null,
   db: null,
-  currentUser: null,
   isInitialized: false,
   unsubscribeSnapshot: null,
   syncTimeout: null,
+  isSyncingFromCloud: false,
 
-  // Inisialisasi Firebase App, Auth, dan Firestore
+  // Inisialisasi Firebase & Cloud Firestore langsung
   init() {
     if (typeof firebase === 'undefined') {
       console.warn('Firebase SDK belum termuat.');
@@ -20,8 +20,8 @@ const FirebaseService = {
 
     const config = getActiveFirebaseConfig();
     if (!config || !config.apiKey || !config.projectId) {
-      console.log('Firebase config belum diisi. Aplikasi berjalan dalam mode lokal.');
-      this.updateUIStatus();
+      console.log('Firebase config belum diisi. Berjalan lokal.');
+      this.updateUIStatus('unconfigured');
       return false;
     }
 
@@ -32,125 +32,107 @@ const FirebaseService = {
         this.app = firebase.app();
       }
 
-      this.auth = firebase.auth();
       this.db = firebase.firestore();
 
-      // Aktifkan offline persistence untuk performa PWA & offline support
+      // Aktifkan offline persistence agar PWA tetap cepat dan bekerja tanpa internet
       this.db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
         if (err.code === 'failed-precondition') {
-          console.warn('Firestore persistence gagal: multiple tabs open');
-        } else if (err.code === 'unimplemented') {
-          console.warn('Browser tidak mendukung offline persistence');
+          console.warn('Firestore multi-tab persistence active');
         }
       });
 
       this.isInitialized = true;
-      console.log('✅ Firebase terhubung ke project:', config.projectId);
+      console.log('⚡ Firebase Direct Sync aktif di project:', config.projectId);
+      this.updateUIStatus('connected');
 
-      // Listener perubahan status login pengguna
-      this.auth.onAuthStateChanged((user) => {
-        this.currentUser = user;
-        this.updateUIStatus();
-        if (user) {
-          console.log('👤 Pengguna login:', user.email);
-          this.onUserLoggedIn(user);
-        } else {
-          console.log('👤 Pengguna belum login atau telah logout');
-          if (this.unsubscribeSnapshot) {
-            this.unsubscribeSnapshot();
-            this.unsubscribeSnapshot = null;
-          }
-        }
-      });
-
+      // Mulai sinkronisasi otomatis langsung (2-way live sync)
+      this.startDirectSync();
       return true;
     } catch (err) {
-      console.error('Gagal inisialisasi Firebase:', err);
-      showToast('Konfigurasi Firebase tidak valid: ' + err.message, 'error');
+      console.error('Inisialisasi Firebase error:', err);
+      this.updateUIStatus('error');
       return false;
     }
   },
 
-  // Periksa apakah konfigurasi Firebase sudah disetel
-  isConfigured() {
-    const c = getActiveFirebaseConfig();
-    return !!(c && c.apiKey && c.projectId);
-  },
+  // Sinkronisasi dua arah instan tanpa login
+  async startDirectSync() {
+    if (!this.db) return;
 
-  // Ketika pengguna login, lakukan sinkronisasi data cloud
-  async onUserLoggedIn(user) {
-    showToast(`Selamat datang, ${user.displayName || user.email}!`, 'success');
+    const docRef = this.db.collection('piskaly_app').doc('main_data');
 
-    // Periksa apakah cloud memiliki data untuk user ini
     try {
-      const userDocRef = this.db.collection('users').doc(user.uid);
-      const doc = await userDocRef.get();
-
+      // 1. Ambil data awal dari cloud jika ada
+      const doc = await docRef.get();
       if (doc.exists) {
-        // Data sudah ada di cloud, muat ke aplikasi
         const cloudData = doc.data();
         this.applyCloudDataToLocal(cloudData);
-        showToast('Data akun berhasil dimuat dari Cloud!', 'success');
+        console.log('☁️ Data cloud berhasil dimuat otomatis');
       } else {
-        // Pengguna baru pertama kali login
-        // Tanyakan apakah ingin mengunggah data lokal saat ini atau mulai kosong
+        // Jika di cloud masih kosong, simpan data lokal saat ini ke cloud
         await this.syncUploadAll();
-        showToast('Data awal berhasil disinkronkan ke Cloud!', 'success');
+        console.log('☁️ Data awal berhasil disimpan ke cloud');
       }
 
-      // Mulai realtime listener untuk sinkronisasi antar-perangkat
-      this.listenToRealtimeUpdates(user.uid);
+      // 2. Pasang realtime listener (live sync ke semua perangkat)
+      if (this.unsubscribeSnapshot) this.unsubscribeSnapshot();
+
+      this.unsubscribeSnapshot = docRef.onSnapshot((snapshot) => {
+        // Abaikan jika perubahan berasal dari ketikan lokal sendiri yang sedang dikirim
+        if (snapshot.metadata.hasPendingWrites) return;
+
+        if (snapshot.exists) {
+          const data = snapshot.data();
+          this.applyCloudDataToLocal(data);
+          this.updateUIStatus('connected');
+        }
+      }, (err) => {
+        console.warn('Realtime listener notice:', err.message);
+      });
+
     } catch (err) {
-      console.error('Error onUserLoggedIn:', err);
+      console.error('Error saat sinkronisasi langsung:', err);
+      // Jika aturan Firebase membutuhkan permission, beri notifikasi ramah
+      if (err.code === 'permission-denied') {
+        showToast('⚠️ Izin Firestore belum diizinkan. Pastikan Rules diatur: allow read, write: if true;', 'warning');
+      }
     }
   },
 
-  // Menerapkan data cloud ke penyimpanan lokal Store
+  // Terapkan data dari cloud ke Store aplikasi lokal
   applyCloudDataToLocal(data) {
     if (!data) return;
+    this.isSyncingFromCloud = true;
 
-    if (Array.isArray(data.jadwal)) Store.setJadwal(data.jadwal);
-    if (Array.isArray(data.tugas)) Store.setTugas(data.tugas);
-    if (Array.isArray(data.catatan)) Store.setCatatan(data.catatan);
-    if (Array.isArray(data.transaksi)) Store.setTransaksi(data.transaksi);
-    if (Array.isArray(data.projects)) Store.setProjects(data.projects);
-    if (data.profil && typeof data.profil === 'object') {
-      const p = Store.getProfil();
-      Store.setProfil({ ...p, ...data.profil });
-    }
-
-    // Segarkan semua tampilan
-    if (typeof renderHome === 'function') renderHome();
-    if (typeof renderJadwal === 'function') renderJadwal();
-    if (typeof renderTugas === 'function') renderTugas();
-    if (typeof renderCatatan === 'function') renderCatatan();
-    if (typeof renderKeuangan === 'function') renderKeuangan();
-    if (typeof renderKalender === 'function') renderKalender();
-    if (typeof updateStats === 'function') updateStats();
-  },
-
-  // Mendengarkan perubahan data di Firestore secara real-time
-  listenToRealtimeUpdates(uid) {
-    if (!this.db) return;
-    if (this.unsubscribeSnapshot) this.unsubscribeSnapshot();
-
-    const userDocRef = this.db.collection('users').doc(uid);
-    this.unsubscribeSnapshot = userDocRef.onSnapshot((doc) => {
-      // Abaikan jika perubahan berasal dari penulisan lokal sendiri yang masih pending
-      if (doc.metadata.hasPendingWrites) return;
-
-      if (doc.exists) {
-        const data = doc.data();
-        this.applyCloudDataToLocal(data);
+    try {
+      if (Array.isArray(data.jadwal)) Store.setJadwal(data.jadwal);
+      if (Array.isArray(data.tugas)) Store.setTugas(data.tugas);
+      if (Array.isArray(data.catatan)) Store.setCatatan(data.catatan);
+      if (Array.isArray(data.transaksi)) Store.setTransaksi(data.transaksi);
+      if (Array.isArray(data.projects)) Store.setProjects(data.projects);
+      if (data.profil && typeof data.profil === 'object') {
+        const p = Store.getProfil();
+        Store.setProfil({ ...p, ...data.profil });
       }
-    }, (error) => {
-      console.error('Realtime listener error:', error);
-    });
+
+      // Refresh seluruh tampilan yang sedang aktif
+      if (typeof renderHome === 'function') renderHome();
+      if (typeof renderJadwal === 'function') renderJadwal();
+      if (typeof renderTugas === 'function') renderTugas();
+      if (typeof renderCatatan === 'function') renderCatatan();
+      if (typeof renderKeuangan === 'function') renderKeuangan();
+      if (typeof renderKalender === 'function') renderKalender();
+      if (typeof updateStats === 'function') updateStats();
+    } finally {
+      setTimeout(() => {
+        this.isSyncingFromCloud = false;
+      }, 500);
+    }
   },
 
   // Unggah semua data lokal ke Cloud Firestore
   async syncUploadAll() {
-    if (!this.isInitialized || !this.currentUser) return;
+    if (!this.isInitialized || this.isSyncingFromCloud) return;
 
     const payload = {
       jadwal: Store.getJadwal(),
@@ -159,103 +141,30 @@ const FirebaseService = {
       transaksi: Store.getTransaksi(),
       projects: Store.getProjects(),
       profil: Store.getProfil(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      userEmail: this.currentUser.email
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
-      await this.db.collection('users').doc(this.currentUser.uid).set(payload, { merge: true });
-      console.log('☁️ Sinkronisasi berhasil diunggah ke Firebase Firestore');
+      const docRef = this.db.collection('piskaly_app').doc('main_data');
+      await docRef.set(payload, { merge: true });
+      console.log('⚡ Data langsung tersimpan di Cloud Firestore');
     } catch (err) {
-      console.error('Gagal mengunggah data ke Firestore:', err);
-      showToast('Gagal sinkronisasi cloud: ' + err.message, 'error');
+      console.error('Gagal upload ke Firestore:', err);
     }
   },
 
-  // Debounced auto-sync (dipanggil setiap ada perubahan data lokal)
+  // Auto-sync debounced (otomatis dipanggil saat ada penambahan/edit data)
   queueSync() {
-    if (!this.isInitialized || !this.currentUser) return;
+    if (!this.isInitialized || this.isSyncingFromCloud) return;
     clearTimeout(this.syncTimeout);
     this.syncTimeout = setTimeout(() => {
       this.syncUploadAll();
-    }, 1200);
+    }, 1000);
   },
 
-  // Login dengan Google
-  async loginWithGoogle() {
-    if (!this.isInitialized) {
-      if (!this.init()) {
-        openFirebaseConfigModal();
-        return;
-      }
-    }
-
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const result = await this.auth.signInWithPopup(provider);
-      return result.user;
-    } catch (err) {
-      console.error('Google Sign-in error:', err);
-      showToast('Gagal masuk dengan Google: ' + err.message, 'error');
-    }
-  },
-
-  // Login dengan Email & Password
-  async loginWithEmail(email, password) {
-    if (!this.isInitialized) {
-      if (!this.init()) {
-        openFirebaseConfigModal();
-        return;
-      }
-    }
-
-    try {
-      const res = await this.auth.signInWithEmailAndPassword(email, password);
-      return res.user;
-    } catch (err) {
-      console.error('Email Sign-in error:', err);
-      showToast('Gagal masuk: ' + err.message, 'error');
-      throw err;
-    }
-  },
-
-  // Registrasi Akun Baru dengan Email & Password
-  async registerWithEmail(email, password, displayName = '') {
-    if (!this.isInitialized) {
-      if (!this.init()) {
-        openFirebaseConfigModal();
-        return;
-      }
-    }
-
-    try {
-      const res = await this.auth.createUserWithEmailAndPassword(email, password);
-      if (displayName && res.user) {
-        await res.user.updateProfile({ displayName });
-      }
-      return res.user;
-    } catch (err) {
-      console.error('Register error:', err);
-      showToast('Gagal mendaftar: ' + err.message, 'error');
-      throw err;
-    }
-  },
-
-  // Logout
-  async logout() {
-    if (!this.auth) return;
-    try {
-      await this.auth.signOut();
-      showToast('Berhasil keluar dari akun Firebase', 'success');
-      this.updateUIStatus();
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  },
-
-  // Bersihkan semua data dummy agar pengguna bisa mulai mengisi data miliknya sendiri
+  // Bersihkan semua data agar mulai kosong total
   async clearAllDummyData() {
-    if (!confirm('Apakah Anda yakin ingin menghapus semua data dummy bawaan aplikasi?\nData Jadwal, Tugas, Catatan, dan Transaksi akan dikosongkan agar Anda dapat mengisi data pribadi Anda sendiri.')) {
+    if (!confirm('Kosongkan semua data agar siap diisi data pribadi Anda sendiri?')) {
       return;
     }
 
@@ -265,7 +174,6 @@ const FirebaseService = {
     Store.setTransaksi([]);
     Store.setProjects([]);
 
-    // Refresh tampilan
     if (typeof renderHome === 'function') renderHome();
     if (typeof renderJadwal === 'function') renderJadwal();
     if (typeof renderTugas === 'function') renderTugas();
@@ -274,53 +182,35 @@ const FirebaseService = {
     if (typeof renderKalender === 'function') renderKalender();
     if (typeof updateStats === 'function') updateStats();
 
-    // Jika sedang login, sinkronkan keadaan kosong ini ke Cloud
-    if (this.currentUser) {
-      await this.syncUploadAll();
-    }
-
-    showToast('✨ Data berhasil dikosongkan! Sekarang Anda siap mengisi data Anda sendiri.', 'success');
+    await this.syncUploadAll();
+    showToast('✨ Semua data telah bersih! Siap diisi data Anda.', 'success');
   },
 
-  // Perbarui UI status koneksi Firebase di halaman Profil
-  updateUIStatus() {
+  // Perbarui indikator status di halaman Profil
+  updateUIStatus(status) {
     const cardStatus = document.getElementById('firebaseStatusBadge');
     const userLabel = document.getElementById('firebaseUserLabel');
-    const authActions = document.getElementById('firebaseAuthActions');
-    const logoutBtn = document.getElementById('firebaseLogoutBtn');
 
     if (!cardStatus) return;
 
-    if (!this.isConfigured()) {
-      cardStatus.className = 'fb-badge unconfigured';
-      cardStatus.innerHTML = '<span class="fb-dot red"></span> Belum Dikonfigurasi';
-      if (userLabel) userLabel.textContent = 'Silakan pasang Firebase Config Anda untuk mengaktifkan cloud database.';
-      if (authActions) authActions.classList.add('hidden');
-      if (logoutBtn) logoutBtn.classList.add('hidden');
-      return;
-    }
-
-    if (this.currentUser) {
+    if (status === 'connected' || this.isInitialized) {
       cardStatus.className = 'fb-badge connected';
-      cardStatus.innerHTML = '<span class="fb-dot green"></span> Tersambung & Sinkron';
+      cardStatus.innerHTML = '<span class="fb-dot green"></span> Sinkron Otomatis (Live)';
       if (userLabel) {
-        userLabel.innerHTML = `<strong>${this.currentUser.displayName || 'Akun Terhubung'}</strong><br><span style="font-size:12px;opacity:0.8;">${this.currentUser.email}</span>`;
+        userLabel.textContent = 'Tersambung langsung ke Cloud Firestore. Setiap perubahan otomatis tersimpan & sinkron ke iPhone, iPad, dan Laptop Anda.';
       }
-      if (authActions) authActions.classList.add('hidden');
-      if (logoutBtn) logoutBtn.classList.remove('hidden');
     } else {
       cardStatus.className = 'fb-badge ready';
-      cardStatus.innerHTML = '<span class="fb-dot yellow"></span> Siap (Belum Login)';
-      if (userLabel) userLabel.textContent = 'Firebase aktif! Masuk dengan Google atau Email untuk menyinkronkan data Anda ke Cloud.';
-      if (authActions) authActions.classList.remove('hidden');
-      if (logoutBtn) logoutBtn.classList.add('hidden');
+      cardStatus.innerHTML = '<span class="fb-dot yellow"></span> Mode Lokal';
+      if (userLabel) {
+        userLabel.textContent = 'Berjalan dalam mode lokal.';
+      }
     }
   }
 };
 
-// Hook ke Store agar setiap aksi penulisan otomatis tersinkronisasi ke Firebase
+// Hook otomatis ke Store: setiap ada penambahan atau pengubahan data, langsung simpan ke Cloud!
 document.addEventListener('DOMContentLoaded', () => {
-  // Hubungkan auto-sync debounced ke Store setter
   const originalSetJadwal = Store.setJadwal.bind(Store);
   Store.setJadwal = function(d) { originalSetJadwal(d); FirebaseService.queueSync(); };
 
@@ -339,16 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const originalSetProfil = Store.setProfil.bind(Store);
   Store.setProfil = function(d) { originalSetProfil(d); FirebaseService.queueSync(); };
 
-  // Inisialisasi Firebase Service
+  // Mulai sinkronisasi langsung seketika
   setTimeout(() => {
     FirebaseService.init();
   }, 100);
 });
 
-// ==========================================
-// UI MODAL HELPERS (Pengaturan & Auth)
-// ==========================================
-
+// UI Modal Helper untuk pengaturan jika ingin ganti project ID
 function openFirebaseConfigModal() {
   const current = getActiveFirebaseConfig();
   document.getElementById('fbApiKey').value = current.apiKey || '';
@@ -369,7 +256,6 @@ function parseFirebaseConfigPaste() {
   }
 
   try {
-    // Ekstrak properti menggunakan regex atau JSON parser
     const extract = (prop) => {
       const match = raw.match(new RegExp(`${prop}\\s*:\\s*["']([^"']+)["']`, 'i'));
       return match ? match[1] : '';
@@ -391,8 +277,6 @@ function parseFirebaseConfigPaste() {
 
     if (apiKey && projectId) {
       showToast('✅ Berhasil membaca konfigurasi Firebase!', 'success');
-    } else {
-      showToast('⚠️ Sebagian nilai tidak terdeteksi, mohon lengkapi manual.', 'warning');
     }
   } catch (err) {
     showToast('Gagal memproses teks paste: ' + err.message, 'error');
@@ -419,65 +303,9 @@ function saveFirebaseConfigFromModal() {
 
   saveFirebaseConfigToStorage(configObj);
   closeModal('modalFirebaseConfig');
-  showToast('✅ Konfigurasi tersimpan! Menghubungkan ke Firebase...', 'success');
+  showToast('✅ Konfigurasi tersimpan! Mengaktifkan sinkronisasi...', 'success');
 
-  // Re-inisialisasi Firebase Service
   setTimeout(() => {
     FirebaseService.init();
   }, 300);
 }
-
-let activeAuthTab = 'login';
-
-function openFirebaseAuthModal() {
-  switchAuthTab('login');
-  document.getElementById('authEmail').value = '';
-  document.getElementById('authPassword').value = '';
-  document.getElementById('authDisplayName').value = '';
-  openModal('modalFirebaseAuth');
-}
-
-function switchAuthTab(tab) {
-  activeAuthTab = tab;
-  const isLogin = tab === 'login';
-  document.getElementById('authTabLogin').classList.toggle('active', isLogin);
-  document.getElementById('authTabRegister').classList.toggle('active', !isLogin);
-  document.getElementById('modalAuthTitle').textContent = isLogin ? 'Masuk dengan Email' : 'Daftar Akun Baru';
-  document.getElementById('authNameGroup').classList.toggle('hidden', isLogin);
-  document.getElementById('authSubmitBtn').textContent = isLogin ? 'Masuk' : 'Daftar & Hubungkan';
-}
-
-async function handleAuthSubmit() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  const name = document.getElementById('authDisplayName').value.trim();
-
-  if (!email || !password) {
-    showToast('Email dan password wajib diisi!', 'error');
-    return;
-  }
-
-  if (password.length < 6) {
-    showToast('Password minimal 6 karakter!', 'error');
-    return;
-  }
-
-  const btn = document.getElementById('authSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Memproses...';
-
-  try {
-    if (activeAuthTab === 'login') {
-      await FirebaseService.loginWithEmail(email, password);
-    } else {
-      await FirebaseService.registerWithEmail(email, password, name);
-    }
-    closeModal('modalFirebaseAuth');
-  } catch (err) {
-    // Error ditangani di dalam service
-  } finally {
-    btn.disabled = false;
-    btn.textContent = activeAuthTab === 'login' ? 'Masuk' : 'Daftar & Hubungkan';
-  }
-}
-

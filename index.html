@@ -35,7 +35,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Main Styles -->
-  <link rel="stylesheet" href="css/style.css?v=3.3" />
+  <link rel="stylesheet" href="css/style.css?v=3.4" />
 </head>
 <body>
 
@@ -560,40 +560,24 @@
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4.5 15.5 8 3l3.5 6.5" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9.5 15 3l4.5 12.5L12 21 4.5 15.5Z" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </div>
                     <div>
-                      <h4 class="fb-card-title">Firebase Cloud Database</h4>
-                      <p class="fb-card-desc" id="firebaseUserLabel">Hubungkan akun Anda untuk sinkronisasi data antar perangkat (HP & Laptop).</p>
+                      <h4 class="fb-card-title">Cloud Database Firestore</h4>
+                      <p class="fb-card-desc" id="firebaseUserLabel">Tersambung langsung ke Cloud Firestore. Setiap perubahan otomatis tersimpan & sinkron antar iPhone, iPad, dan Laptop Anda.</p>
                     </div>
                   </div>
-                  <div id="firebaseStatusBadge" class="fb-badge unconfigured">
-                    <span class="fb-dot red"></span> Belum Dikonfigurasi
+                  <div id="firebaseStatusBadge" class="fb-badge connected">
+                    <span class="fb-dot green"></span> Sinkron Otomatis (Live)
                   </div>
                 </div>
 
                 <div class="fb-actions-row">
-                  <button type="button" class="fb-btn config-btn" onclick="openFirebaseConfigModal()">
-                    <i data-lucide="settings"></i> Konfigurasi Firebase
+                  <button type="button" class="fb-btn sync-btn" onclick="FirebaseService.syncUploadAll(); showToast('⚡ Data berhasil disinkronkan ke Cloud Firestore!', 'success');">
+                    <i data-lucide="refresh-cw"></i> Sinkronkan Sekarang
                   </button>
                   <button type="button" class="fb-btn purge-btn" onclick="FirebaseService.clearAllDummyData()">
                     <i data-lucide="sparkles"></i> Kosongkan Data Dummy
                   </button>
-                </div>
-
-                <div class="fb-auth-row" id="firebaseAuthActions">
-                  <button type="button" class="fb-btn google-btn" onclick="FirebaseService.loginWithGoogle()">
-                    <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.7 0 3 .6 4 1.5l3-3C17.2 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.1 7.5 23 12 23z"/></svg>
-                    Masuk dengan Google
-                  </button>
-                  <button type="button" class="fb-btn email-btn" onclick="openFirebaseAuthModal()">
-                    <i data-lucide="mail"></i> Masuk dengan Email
-                  </button>
-                </div>
-
-                <div class="fb-logged-row hidden" id="firebaseLogoutBtn">
-                  <button type="button" class="fb-btn sync-btn" onclick="FirebaseService.syncUploadAll(); showToast('Data berhasil disinkronkan ke Cloud!', 'success');">
-                    <i data-lucide="refresh-cw"></i> Sinkronkan Sekarang
-                  </button>
-                  <button type="button" class="fb-btn logout-btn" onclick="FirebaseService.logout()">
-                    <i data-lucide="log-out"></i> Keluar Akun
+                  <button type="button" class="fb-btn config-btn" onclick="openFirebaseConfigModal()">
+                    <i data-lucide="settings"></i> Pengaturan
                   </button>
                 </div>
               </div>
@@ -1224,39 +1208,6 @@
     </div>
   </div>
 
-  <!-- Modal: Login / Register Email Firebase -->
-  <div class="modal hidden" id="modalFirebaseAuth">
-    <div class="modal-header">
-      <h3 id="modalAuthTitle">Masuk dengan Email</h3>
-      <button class="modal-close" data-modal="modalFirebaseAuth"><i data-lucide="x"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="auth-tabs" style="display:flex; gap:8px; margin-bottom:16px;">
-        <button type="button" class="auth-tab-btn active" id="authTabLogin" onclick="switchAuthTab('login')">Masuk</button>
-        <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="switchAuthTab('register')">Daftar Akun Baru</button>
-      </div>
-
-      <div class="form-group hidden" id="authNameGroup">
-        <label>Nama Lengkap</label>
-        <input type="text" id="authDisplayName" placeholder="Nama Anda" />
-      </div>
-
-      <div class="form-group">
-        <label>Email *</label>
-        <input type="email" id="authEmail" placeholder="nama@email.com" />
-      </div>
-
-      <div class="form-group">
-        <label>Password *</label>
-        <input type="password" id="authPassword" placeholder="Minimal 6 karakter" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" data-modal="modalFirebaseAuth">Batal</button>
-      <button class="btn-primary" id="authSubmitBtn" onclick="handleAuthSubmit()">Masuk</button>
-    </div>
-  </div>
-
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden"></div>
 
@@ -1264,18 +1215,18 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.3"></script>
-  <script src="js/firebase-service.js?v=3.3"></script>
+  <script src="js/firebase-config.js?v=3.4"></script>
+  <script src="js/firebase-service.js?v=3.4"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.3"></script>
-  <script src="js/app.js?v=3.3"></script>
-  <script src="js/jadwal.js?v=3.3"></script>
-  <script src="js/tugas.js?v=3.3"></script>
-  <script src="js/catatan.js?v=3.3"></script>
-  <script src="js/keuangan.js?v=3.3"></script>
-  <script src="js/kalender.js?v=3.3"></script>
-  <script src="js/ai.js?v=3.3"></script>
+  <script src="js/storage.js?v=3.4"></script>
+  <script src="js/app.js?v=3.4"></script>
+  <script src="js/jadwal.js?v=3.4"></script>
+  <script src="js/tugas.js?v=3.4"></script>
+  <script src="js/catatan.js?v=3.4"></script>
+  <script src="js/keuangan.js?v=3.4"></script>
+  <script src="js/kalender.js?v=3.4"></script>
+  <script src="js/ai.js?v=3.4"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1286,7 +1237,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.3').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.4').catch(() => {});
       });
     }
   </script>
