@@ -121,7 +121,7 @@ function deleteTugas(id) {
   renderTugas();
   if (currentPage === 'home') renderHome();
   updateStats();
-  showToast('Tugas dihapus', '');
+  showToast('🗑️ Tugas dihapus', 'error');
 }
 
 function saveTugas() {

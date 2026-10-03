@@ -87,7 +87,7 @@ function deleteJadwal(id) {
   renderJadwalList();
   if (currentPage === 'home') renderHome();
   updateStats();
-  showToast('Jadwal dihapus', '');
+  showToast('🗑️ Jadwal dihapus', 'error');
 }
 
 function saveJadwal() {

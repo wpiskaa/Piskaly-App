@@ -9,12 +9,76 @@ let financeChart = null;
 // ---- Utils ----
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
-function showToast(msg, type = '', duration = 2800) {
+// ==========================================
+// HAPTIC & AUDIO POP SYNTHESIZER (Web Audio API)
+// ==========================================
+function playPopSound(type = 'pop') {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!window._appAudioCtx) {
+      window._appAudioCtx = new AudioCtx();
+    }
+    const ctx = window._appAudioCtx;
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+
+    if (type === 'error') {
+      // Tactile error dual-tone drop
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.linearRampToValueAtTime(170, now + 0.16);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    } else {
+      // Satisfying iOS-style crisp pop chime
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(560, now);
+      osc.frequency.exponentialRampToValueAtTime(890, now + 0.05);
+      osc.frequency.exponentialRampToValueAtTime(430, now + 0.12);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    }
+  } catch (e) {
+    // Autoplay policy or unsupported audio
+  }
+}
+
+let toastTimeout = null;
+function showToast(msg, type = '', duration = 2600) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type}`;
-  t.classList.add('show');
-  setTimeout(() => { t.classList.remove('show'); t.classList.add('hidden'); }, duration);
+  if (!t) return;
+
+  // Bunyikan pop feedback & getaran haptic fisik
+  playPopSound(type === 'error' ? 'error' : 'pop');
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate(type === 'error' ? [35, 45, 35] : 18); } catch (e) {}
+  }
+
+  t.innerHTML = msg;
+  t.className = `toast ${type} show`;
+
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    t.classList.remove('show');
+  }, duration);
 }
 
 function formatRupiah(num) {

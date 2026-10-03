@@ -132,7 +132,7 @@ function deleteEvent(id) {
   if (!confirm('Hapus event ini?')) return;
   Store.setEvents(Store.getEvents().filter(e => e.id !== id));
   renderCalendarGrid();
-  showToast('Event dihapus', '');
+  showToast('🗑️ Event dihapus', 'error');
 }
 
 function saveEvent() {

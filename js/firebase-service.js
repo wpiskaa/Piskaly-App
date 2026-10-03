@@ -131,7 +131,7 @@ const FirebaseService = {
   },
 
   // Unggah semua data lokal ke Cloud Firestore
-  async syncUploadAll() {
+  async syncUploadAll(notify = true) {
     if (!this.isInitialized || this.isSyncingFromCloud) return;
 
     const payload = {
@@ -148,8 +148,14 @@ const FirebaseService = {
       const docRef = this.db.collection('piskaly_app').doc('main_data');
       await docRef.set(payload, { merge: true });
       console.log('⚡ Data langsung tersimpan di Cloud Firestore');
+      if (notify && typeof showToast === 'function') {
+        showToast('☁️ Data tersinkron ke Cloud!', 'success', 2200);
+      }
     } catch (err) {
       console.error('Gagal upload ke Firestore:', err);
+      if (typeof showToast === 'function') {
+        showToast('⚠️ Gagal sinkron Cloud: ' + err.message, 'error', 3000);
+      }
     }
   },
 

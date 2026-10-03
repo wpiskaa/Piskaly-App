@@ -95,7 +95,7 @@ function deleteCatatan(id) {
   renderCatatan();
   if (currentPage === 'home') renderHomeNotes();
   updateStats();
-  showToast('Catatan dihapus', '');
+  showToast('🗑️ Catatan dihapus', 'error');
 }
 
 function saveCatatan() {
