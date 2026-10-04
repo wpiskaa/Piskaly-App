@@ -1,0 +1,83 @@
+/* ===========================
+   APP LAYOUT
+   =========================== */
+#app { height: 100vh; height: 100dvh; overflow: hidden; position: relative; background: var(--bg-main); }
+#main-app { display: flex; flex-direction: column; height: 100%; background: var(--bg-main); }
+#main-app.hidden { display: none; }
+.hidden { display: none !important; }
+
+/* ===========================
+   HEADER
+   =========================== */
+/* ===========================
+   HEADER (GRID MENU, CENTER TITLE, BELL)
+   =========================== */
+#app-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: calc(var(--header-height) + var(--safe-top));
+  padding-top: var(--safe-top);
+  background: var(--bg-main);
+  display: flex; align-items: center; justify-content: space-between;
+  padding-left: 20px; padding-right: 20px;
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+.header-left { display: flex; align-items: center; }
+.header-grid-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-primary); background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.header-grid-btn svg { width: 20px; height: 20px; stroke-width: 2.2px; }
+.header-grid-btn:hover { background: var(--bg-input); }
+.header-grid-btn:active { transform: scale(0.92); }
+
+.header-center { display: flex; align-items: center; justify-content: center; }
+.header-title-text {
+  font-size: 18px; font-weight: 800; color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.header-right { display: flex; align-items: center; gap: 8px; }
+.header-icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-primary); background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: relative; transition: var(--transition);
+  cursor: pointer;
+}
+.header-icon-btn:hover { background: var(--bg-input); }
+.header-icon-btn:active { transform: scale(0.92); }
+.header-icon-btn svg { width: 20px; height: 20px; stroke-width: 2.2px; }
+.notif-badge {
+  position: absolute; top: 7px; right: 7px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger);
+  border: 1.5px solid var(--bg-card);
+}
+
+/* ===========================
+   PAGES CONTAINER
+   =========================== */
+#pages-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: calc(var(--header-height) + var(--safe-top));
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 24px);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+/* Scrollbar */
+#pages-container::-webkit-scrollbar { width: 0; }
+
+.page { display: none; }
+.page.active { display: block; }
+.page-content { padding: 16px 20px 20px; }
+

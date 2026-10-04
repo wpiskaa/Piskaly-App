@@ -173,7 +173,7 @@ function navigateTo(page) {
   const titles = {
     home: 'Home', jadwal: 'Jadwal Kuliah', tugas: 'Tugas & Deadline',
     catatan: 'Catatan', keuangan: 'Manajemen Uang', kalender: 'Kalender',
-    ai: 'Aiden AI', profil: 'Profil'
+    ai: 'Aiden AI', profil: 'Profil', notifikasi: 'Pemberitahuan'
   };
   const titleEl = document.getElementById('pageTitle');
   if (titleEl) titleEl.textContent = titles[page] || page;
@@ -186,6 +186,10 @@ function navigateTo(page) {
   if (page === 'catatan') renderCatatan();
   if (page === 'keuangan') renderKeuangan();
   if (page === 'kalender') renderKalender();
+  if (page === 'notifikasi' && typeof renderNotifikasi === 'function') renderNotifikasi();
+
+  // Update notification badge counter
+  if (typeof updateNotifBadge === 'function') updateNotifBadge();
 
   // Scroll to top of page container
   if (pagesContainer) pagesContainer.scrollTop = 0;

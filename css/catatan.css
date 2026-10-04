@@ -1,0 +1,155 @@
+/* ===========================
+   CATATAN PAGE
+   =========================== */
+.notes-search-wrap {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 99px; padding: 12px 18px; margin: 0 0 18px 0;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+.notes-search-wrap:focus-within {
+  border-color: var(--primary-light);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+}
+.notes-search-wrap svg { width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0; }
+.notes-search-wrap input {
+  flex: 1; background: none; border: none; font-size: 14.5px;
+  color: var(--text-primary); font-family: var(--font);
+}
+.notes-search-wrap input::placeholder { color: var(--text-muted); }
+
+.catatan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  padding: 0 0 100px 0;
+}
+@media (max-width: 520px) {
+  .catatan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.catatan-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 20px 18px 16px 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: fadeSlideIn 0.3s ease forwards;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.catatan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--border-hover);
+}
+.catatan-card:active {
+  transform: scale(0.98);
+}
+.catatan-card-stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+}
+.catatan-card-glow {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  opacity: 0.12;
+  pointer-events: none;
+  filter: blur(14px);
+}
+.catatan-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.catatan-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  word-break: break-word;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+}
+.catatan-card-preview {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.catatan-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.catatan-card-date {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.catatan-card-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+.catatan-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.catatan-actions button {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.catatan-actions .action-btn.edit {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.catatan-actions .action-btn.edit:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.catatan-actions .action-btn.delete {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid transparent;
+}
+.catatan-actions .action-btn.delete:hover {
+  opacity: 0.9;
+}
+

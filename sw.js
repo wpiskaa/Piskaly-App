@@ -2,15 +2,31 @@
 // SERVICE WORKER - sw.js
 // ===========================
 
-const CACHE_NAME = 'mylife-v3.7';
+const CACHE_NAME = 'mylife-v3.8';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './css/style.css',
+  './css/base.css',
+  './css/layout.css',
+  './css/navigation.css',
+  './css/drawer.css',
+  './css/components.css',
+  './css/home.css',
+  './css/jadwal.css',
+  './css/tugas.css',
+  './css/catatan.css',
+  './css/keuangan.css',
+  './css/kalender.css',
+  './css/ai.css',
+  './css/profil.css',
+  './css/notifikasi.css',
+  './css/utilities.css',
   './js/firebase-config.js',
   './js/firebase-service.js',
   './js/storage.js',
   './js/app.js',
+  './js/notifikasi.js',
   './js/jadwal.js',
   './js/tugas.js',
   './js/catatan.js',

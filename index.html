@@ -34,8 +34,22 @@
   <!-- Chart.js for finance charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-  <!-- Main Styles -->
-  <link rel="stylesheet" href="css/style.css?v=3.4" />
+  <!-- Modular Architecture Stylesheets -->
+  <link rel="stylesheet" href="css/base.css?v=3.8" />
+  <link rel="stylesheet" href="css/layout.css?v=3.8" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.8" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.8" />
+  <link rel="stylesheet" href="css/components.css?v=3.8" />
+  <link rel="stylesheet" href="css/home.css?v=3.8" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.8" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.8" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.8" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.8" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.8" />
+  <link rel="stylesheet" href="css/ai.css?v=3.8" />
+  <link rel="stylesheet" href="css/profil.css?v=3.8" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.8" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.8" />
 </head>
 <body>
 
@@ -79,9 +93,9 @@
           <button class="header-icon-btn theme-toggle-btn" id="headerThemeBtn" aria-label="Ganti Tema" title="Ganti Mode Terang / Malam">
             <i data-lucide="moon" id="headerThemeIcon"></i>
           </button>
-          <button class="header-icon-btn notif-btn" id="notifBtn" aria-label="Notifikasi" onclick="showToast('Semua notifikasi terkini sudah dibaca', 'info')">
+          <button class="header-icon-btn notif-btn" id="notifBtn" aria-label="Notifikasi" title="Pemberitahuan & Deadline" onclick="navigateTo('notifikasi')">
             <i data-lucide="bell"></i>
-            <span class="notif-badge" id="notifBadge">3</span>
+            <span class="notif-badge" id="notifBadge">0</span>
           </button>
         </div>
       </header>
@@ -655,6 +669,42 @@
           </div>
         </section>
 
+        <!-- ===== PAGE: NOTIFIKASI ===== -->
+        <section id="page-notifikasi" class="page hidden">
+          <div class="page-content notif-page-content">
+            <div class="notif-page-header">
+              <button class="notif-back-btn" onclick="navigateTo('home')" aria-label="Kembali ke Beranda" title="Kembali">
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <div class="notif-page-title-wrap">
+                <h2 class="notif-page-title">Pemberitahuan</h2>
+                <span class="notif-unread-count" id="notifUnreadPill">0 Baru</span>
+              </div>
+              <div class="notif-header-actions">
+                <button class="notif-act-btn" id="markAllReadBtn" title="Tandai Semua Sudah Dibaca" onclick="markAllNotificationsAsRead()">
+                  <i data-lucide="check-check"></i>
+                </button>
+                <button class="notif-act-btn" id="clearNotifBtn" title="Bersihkan Notifikasi" onclick="clearAllNotifications()">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="notif-filter-tabs">
+              <button class="notif-tab active" data-filter="all">Semua</button>
+              <button class="notif-tab" data-filter="unread">Belum Dibaca</button>
+              <button class="notif-tab" data-filter="academic">Kuliah & Agenda</button>
+              <button class="notif-tab" data-filter="tasks">Tugas</button>
+            </div>
+
+            <!-- Notification Dynamic List -->
+            <div id="notifikasiList" class="notifikasi-list">
+              <!-- Dynamically populated by js/notifikasi.js -->
+            </div>
+          </div>
+        </section>
+
       </main>
 
       <!-- ===== BOTTOM NAVIGATION (5 ITEMS - MATCHING USER REFERENCE IMAGE) ===== -->
@@ -779,6 +829,11 @@
             <button class="drawer-nav-item" onclick="navigateTo('ai'); closeDrawer();">
               <i data-lucide="sparkles"></i>
               <span>Aiden AI (Gemini)</span>
+            </button>
+            <button class="drawer-nav-item" onclick="navigateTo('notifikasi'); closeDrawer();">
+              <i data-lucide="bell"></i>
+              <span>Pemberitahuan</span>
+              <span class="drawer-badge" id="drawerNotifBadge" style="margin-left:auto;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;display:none;">0</span>
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('profil'); closeDrawer();">
               <i data-lucide="user-circle"></i>
@@ -1245,8 +1300,9 @@
   <script src="js/tugas.js?v=3.7"></script>
   <script src="js/catatan.js?v=3.7"></script>
   <script src="js/keuangan.js?v=3.7"></script>
-  <script src="js/kalender.js?v=3.7"></script>
-  <script src="js/ai.js?v=3.7"></script>
+  <script src="js/kalender.js?v=3.8"></script>
+  <script src="js/notifikasi.js?v=3.8"></script>
+  <script src="js/ai.js?v=3.8"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1257,7 +1313,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.7').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.8').catch(() => {});
       });
     }
   </script>

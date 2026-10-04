@@ -1,0 +1,94 @@
+/* ===========================
+   BOTTOM NAVIGATION - WHITE DOCK & ROYAL NAVY CENTER FAB
+   =========================== */
+#bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  height: calc(var(--nav-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 25px rgba(10, 34, 101, 0.07);
+  display: flex; align-items: center; justify-content: space-around;
+  padding-left: 12px; padding-right: 12px;
+  transition: var(--transition);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 6px 12px; flex: 1;
+  color: var(--text-secondary); transition: var(--transition);
+  border-radius: 12px; cursor: pointer;
+  background: none; border: none;
+}
+.nav-item svg { width: 22px; height: 22px; stroke-width: 2.2px; transition: transform 0.2s ease; }
+.nav-item span { font-size: 11px; font-weight: 600; letter-spacing: 0.1px; }
+.nav-item.active { color: var(--primary); }
+body.dark-mode .nav-item.active { color: #38bdf8; }
+.nav-item.active svg { transform: scale(1.08); }
+.nav-item:active { transform: scale(0.92); }
+
+.nav-center-btn-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+  position: relative;
+  top: -14px;
+}
+.nav-center-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(10, 34, 101, 0.45);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 4px solid var(--bg-card);
+  cursor: pointer;
+}
+body.dark-mode .nav-center-btn {
+  border-color: var(--bg-card);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+}
+.nav-center-btn svg { width: 24px; height: 24px; stroke-width: 2.5px; }
+.nav-center-btn:active { transform: scale(0.9); }
+
+/* Quick Action Modal */
+.quick-action-options { display: flex; flex-direction: column; gap: 8px; }
+.qa-item {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card-2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px;
+  cursor: pointer; transition: var(--transition); text-align: left; width: 100%;
+}
+.qa-item:hover, .qa-item:active {
+  background: var(--bg-input); transform: translateY(-1px);
+}
+.qa-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.qa-icon svg { width: 22px; height: 22px; }
+.qa-icon.blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.qa-icon.red { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.qa-icon.green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.qa-icon.amber { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.qa-icon.indigo { background: rgba(99, 102, 241, 0.12); color: #6366f1; }
+.qa-text { flex: 1; min-width: 0; }
+.qa-text strong { display: block; font-size: 14px; color: var(--text-primary); }
+.qa-text span { display: block; font-size: 11.5px; color: var(--text-secondary); margin-top: 1px; }
+
+
+
+/* ===========================
+   FAB BUTTON
+   =========================== */
+.fab {
+  position: fixed; right: 20px; bottom: calc(var(--nav-height) + 20px + var(--safe-bottom));
+  width: 56px; height: 56px; border-radius: 18px;
+  background: linear-gradient(135deg, var(--primary-light), #7c3aed);
+  color: white; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+  transition: var(--transition); z-index: 50;
+}
+.fab:active { transform: scale(0.9); }
+.fab svg { width: 26px; height: 26px; }
+
