@@ -132,6 +132,7 @@ function deleteEvent(id) {
   if (!confirm('Hapus event ini?')) return;
   Store.setEvents(Store.getEvents().filter(e => e.id !== id));
   renderCalendarGrid();
+  if (typeof renderHome === 'function') renderHome();
   showToast('🗑️ Event dihapus', 'error');
 }
 
@@ -168,6 +169,7 @@ function saveEvent() {
   resetEventForm();
   renderCalendarGrid();
   selectCalDay(tanggal);
+  if (typeof renderHome === 'function') renderHome();
   showToast(editingEventId ? '✅ Event diperbarui!' : '✅ Event ditambahkan!', 'success');
   editingEventId = null;
 }

@@ -472,6 +472,124 @@ body.dark-mode .proj-card-light .proj-prog-fill { background: #38bdf8; }
   font-size: 11px; color: var(--text-muted); font-weight: 500;
 }
 
+/* Section Title Badge */
+.sec-title-with-badge {
+  display: flex; align-items: center; gap: 8px;
+}
+.sec-badge-pill {
+  font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px;
+  background: var(--bg-input); color: var(--primary-light);
+  border: 1px solid var(--border);
+}
+
+/* Upcoming Agenda Card on Home */
+.agenda-home-item {
+  display: flex; position: relative; overflow: hidden;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 14px 16px 14px 18px;
+  box-shadow: var(--shadow-sm); cursor: pointer;
+  transition: var(--transition);
+}
+.agenda-home-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--border-hover);
+}
+.agenda-home-item:active { transform: scale(0.98); }
+
+.agenda-color-bar {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+}
+.agenda-main-content {
+  flex: 1; min-width: 0;
+}
+.agenda-header-line {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 5px;
+}
+.agenda-title {
+  font-size: 14.5px; font-weight: 800; color: var(--text-primary);
+  letter-spacing: -0.2px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* H- Countdown Badges */
+.agenda-countdown-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 800; padding: 3px 10px;
+  border-radius: 99px; white-space: nowrap; flex-shrink: 0;
+}
+.badge-h-today {
+  background: rgba(16, 185, 129, 0.14); color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+.badge-h-tomorrow {
+  background: rgba(245, 158, 11, 0.14); color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.badge-h-urgent {
+  background: rgba(249, 115, 22, 0.12); color: #ea580c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.badge-h-normal {
+  background: rgba(37, 99, 235, 0.1); color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+.agenda-pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #10b981;
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+.agenda-details-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  font-size: 12px; color: var(--text-secondary); font-weight: 500;
+}
+.agenda-meta-item {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.agenda-meta-item svg {
+  width: 13px; height: 13px; color: var(--text-muted); flex-shrink: 0;
+}
+.agenda-desc-snippet {
+  font-size: 11.5px; color: var(--text-muted); margin-top: 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Agenda Empty Card */
+.agenda-empty-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-card); border: 1px dashed var(--border);
+  border-radius: 18px; padding: 14px 16px; cursor: pointer;
+  transition: var(--transition);
+}
+.agenda-empty-card:hover {
+  border-color: var(--primary-light);
+  background: var(--bg-input);
+}
+.agenda-empty-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: rgba(37, 99, 235, 0.1); color: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.agenda-empty-icon svg { width: 20px; height: 20px; }
+.agenda-empty-info { flex: 1; min-width: 0; }
+.agenda-empty-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.agenda-empty-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+.agenda-empty-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; color: var(--primary-light);
+  padding: 6px 12px; border-radius: 99px;
+  background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2);
+  flex-shrink: 0; cursor: pointer;
+}
+
 /* Empty Compact State */
 .empty-compact {
   display: flex; align-items: center; gap: 10px;
@@ -503,13 +621,46 @@ body.dark-mode .proj-card-light .proj-prog-fill { background: #38bdf8; }
   background: var(--bg-card); border: 1px solid var(--border);
   transition: var(--transition); cursor: pointer;
   box-shadow: var(--shadow-sm);
+  display: inline-flex; align-items: center; gap: 6px;
 }
+.day-tab svg { width: 14px; height: 14px; }
 .day-tab.active {
   background: linear-gradient(135deg, #132b5e 0%, #173670 100%);
   color: white; border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 14px rgba(19, 43, 94, 0.28);
 }
 .jadwal-list { display: flex; flex-direction: column; gap: 14px; padding: 0 0 100px 0; }
+
+/* Jadwal Day Group for All Day View */
+.jadwal-day-group { margin-bottom: 22px; }
+.jadwal-day-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding: 0 4px;
+}
+.jadwal-day-title-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.jadwal-day-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary-light);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+}
+.jadwal-day-name {
+  font-size: 15px; font-weight: 800; color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+.jadwal-day-count-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.jadwal-day-items {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.jadwal-day-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+  background: var(--bg-input); color: var(--text-secondary);
+}
 
 /* Jadwal Card - Harmonized with Home 20px rounded card style */
 .jadwal-card {

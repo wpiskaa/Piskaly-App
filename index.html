@@ -271,6 +271,25 @@
               </div>
             </div>
 
+            <!-- 6. Section: Agenda & Kegiatan Mendatang (Kalender) -->
+            <div class="home-projects-sec" style="margin-top: 24px;">
+              <div class="sec-header-row">
+                <div class="sec-title-with-badge">
+                  <h3 class="sec-title">Upcoming Agenda</h3>
+                  <span class="sec-badge-pill" id="upcomingAgendaCount">0</span>
+                </div>
+                <div class="sec-header-actions">
+                  <button class="add-proj-header-btn" title="Tambah Agenda Baru" onclick="openAddEventModal()">
+                    <i data-lucide="plus"></i> Tambah
+                  </button>
+                  <button class="sec-link-btn" onclick="navigateTo('kalender')">Kalender</button>
+                </div>
+              </div>
+              <div id="upcomingAgendaList" class="clean-items-list">
+                <!-- Dynamically populated with H- countdown info -->
+              </div>
+            </div>
+
             <!-- Compatibility elements for background stats -->
             <span id="statSaldoNum" style="display:none;">Rp 0</span>
             <span id="statTugasNum" style="display:none;">0</span>
@@ -289,12 +308,14 @@
         <section id="page-jadwal" class="page hidden">
           <div class="page-content">
             <div class="day-tabs" id="dayTabs">
+              <button class="day-tab" data-day="All"><i data-lucide="layers"></i> All Day</button>
               <button class="day-tab active" data-day="Senin">Sen</button>
               <button class="day-tab" data-day="Selasa">Sel</button>
               <button class="day-tab" data-day="Rabu">Rab</button>
               <button class="day-tab" data-day="Kamis">Kam</button>
               <button class="day-tab" data-day="Jumat">Jum</button>
               <button class="day-tab" data-day="Sabtu">Sab</button>
+              <button class="day-tab" data-day="Minggu">Min</button>
             </div>
             <div id="jadwalList" class="jadwal-list"></div>
             <button class="fab" id="addJadwalBtn" aria-label="Tambah Jadwal">
@@ -802,6 +823,7 @@
             <option value="Kamis">Kamis</option>
             <option value="Jumat">Jumat</option>
             <option value="Sabtu">Sabtu</option>
+            <option value="Minggu">Minggu</option>
           </select>
         </div>
         <div class="form-group">
@@ -1217,14 +1239,14 @@
   <script src="js/firebase-service.js?v=3.4"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.4"></script>
-  <script src="js/app.js?v=3.4"></script>
-  <script src="js/jadwal.js?v=3.4"></script>
-  <script src="js/tugas.js?v=3.4"></script>
-  <script src="js/catatan.js?v=3.4"></script>
-  <script src="js/keuangan.js?v=3.4"></script>
-  <script src="js/kalender.js?v=3.4"></script>
-  <script src="js/ai.js?v=3.4"></script>
+  <script src="js/storage.js?v=3.7"></script>
+  <script src="js/app.js?v=3.7"></script>
+  <script src="js/jadwal.js?v=3.7"></script>
+  <script src="js/tugas.js?v=3.7"></script>
+  <script src="js/catatan.js?v=3.7"></script>
+  <script src="js/keuangan.js?v=3.7"></script>
+  <script src="js/kalender.js?v=3.7"></script>
+  <script src="js/ai.js?v=3.7"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1235,7 +1257,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.6').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.7').catch(() => {});
       });
     }
   </script>

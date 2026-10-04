@@ -109,6 +109,7 @@ const FirebaseService = {
       if (Array.isArray(data.tugas)) Store.setTugas(data.tugas);
       if (Array.isArray(data.catatan)) Store.setCatatan(data.catatan);
       if (Array.isArray(data.transaksi)) Store.setTransaksi(data.transaksi);
+      if (Array.isArray(data.events)) Store.setEvents(data.events);
       if (Array.isArray(data.projects)) Store.setProjects(data.projects);
       if (data.profil && typeof data.profil === 'object') {
         const p = Store.getProfil();
@@ -139,6 +140,7 @@ const FirebaseService = {
       tugas: Store.getTugas(),
       catatan: Store.getCatatan(),
       transaksi: Store.getTransaksi(),
+      events: Store.getEvents(),
       projects: Store.getProjects(),
       profil: Store.getProfil(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -228,6 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const originalSetTransaksi = Store.setTransaksi.bind(Store);
   Store.setTransaksi = function(d) { originalSetTransaksi(d); FirebaseService.queueSync(); };
+
+  const originalSetEvents = Store.setEvents.bind(Store);
+  Store.setEvents = function(d) { originalSetEvents(d); FirebaseService.queueSync(); };
 
   const originalSetProjects = Store.setProjects.bind(Store);
   Store.setProjects = function(d) { originalSetProjects(d); FirebaseService.queueSync(); };

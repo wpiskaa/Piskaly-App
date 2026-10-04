@@ -408,6 +408,16 @@ function filterHomeContent(q) {
     const text = item.textContent.toLowerCase();
     item.style.display = text.includes(query) ? '' : 'none';
   });
+
+  // Filter upcoming agenda items
+  document.querySelectorAll('#upcomingAgendaList .agenda-home-item').forEach(item => {
+    if (!query) {
+      item.style.display = '';
+      return;
+    }
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(query) ? '' : 'none';
+  });
 }
 
 // ---- Greeting ----
@@ -452,6 +462,7 @@ function renderHome() {
   updateGreeting();
   renderOngoingProjects();
   renderHomeTodaySchedule();
+  renderHomeUpcomingAgenda();
   renderHomeDeadlines();
   renderHomeFinance();
   renderHomeNotes();
@@ -533,6 +544,126 @@ function renderHomeTodaySchedule() {
     </div>
   `).join('');
   lucide.createIcons({ nodes: [container] });
+}
+
+function renderHomeUpcomingAgenda() {
+  const container = document.getElementById('upcomingAgendaList');
+  const countBadge = document.getElementById('upcomingAgendaCount');
+  if (!container) return;
+
+  const events = Store.getEvents();
+  const now = new Date();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  // Hitung H- untuk setiap event dari Kalender
+  const computedEvents = events.map(e => {
+    if (!e.tanggal) return null;
+    const parts = e.tanggal.split('-');
+    if (parts.length < 3) return null;
+    const evDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])).getTime();
+    const diffDays = Math.round((evDate - todayMidnight) / (1000 * 60 * 60 * 24));
+    return { ...e, diffDays, evDate };
+  }).filter(Boolean);
+
+  // Filter agenda hari ini & mendatang (diffDays >= 0), urutkan dari yang paling dekat
+  const upcoming = computedEvents
+    .filter(e => e.diffDays >= 0)
+    .sort((a, b) => a.diffDays - b.diffDays || (a.jamMulai || '').localeCompare(b.jamMulai || ''));
+
+  if (countBadge) countBadge.textContent = upcoming.length;
+
+  if (!upcoming.length) {
+    container.innerHTML = `
+      <div class="agenda-empty-card" onclick="openAddEventModal()">
+        <div class="agenda-empty-icon"><i data-lucide="calendar-plus"></i></div>
+        <div class="agenda-empty-info">
+          <div class="agenda-empty-title">Belum Ada Agenda Mendatang</div>
+          <div class="agenda-empty-sub">Tap untuk menambah jadwal kegiatan / ujian ke Kalender</div>
+        </div>
+        <button class="agenda-empty-btn"><i data-lucide="plus"></i> Tambah</button>
+      </div>
+    `;
+    lucide.createIcons({ nodes: [container] });
+    return;
+  }
+
+  // Tampilkan maksimal 4 agenda terdekat di Home screen
+  const displayItems = upcoming.slice(0, 4);
+
+  container.innerHTML = displayItems.map(e => {
+    let badgeLabel = '';
+    let badgeClass = '';
+    let isToday = false;
+
+    if (e.diffDays === 0) {
+      badgeLabel = 'Hari Ini!';
+      badgeClass = 'badge-h-today';
+      isToday = true;
+    } else if (e.diffDays === 1) {
+      badgeLabel = 'H-1 Besok';
+      badgeClass = 'badge-h-tomorrow';
+    } else if (e.diffDays <= 3) {
+      badgeLabel = `H-${e.diffDays}`;
+      badgeClass = 'badge-h-urgent';
+    } else {
+      badgeLabel = `H-${e.diffDays}`;
+      badgeClass = 'badge-h-normal';
+    }
+
+    const d = new Date(e.tanggal + 'T12:00:00');
+    const dateFormatted = d.toLocaleDateString('id-ID', {
+      weekday: 'short', day: 'numeric', month: 'short'
+    });
+
+    const timeStr = e.jamMulai ? `${e.jamMulai}${e.jamSelesai ? ' - ' + e.jamSelesai : ''}` : '';
+
+    return `
+      <div class="agenda-home-item" onclick="openEventFromHome('${e.id}', '${e.tanggal}')">
+        <div class="agenda-color-bar" style="background:${e.color || '#2563eb'};"></div>
+        <div class="agenda-main-content">
+          <div class="agenda-header-line">
+            <h4 class="agenda-title">${e.nama}</h4>
+            <div class="agenda-countdown-pill ${badgeClass}">
+              ${isToday ? '<span class="agenda-pulse-dot"></span>' : ''}
+              ${badgeLabel}
+            </div>
+          </div>
+          <div class="agenda-details-row">
+            <span class="agenda-meta-item">
+              <i data-lucide="calendar"></i> ${dateFormatted}
+            </span>
+            ${timeStr ? `
+              <span class="agenda-meta-item">
+                <i data-lucide="clock"></i> ${timeStr}
+              </span>
+            ` : ''}
+            ${e.lokasi ? `
+              <span class="agenda-meta-item">
+                <i data-lucide="map-pin"></i> ${e.lokasi}
+              </span>
+            ` : ''}
+          </div>
+          ${e.deskripsi ? `<p class="agenda-desc-snippet">${e.deskripsi}</p>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  lucide.createIcons({ nodes: [container] });
+}
+
+function openAddEventModal() {
+  if (typeof resetEventForm === 'function') resetEventForm();
+  const dInput = document.getElementById('eventTanggal');
+  if (dInput) dInput.value = new Date().toISOString().slice(0, 10);
+  openModal('modalEvent');
+}
+
+function openEventFromHome(eventId, eventDate) {
+  navigateTo('kalender');
+  if (typeof selectCalDay === 'function' && eventDate) {
+    selectCalDay(eventDate);
+  }
 }
 
 function renderHomeDeadlines() {
