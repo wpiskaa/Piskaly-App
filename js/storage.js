@@ -69,14 +69,13 @@ const Store = {
   },
 
   initSeedData() {
-    // Clear dummy data for user so they can input their own real data
-    if (!localStorage.getItem('mylife_user_clean_v1')) {
-      this.setJadwal([]);
-      this.setTugas([]);
-      this.setCatatan([]);
+    // Pastikan tidak ada data dummy pada transaksi, tabungan, anggaran, hutang
+    if (!localStorage.getItem('mylife_clean_finance_v4')) {
       this.setTransaksi([]);
-      this.setProjects([]);
-      this.set('mylife_user_clean_v1', true);
+      this.setGoals([]);
+      this.setBudgets([]);
+      this.setDebts([]);
+      this.set('mylife_clean_finance_v4', true);
     }
   }
 };

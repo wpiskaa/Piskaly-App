@@ -95,7 +95,7 @@ function openDebtModal() {
 
 function saveDebt() {
   const nama = document.getElementById('debtNama').value.trim();
-  const jumlah = parseFloat(document.getElementById('debtJumlah').value);
+  const jumlah = parseRupiahInput(document.getElementById('debtJumlah').value);
   if (!nama) { showToast('Nama tidak boleh kosong!', 'error'); return; }
   if (!jumlah || jumlah <= 0) { showToast('Jumlah tidak valid!', 'error'); return; }
 
@@ -124,13 +124,13 @@ function openDebtPay(id) {
   document.getElementById('modalDebtPayTitle').textContent = isOwe ? 'Bayar Hutang' : 'Terima Pembayaran';
   document.getElementById('debtPayInfo').innerHTML =
     `<b>${finEsc(d.nama)}</b><span>Sisa ${finRp(debtRemaining(d))} dari ${finRp(d.jumlah)}</span>`;
-  document.getElementById('debtPayJumlah').value = debtRemaining(d);
+  document.getElementById('debtPayJumlah').value = formatRupiahDisplay(debtRemaining(d));
   document.getElementById('debtPayRecord').checked = true;
   openModal('modalDebtPay');
 }
 
 function saveDebtPay() {
-  const jumlah = parseFloat(document.getElementById('debtPayJumlah').value);
+  const jumlah = parseRupiahInput(document.getElementById('debtPayJumlah').value);
   const debts = Store.getDebts();
   const d = debts.find(x => x.id === payingDebtId);
   if (!d) return;
@@ -182,4 +182,21 @@ document.addEventListener('DOMContentLoaded', () => {
       renderDebts();
     });
   });
+
+  attachRupiahFormatter(document.getElementById('debtJumlah'));
+  attachRupiahFormatter(document.getElementById('debtPayJumlah'));
+
+  const fullBtn = document.getElementById('debtPayFullBtn');
+  if (fullBtn) {
+    fullBtn.addEventListener('click', () => {
+      if (payingDebtId) {
+        const d = Store.getDebts().find(x => x.id === payingDebtId);
+        if (d) {
+          const input = document.getElementById('debtPayJumlah');
+          input.value = formatRupiahDisplay(debtRemaining(d));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    });
+  }
 });

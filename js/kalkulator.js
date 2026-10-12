@@ -6,8 +6,8 @@ let simMode = 'duration';
 
 // ---- Simulasi menabung ----
 function runSavingsSim() {
-  const target = parseFloat(document.getElementById('simTarget').value) || 0;
-  const saved = parseFloat(document.getElementById('simSaved').value) || 0;
+  const target = parseRupiahInput(document.getElementById('simTarget').value);
+  const saved = parseRupiahInput(document.getElementById('simSaved').value);
   const out = document.getElementById('simResult');
   const need = target - saved;
 
@@ -32,7 +32,7 @@ function runSavingsSim() {
       </div>
       <p class="calc-res-note">Tercapai sekitar ${formatDate(end.toISOString())}</p>`;
   } else {
-    const rate = parseFloat(document.getElementById('simRate').value);
+    const rate = parseRupiahInput(document.getElementById('simRate').value);
     if (!rate || rate <= 0) { showToast('Isi nominal nabung!', 'error'); return; }
     const period = document.getElementById('simRatePeriod').value;
     const daysPer = period === 'day' ? 1 : period === 'week' ? 7 : 30.44;
@@ -56,7 +56,7 @@ function runSavingsSim() {
 
 // ---- Split bill ----
 function runSplitBill() {
-  const total = parseFloat(document.getElementById('splitTotal').value) || 0;
+  const total = parseRupiahInput(document.getElementById('splitTotal').value);
   const people = Math.max(1, parseInt(document.getElementById('splitPeople').value) || 1);
   const tax = parseFloat(document.getElementById('splitTax').value) || 0;
   const out = document.getElementById('splitResult');
@@ -145,5 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('simRateWrap').classList.toggle('hidden', simMode !== 'rate');
       document.getElementById('simResult').classList.add('hidden');
     });
+  });
+
+  ['simTarget', 'simSaved', 'simRate', 'splitTotal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && typeof attachRupiahFormatter === 'function') attachRupiahFormatter(el);
   });
 });

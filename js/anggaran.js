@@ -107,14 +107,14 @@ function openBudgetModal(id) {
   const select = document.getElementById('budgetKategori');
   select.innerHTML = options.map(c => `<option value="${c}">${CATEGORY_ICONS[c] || ''} ${c}</option>`).join('');
   if (b) select.value = b.kategori;
-  document.getElementById('budgetLimit').value = b ? b.limit : '';
+  document.getElementById('budgetLimit').value = b ? formatRupiahDisplay(b.limit) : '';
   document.getElementById('modalBudgetTitle').textContent = b ? 'Edit Anggaran' : 'Atur Anggaran';
   openModal('modalBudget');
 }
 
 function saveBudget() {
   const kategori = document.getElementById('budgetKategori').value;
-  const limit = parseFloat(document.getElementById('budgetLimit').value);
+  const limit = parseRupiahInput(document.getElementById('budgetLimit').value);
   if (!limit || limit <= 0) { showToast('Batas anggaran tidak valid!', 'error'); return; }
 
   let budgets = Store.getBudgets();
@@ -139,4 +139,5 @@ function deleteBudget(id) {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saveBudgetBtn').addEventListener('click', saveBudget);
+  attachRupiahFormatter(document.getElementById('budgetLimit'));
 });

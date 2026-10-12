@@ -35,22 +35,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Modular Architecture Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.9" />
-  <link rel="stylesheet" href="css/layout.css?v=3.9" />
-  <link rel="stylesheet" href="css/navigation.css?v=3.9" />
-  <link rel="stylesheet" href="css/drawer.css?v=3.9" />
-  <link rel="stylesheet" href="css/components.css?v=3.9" />
-  <link rel="stylesheet" href="css/home.css?v=3.9" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.9" />
-  <link rel="stylesheet" href="css/tugas.css?v=3.9" />
-  <link rel="stylesheet" href="css/catatan.css?v=3.9" />
-  <link rel="stylesheet" href="css/keuangan.css?v=3.9" />
-  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.9" />
-  <link rel="stylesheet" href="css/kalender.css?v=3.9" />
-  <link rel="stylesheet" href="css/ai.css?v=3.9" />
-  <link rel="stylesheet" href="css/profil.css?v=3.9" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.9" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.9" />
+  <link rel="stylesheet" href="css/base.css?v=3.10" />
+  <link rel="stylesheet" href="css/layout.css?v=3.10" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.10" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.10" />
+  <link rel="stylesheet" href="css/components.css?v=3.10" />
+  <link rel="stylesheet" href="css/home.css?v=3.10" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.10" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.10" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.10" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.10" />
+  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.10" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.10" />
+  <link rel="stylesheet" href="css/ai.css?v=3.10" />
+  <link rel="stylesheet" href="css/profil.css?v=3.10" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.10" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.10" />
 </head>
 <body>
 
@@ -379,7 +379,7 @@
               <div class="card-meta-top">
                 <div class="card-brand-group">
                   <span class="card-brand-title">MyLife Platinum</span>
-                  <span class="card-holder-name" id="atmCardHolder">JENIFER</span>
+                  <span class="card-holder-name" id="atmCardHolder">KARTU SAYA</span>
                 </div>
                 <div class="card-chip-group">
                   <span class="card-digits-mini">•••• 8829</span>
@@ -516,14 +516,38 @@
                   <button class="calc-seg-btn active" data-simmode="duration">Target &amp; Waktu</button>
                   <button class="calc-seg-btn" data-simmode="rate">Nabung Rutin</button>
                 </div>
-                <div class="form-group"><label>Target Dana (Rp)</label><input type="number" id="simTarget" placeholder="mis. 5000000" min="0" /></div>
-                <div class="form-group"><label>Sudah Terkumpul (Rp)</label><input type="number" id="simSaved" placeholder="0" min="0" /></div>
+                <div class="form-group">
+                  <label>Target Dana (Rp)</label>
+                  <input type="text" id="simTarget" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+                  <div class="quick-amounts" data-target="simTarget">
+                    <button type="button" data-amt="1000000">+1jt</button>
+                    <button type="button" data-amt="5000000">+5jt</button>
+                    <button type="button" data-amt="10000000">+10jt</button>
+                    <button type="button" class="clear-btn" data-amt="0">C</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Sudah Terkumpul (Rp)</label>
+                  <input type="text" id="simSaved" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+                  <div class="quick-amounts" data-target="simSaved">
+                    <button type="button" data-amt="100000">+100rb</button>
+                    <button type="button" data-amt="500000">+500rb</button>
+                    <button type="button" data-amt="1000000">+1jt</button>
+                    <button type="button" class="clear-btn" data-amt="0">C</button>
+                  </div>
+                </div>
                 <div class="form-group" id="simDurationWrap"><label>Jangka Waktu (bulan)</label><input type="number" id="simMonths" placeholder="mis. 6" min="1" /></div>
                 <div class="form-group hidden" id="simRateWrap">
                   <label>Nabung Berapa (Rp)</label>
                   <div class="calc-inline">
-                    <input type="number" id="simRate" placeholder="mis. 200000" min="0" />
+                    <input type="text" id="simRate" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
                     <select id="simRatePeriod"><option value="day">/ hari</option><option value="week">/ minggu</option><option value="month" selected>/ bulan</option></select>
+                  </div>
+                  <div class="quick-amounts" data-target="simRate">
+                    <button type="button" data-amt="10000">+10rb</button>
+                    <button type="button" data-amt="50000">+50rb</button>
+                    <button type="button" data-amt="100000">+100rb</button>
+                    <button type="button" class="clear-btn" data-amt="0">C</button>
                   </div>
                 </div>
                 <button class="btn-primary calc-btn" onclick="runSavingsSim()">Hitung</button>
@@ -533,7 +557,16 @@
               <!-- Split Bill -->
               <div class="calc-card">
                 <div class="calc-card-head"><i data-lucide="users"></i><h4>Patungan / Split Bill</h4></div>
-                <div class="form-group"><label>Total Tagihan (Rp)</label><input type="number" id="splitTotal" placeholder="0" min="0" /></div>
+                <div class="form-group">
+                  <label>Total Tagihan (Rp)</label>
+                  <input type="text" id="splitTotal" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+                  <div class="quick-amounts" data-target="splitTotal">
+                    <button type="button" data-amt="50000">+50rb</button>
+                    <button type="button" data-amt="100000">+100rb</button>
+                    <button type="button" data-amt="200000">+200rb</button>
+                    <button type="button" class="clear-btn" data-amt="0">C</button>
+                  </div>
+                </div>
                 <div class="calc-inline two">
                   <div class="form-group"><label>Jumlah Orang</label><input type="number" id="splitPeople" value="2" min="1" /></div>
                   <div class="form-group"><label>Pajak/Service (%)</label><input type="number" id="splitTax" value="0" min="0" /></div>
@@ -1122,7 +1155,15 @@
       </div>
       <div class="form-group">
         <label>Jumlah (Rp) *</label>
-        <input type="number" id="transJumlah" placeholder="0" min="0" />
+        <input type="text" id="transJumlah" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <div class="quick-amounts" data-target="transJumlah">
+          <button type="button" data-amt="10000">+10rb</button>
+          <button type="button" data-amt="20000">+20rb</button>
+          <button type="button" data-amt="50000">+50rb</button>
+          <button type="button" data-amt="100000">+100rb</button>
+          <button type="button" data-amt="500000">+500rb</button>
+          <button type="button" class="clear-btn" data-amt="0">C</button>
+        </div>
       </div>
       <div class="form-group">
         <label>Keterangan *</label>
@@ -1172,7 +1213,14 @@
       </div>
       <div class="form-group">
         <label>Target Dana (Rp) *</label>
-        <input type="number" id="goalTarget" placeholder="0" min="0" />
+        <input type="text" id="goalTarget" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <div class="quick-amounts" data-target="goalTarget">
+          <button type="button" data-amt="100000">+100rb</button>
+          <button type="button" data-amt="500000">+500rb</button>
+          <button type="button" data-amt="1000000">+1jt</button>
+          <button type="button" data-amt="5000000">+5jt</button>
+          <button type="button" class="clear-btn" data-amt="0">C</button>
+        </div>
       </div>
       <div class="form-group">
         <label>Tenggat Waktu (opsional)</label>
@@ -1195,13 +1243,14 @@
       <div class="deposit-goal-name" id="depositGoalName"></div>
       <div class="form-group">
         <label>Jumlah (Rp) *</label>
-        <input type="number" id="depositJumlah" placeholder="0" min="0" />
-        <div class="quick-amounts" id="depositQuick">
-          <button type="button" data-amt="10000">10rb</button>
-          <button type="button" data-amt="25000">25rb</button>
-          <button type="button" data-amt="50000">50rb</button>
-          <button type="button" data-amt="100000">100rb</button>
-          <button type="button" data-amt="500000">500rb</button>
+        <input type="text" id="depositJumlah" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <div class="quick-amounts" id="depositQuick" data-target="depositJumlah">
+          <button type="button" data-amt="10000">+10rb</button>
+          <button type="button" data-amt="25000">+25rb</button>
+          <button type="button" data-amt="50000">+50rb</button>
+          <button type="button" data-amt="100000">+100rb</button>
+          <button type="button" data-amt="500000">+500rb</button>
+          <button type="button" class="clear-btn" data-amt="0">C</button>
         </div>
       </div>
       <div class="form-group">
@@ -1232,7 +1281,14 @@
       </div>
       <div class="form-group">
         <label>Batas per Bulan (Rp) *</label>
-        <input type="number" id="budgetLimit" placeholder="0" min="0" />
+        <input type="text" id="budgetLimit" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <div class="quick-amounts" data-target="budgetLimit">
+          <button type="button" data-amt="100000">+100rb</button>
+          <button type="button" data-amt="250000">+250rb</button>
+          <button type="button" data-amt="500000">+500rb</button>
+          <button type="button" data-amt="1000000">+1jt</button>
+          <button type="button" class="clear-btn" data-amt="0">C</button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1258,7 +1314,14 @@
       </div>
       <div class="form-group">
         <label>Jumlah (Rp) *</label>
-        <input type="number" id="debtJumlah" placeholder="0" min="0" />
+        <input type="text" id="debtJumlah" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <div class="quick-amounts" data-target="debtJumlah">
+          <button type="button" data-amt="50000">+50rb</button>
+          <button type="button" data-amt="100000">+100rb</button>
+          <button type="button" data-amt="500000">+500rb</button>
+          <button type="button" data-amt="1000000">+1jt</button>
+          <button type="button" class="clear-btn" data-amt="0">C</button>
+        </div>
       </div>
       <div class="form-group">
         <label>Jatuh Tempo (opsional)</label>
@@ -1285,7 +1348,13 @@
       <div class="deposit-goal-name" id="debtPayInfo"></div>
       <div class="form-group">
         <label>Jumlah (Rp) *</label>
-        <input type="number" id="debtPayJumlah" placeholder="0" min="0" />
+        <input type="text" id="debtPayJumlah" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <div class="quick-amounts" data-target="debtPayJumlah">
+          <button type="button" id="debtPayFullBtn" class="accent-btn" style="grid-column: span 2;">Bayar Lunas</button>
+          <button type="button" data-amt="50000">+50rb</button>
+          <button type="button" data-amt="100000">+100rb</button>
+          <button type="button" class="clear-btn" data-amt="0">C</button>
+        </div>
       </div>
       <label class="check-row">
         <input type="checkbox" id="debtPayRecord" checked />
@@ -1539,23 +1608,23 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.9"></script>
-  <script src="js/firebase-service.js?v=3.9"></script>
+  <script src="js/firebase-config.js?v=3.10"></script>
+  <script src="js/firebase-service.js?v=3.10"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.9"></script>
-  <script src="js/app.js?v=3.9"></script>
-  <script src="js/jadwal.js?v=3.9"></script>
-  <script src="js/tugas.js?v=3.9"></script>
-  <script src="js/catatan.js?v=3.9"></script>
-  <script src="js/keuangan.js?v=3.9"></script>
-  <script src="js/tabungan.js?v=3.9"></script>
-  <script src="js/anggaran.js?v=3.9"></script>
-  <script src="js/hutang.js?v=3.9"></script>
-  <script src="js/kalkulator.js?v=3.9"></script>
-  <script src="js/kalender.js?v=3.9"></script>
-  <script src="js/notifikasi.js?v=3.9"></script>
-  <script src="js/ai.js?v=3.9"></script>
+  <script src="js/storage.js?v=3.10"></script>
+  <script src="js/app.js?v=3.10"></script>
+  <script src="js/jadwal.js?v=3.10"></script>
+  <script src="js/tugas.js?v=3.10"></script>
+  <script src="js/catatan.js?v=3.10"></script>
+  <script src="js/keuangan.js?v=3.10"></script>
+  <script src="js/tabungan.js?v=3.10"></script>
+  <script src="js/anggaran.js?v=3.10"></script>
+  <script src="js/hutang.js?v=3.10"></script>
+  <script src="js/kalkulator.js?v=3.10"></script>
+  <script src="js/kalender.js?v=3.10"></script>
+  <script src="js/notifikasi.js?v=3.10"></script>
+  <script src="js/ai.js?v=3.10"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1566,7 +1635,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.9').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.10').catch(() => {});
       });
     }
   </script>

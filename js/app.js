@@ -88,7 +88,46 @@ function formatRupiah(num) {
 }
 
 function formatRupiahFull(num) {
-  return 'Rp ' + num.toLocaleString('id-ID');
+  return 'Rp ' + (Number(num) || 0).toLocaleString('id-ID');
+}
+
+// Parse string / input Rupiah ke nilai angka murni
+function parseRupiahInput(val) {
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  if (!val) return 0;
+  const digits = String(val).replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+}
+
+// Format angka murni ke tampilan Rupiah Indonesia dengan titik ribuan
+function formatRupiahDisplay(num) {
+  const n = parseRupiahInput(num);
+  return n > 0 ? 'Rp ' + n.toLocaleString('id-ID') : '';
+}
+
+// Pasang keyboard angka & format Rupiah interaktif otomatis pada elemen input
+function attachRupiahFormatter(input) {
+  if (!input) return;
+  input.setAttribute('type', 'text');
+  input.setAttribute('inputmode', 'numeric');
+  input.setAttribute('pattern', '[0-9]*');
+  input.setAttribute('autocomplete', 'off');
+
+  if (input._rupiahAttached) return;
+  input._rupiahAttached = true;
+
+  input.addEventListener('input', () => {
+    const raw = parseRupiahInput(input.value);
+    input.value = raw > 0 ? formatRupiahDisplay(raw) : '';
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value) {
+      setTimeout(() => {
+        try { input.select(); } catch (e) {}
+      }, 50);
+    }
+  });
 }
 
 function formatDate(dateStr) {
@@ -494,10 +533,10 @@ function updateStats() {
   const jadwalToday = Store.getJadwal().filter(j => j.hari === today);
 
   const statSaldo = document.getElementById('statSaldoNum');
-  if (statSaldo) statSaldo.textContent = formatRupiahFull(saldo > 0 ? saldo : 2589500);
+  if (statSaldo) statSaldo.textContent = formatRupiahFull(saldo);
 
-  const cardAtmHolder = document.getElementById('cardAtmHolder');
-  if (cardAtmHolder) cardAtmHolder.textContent = profil.name || 'Ahmad Fawaid';
+  const cardAtmHolder = document.getElementById('cardAtmHolder') || document.getElementById('atmCardHolder');
+  if (cardAtmHolder) cardAtmHolder.textContent = (profil.name || 'KARTU SAYA').toUpperCase();
 
   const homeJadwalCountBadge = document.getElementById('homeJadwalCountBadge');
   if (homeJadwalCountBadge) homeJadwalCountBadge.textContent = jadwalToday.length;
@@ -926,6 +965,29 @@ function initApp() {
       showToast('Semua data berhasil dihapus', 'success');
       location.reload();
     }
+  });
+
+  // Pasang formatter Rupiah ke semua elemen dengan class .money-input
+  document.querySelectorAll('.money-input').forEach(attachRupiahFormatter);
+
+  // Global listener untuk tombol cepat nominal (.quick-amounts button)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.quick-amounts button');
+    if (!btn) return;
+    const wrap = btn.closest('.quick-amounts');
+    const targetId = wrap ? wrap.dataset.target : null;
+    if (!targetId) return;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    if (btn.dataset.amt === 'clear') {
+      input.value = '';
+    } else if (btn.dataset.amt) {
+      const cur = parseRupiahInput(input.value);
+      const added = parseFloat(btn.dataset.amt) || 0;
+      input.value = formatRupiahDisplay(cur + added);
+    }
+    input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
   // Init Lucide Icons

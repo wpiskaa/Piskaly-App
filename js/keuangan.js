@@ -73,6 +73,12 @@ function renderBalanceSummary() {
   if (tf) tf.textContent = formatRupiahFull(totals.wallet);
   document.getElementById('homeIncome').textContent = formatRupiah(income);
   document.getElementById('homeExpense').textContent = formatRupiah(expense);
+
+  const holderEl = document.getElementById('atmCardHolder');
+  if (holderEl) {
+    const profil = Store.getProfil();
+    holderEl.textContent = (profil.name || 'KARTU SAYA').toUpperCase();
+  }
 }
 
 function renderFinanceChart() {
@@ -240,7 +246,7 @@ function editTransaksi(id) {
   if (!t) return;
   editingTransId = id;
   setTransType(t.type);
-  document.getElementById('transJumlah').value = t.jumlah;
+  document.getElementById('transJumlah').value = formatRupiahDisplay(t.jumlah);
   document.getElementById('transKeterangan').value = t.keterangan;
   document.getElementById('transKategori').value = t.kategori;
   document.getElementById('transTanggal').value = t.tanggal;
@@ -263,7 +269,7 @@ function setTransType(type) {
 }
 
 function saveTransaksi() {
-  const jumlah = parseFloat(document.getElementById('transJumlah').value);
+  const jumlah = parseRupiahInput(document.getElementById('transJumlah').value);
   const keterangan = document.getElementById('transKeterangan').value.trim();
   if (!jumlah || jumlah <= 0) { showToast('Jumlah tidak valid!', 'error'); return; }
   if (!keterangan) { showToast('Keterangan tidak boleh kosong!', 'error'); return; }
@@ -329,4 +335,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set today's date as default
   document.getElementById('transTanggal').value = new Date().toISOString().slice(0, 10);
+  attachRupiahFormatter(document.getElementById('transJumlah'));
 });

@@ -145,7 +145,7 @@ function openGoalModal(id) {
   const g = id ? Store.getGoals().find(x => x.id === id) : null;
   document.getElementById('modalGoalTitle').textContent = g ? 'Edit Target' : 'Target Baru';
   document.getElementById('goalNama').value = g ? g.nama : '';
-  document.getElementById('goalTarget').value = g ? g.target : '';
+  document.getElementById('goalTarget').value = g ? formatRupiahDisplay(g.target) : '';
   document.getElementById('goalDeadline').value = g ? (g.deadline || '') : '';
   setGoalIcon(g ? (g.icon || GOAL_ICONS[0]) : GOAL_ICONS[0]);
   openModal('modalGoal');
@@ -153,7 +153,7 @@ function openGoalModal(id) {
 
 function saveGoal() {
   const nama = document.getElementById('goalNama').value.trim();
-  const target = parseFloat(document.getElementById('goalTarget').value);
+  const target = parseRupiahInput(document.getElementById('goalTarget').value);
   const deadline = document.getElementById('goalDeadline').value;
   if (!nama) { showToast('Nama target tidak boleh kosong!', 'error'); return; }
   if (!target || target <= 0) { showToast('Target dana tidak valid!', 'error'); return; }
@@ -202,7 +202,7 @@ function openDeposit(id, type) {
 }
 
 function saveDeposit() {
-  const jumlah = parseFloat(document.getElementById('depositJumlah').value);
+  const jumlah = parseRupiahInput(document.getElementById('depositJumlah').value);
   if (!jumlah || jumlah <= 0) { showToast('Jumlah tidak valid!', 'error'); return; }
 
   const goals = Store.getGoals();
@@ -254,10 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.getElementById('saveGoalBtn').addEventListener('click', saveGoal);
   document.getElementById('saveDepositBtn').addEventListener('click', saveDeposit);
-  document.querySelectorAll('#depositQuick button').forEach(b => {
-    b.addEventListener('click', () => {
-      const input = document.getElementById('depositJumlah');
-      input.value = (parseFloat(input.value) || 0) + parseFloat(b.dataset.amt);
-    });
-  });
+
+  attachRupiahFormatter(document.getElementById('goalTarget'));
+  attachRupiahFormatter(document.getElementById('depositJumlah'));
 });
