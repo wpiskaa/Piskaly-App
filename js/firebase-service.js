@@ -65,7 +65,38 @@ const FirebaseService = {
       // 1. Ambil data awal dari cloud jika ada
       const doc = await docRef.get();
       if (doc.exists) {
-        const cloudData = doc.data();
+        const cloudData = doc.data() || {};
+
+        // Deteksi dan bersihkan data dummy lama (Uang Saku Rp 2jt, Makan Rp 150rb, hutang Andi/Budi, dan proyek dummy p1-p4)
+        const hasDummyTrans = Array.isArray(cloudData.transaksi) && cloudData.transaksi.some(t => t.keterangan === 'Uang Saku' || t.jumlah === 2000000 || t.jumlah === 150000);
+        const hasDummyDebts = Array.isArray(cloudData.debts) && cloudData.debts.some(d => d.nama === 'Andi' || d.nama === 'Budi');
+        const hasDummyProjects = Array.isArray(cloudData.projects) && cloudData.projects.some(p => p.id === 'p1' || p.title === 'Mobile App');
+
+        if (hasDummyTrans || hasDummyDebts || hasDummyProjects || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
+          console.log('🧹 Membersihkan data dummy lama di Cloud Firestore...');
+          if (hasDummyTrans || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
+            cloudData.transaksi = [];
+            cloudData.goals = [];
+            cloudData.budgets = [];
+          }
+          if (hasDummyDebts || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
+            cloudData.debts = [];
+          }
+          if (hasDummyProjects || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
+            cloudData.projects = [];
+          }
+
+          await docRef.set({
+            transaksi: cloudData.transaksi || [],
+            goals: cloudData.goals || [],
+            budgets: cloudData.budgets || [],
+            debts: cloudData.debts || [],
+            projects: cloudData.projects || []
+          }, { merge: true });
+
+          localStorage.setItem('mylife_cloud_cleaned_v6', 'true');
+        }
+
         this.applyCloudDataToLocal(cloudData);
         console.log('☁️ Data cloud berhasil dimuat otomatis');
       } else {
@@ -108,12 +139,27 @@ const FirebaseService = {
       if (Array.isArray(data.jadwal)) Store.setJadwal(data.jadwal);
       if (Array.isArray(data.tugas)) Store.setTugas(data.tugas);
       if (Array.isArray(data.catatan)) Store.setCatatan(data.catatan);
-      if (Array.isArray(data.transaksi)) Store.setTransaksi(data.transaksi);
+
+      // Filter ketat data dummy keuangan
+      let trans = Array.isArray(data.transaksi) ? data.transaksi : [];
+      if (trans.some(t => t.keterangan === 'Uang Saku' || t.jumlah === 2000000 || t.jumlah === 150000)) trans = [];
+      Store.setTransaksi(trans);
+
+      let debts = Array.isArray(data.debts) ? data.debts : [];
+      if (debts.some(d => d.nama === 'Andi' || d.nama === 'Budi')) debts = [];
+      Store.setDebts(debts);
+
+      let budgets = Array.isArray(data.budgets) ? data.budgets : [];
+      if (budgets.some(b => b.kategori === 'Makan' && b.limit === 500000)) budgets = [];
+      Store.setBudgets(budgets);
+
       if (Array.isArray(data.goals)) Store.setGoals(data.goals);
-      if (Array.isArray(data.budgets)) Store.setBudgets(data.budgets);
-      if (Array.isArray(data.debts)) Store.setDebts(data.debts);
       if (Array.isArray(data.events)) Store.setEvents(data.events);
-      if (Array.isArray(data.projects)) Store.setProjects(data.projects);
+
+      let projs = Array.isArray(data.projects) ? data.projects : [];
+      if (projs.some(p => p.id === 'p1' || p.title === 'Mobile App')) projs = [];
+      Store.setProjects(projs);
+
       if (data.profil && typeof data.profil === 'object') {
         const p = Store.getProfil();
         Store.setProfil({ ...p, ...data.profil });

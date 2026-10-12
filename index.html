@@ -35,22 +35,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Modular Architecture Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.10" />
-  <link rel="stylesheet" href="css/layout.css?v=3.10" />
-  <link rel="stylesheet" href="css/navigation.css?v=3.10" />
-  <link rel="stylesheet" href="css/drawer.css?v=3.10" />
-  <link rel="stylesheet" href="css/components.css?v=3.10" />
-  <link rel="stylesheet" href="css/home.css?v=3.10" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.10" />
-  <link rel="stylesheet" href="css/tugas.css?v=3.10" />
-  <link rel="stylesheet" href="css/catatan.css?v=3.10" />
-  <link rel="stylesheet" href="css/keuangan.css?v=3.10" />
-  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.10" />
-  <link rel="stylesheet" href="css/kalender.css?v=3.10" />
-  <link rel="stylesheet" href="css/ai.css?v=3.10" />
-  <link rel="stylesheet" href="css/profil.css?v=3.10" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.10" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.10" />
+  <link rel="stylesheet" href="css/base.css?v=3.11" />
+  <link rel="stylesheet" href="css/layout.css?v=3.11" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.11" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.11" />
+  <link rel="stylesheet" href="css/components.css?v=3.11" />
+  <link rel="stylesheet" href="css/home.css?v=3.11" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.11" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.11" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.11" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.11" />
+  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.11" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.11" />
+  <link rel="stylesheet" href="css/ai.css?v=3.11" />
+  <link rel="stylesheet" href="css/profil.css?v=3.11" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.11" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.11" />
 </head>
 <body>
 
@@ -168,111 +168,7 @@
               </div>
 
               <!-- 2x2 Grid -->
-              <div class="ongoing-projects-grid" id="ongoingProjectsGrid">
-                <!-- Card 1: Highlighted Deep Navy Card -->
-                <div class="proj-card proj-card-navy" onclick="navigateTo('tugas')">
-                  <div class="proj-card-top">
-                    <span class="proj-date" id="projDate1">May 30, 2022</span>
-                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
-                  </div>
-                  <div class="proj-card-main">
-                    <div class="proj-icon-box navy-box">
-                      <i data-lucide="smartphone"></i>
-                    </div>
-                    <div class="proj-info">
-                      <h4 class="proj-title" id="projTitle1">Mobile App</h4>
-                      <p class="proj-sub" id="projSub1">E-commerce</p>
-                    </div>
-                  </div>
-                  <div class="proj-card-bottom">
-                    <div class="proj-progress-header">
-                      <span>Progress</span>
-                      <span class="proj-pct" id="projPct1">56%</span>
-                    </div>
-                    <div class="proj-prog-track">
-                      <div class="proj-prog-fill" id="projFill1" style="width: 56%;"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Card 2: Light Card -->
-                <div class="proj-card proj-card-light" onclick="navigateTo('tugas')">
-                  <div class="proj-card-top">
-                    <span class="proj-date" id="projDate2">May 30, 2022</span>
-                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
-                  </div>
-                  <div class="proj-card-main">
-                    <div class="proj-icon-box blue-box">
-                      <i data-lucide="layout"></i>
-                    </div>
-                    <div class="proj-info">
-                      <h4 class="proj-title" id="projTitle2">Dashboard</h4>
-                      <p class="proj-sub" id="projSub2">Home</p>
-                    </div>
-                  </div>
-                  <div class="proj-card-bottom">
-                    <div class="proj-progress-header">
-                      <span>Progress</span>
-                      <span class="proj-pct" id="projPct2">46%</span>
-                    </div>
-                    <div class="proj-prog-track">
-                      <div class="proj-prog-fill" id="projFill2" style="width: 46%;"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Card 3: Light Card -->
-                <div class="proj-card proj-card-light" onclick="navigateTo('tugas')">
-                  <div class="proj-card-top">
-                    <span class="proj-date" id="projDate3">May 30, 2022</span>
-                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
-                  </div>
-                  <div class="proj-card-main">
-                    <div class="proj-icon-box red-box">
-                      <i data-lucide="megaphone"></i>
-                    </div>
-                    <div class="proj-info">
-                      <h4 class="proj-title" id="projTitle3">Banner</h4>
-                      <p class="proj-sub" id="projSub3">Marketing</p>
-                    </div>
-                  </div>
-                  <div class="proj-card-bottom">
-                    <div class="proj-progress-header">
-                      <span>Progress</span>
-                      <span class="proj-pct" id="projPct3">87%</span>
-                    </div>
-                    <div class="proj-prog-track">
-                      <div class="proj-prog-fill" id="projFill3" style="width: 87%;"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Card 4: Light Card -->
-                <div class="proj-card proj-card-light" onclick="navigateTo('tugas')">
-                  <div class="proj-card-top">
-                    <span class="proj-date" id="projDate4">May 30, 2022</span>
-                    <button class="proj-more-btn" aria-label="Menu Proyek" onclick="event.stopPropagation(); openModal('modalTugas');"><i data-lucide="more-vertical"></i></button>
-                  </div>
-                  <div class="proj-card-main">
-                    <div class="proj-icon-box purple-box">
-                      <i data-lucide="box"></i>
-                    </div>
-                    <div class="proj-info">
-                      <h4 class="proj-title" id="projTitle4">UI/UX</h4>
-                      <p class="proj-sub" id="projSub4">Design</p>
-                    </div>
-                  </div>
-                  <div class="proj-card-bottom">
-                    <div class="proj-progress-header">
-                      <span>Progress</span>
-                      <span class="proj-pct" id="projPct4">24%</span>
-                    </div>
-                    <div class="proj-prog-track">
-                      <div class="proj-prog-fill" id="projFill4" style="width: 24%;"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div class="ongoing-projects-grid" id="ongoingProjectsGrid"></div>
             </div>
 
             <!-- 5. Section: Jadwal Perkuliahan Hari Ini -->
@@ -378,11 +274,11 @@
               <!-- Top Row: Cardholder & Masked Card No -->
               <div class="card-meta-top">
                 <div class="card-brand-group">
-                  <span class="card-brand-title">MyLife Platinum</span>
+                  <span class="card-brand-title">Dompet Saya</span>
                   <span class="card-holder-name" id="atmCardHolder">KARTU SAYA</span>
                 </div>
                 <div class="card-chip-group">
-                  <span class="card-digits-mini">•••• 8829</span>
+                  <span class="card-digits-mini">•••• ••••</span>
                   <div class="card-gold-chip"></div>
                 </div>
               </div>
@@ -1608,23 +1504,23 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.10"></script>
-  <script src="js/firebase-service.js?v=3.10"></script>
+  <script src="js/firebase-config.js?v=3.11"></script>
+  <script src="js/firebase-service.js?v=3.11"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.10"></script>
-  <script src="js/app.js?v=3.10"></script>
-  <script src="js/jadwal.js?v=3.10"></script>
-  <script src="js/tugas.js?v=3.10"></script>
-  <script src="js/catatan.js?v=3.10"></script>
-  <script src="js/keuangan.js?v=3.10"></script>
-  <script src="js/tabungan.js?v=3.10"></script>
-  <script src="js/anggaran.js?v=3.10"></script>
-  <script src="js/hutang.js?v=3.10"></script>
-  <script src="js/kalkulator.js?v=3.10"></script>
-  <script src="js/kalender.js?v=3.10"></script>
-  <script src="js/notifikasi.js?v=3.10"></script>
-  <script src="js/ai.js?v=3.10"></script>
+  <script src="js/storage.js?v=3.11"></script>
+  <script src="js/app.js?v=3.11"></script>
+  <script src="js/jadwal.js?v=3.11"></script>
+  <script src="js/tugas.js?v=3.11"></script>
+  <script src="js/catatan.js?v=3.11"></script>
+  <script src="js/keuangan.js?v=3.11"></script>
+  <script src="js/tabungan.js?v=3.11"></script>
+  <script src="js/anggaran.js?v=3.11"></script>
+  <script src="js/hutang.js?v=3.11"></script>
+  <script src="js/kalkulator.js?v=3.11"></script>
+  <script src="js/kalender.js?v=3.11"></script>
+  <script src="js/notifikasi.js?v=3.11"></script>
+  <script src="js/ai.js?v=3.11"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1635,7 +1531,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.10').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.11').catch(() => {});
       });
     }
   </script>

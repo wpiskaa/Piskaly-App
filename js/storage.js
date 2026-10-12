@@ -24,35 +24,56 @@ const Store = {
   getCatatan() { return this.get('mylife_catatan', []); },
   setCatatan(d) { this.set('mylife_catatan', d); },
 
-  getTransaksi() { return this.get('mylife_transaksi', []); },
+  getTransaksi() {
+    const list = this.get('mylife_transaksi', []);
+    if (Array.isArray(list) && list.some(t => t.keterangan === 'Uang Saku' || t.jumlah === 2000000 || t.jumlah === 150000)) {
+      this.set('mylife_transaksi', []);
+      return [];
+    }
+    return list;
+  },
   setTransaksi(d) { this.set('mylife_transaksi', d); },
 
   // Manajemen keuangan lanjutan: target tabungan, anggaran, hutang/piutang
   getGoals() { return this.get('mylife_goals', []); },
   setGoals(d) { this.set('mylife_goals', d); },
 
-  getBudgets() { return this.get('mylife_budgets', []); },
+  getBudgets() {
+    const list = this.get('mylife_budgets', []);
+    if (Array.isArray(list) && list.some(b => b.kategori === 'Makan' && b.limit === 500000)) {
+      this.set('mylife_budgets', []);
+      return [];
+    }
+    return list;
+  },
   setBudgets(d) { this.set('mylife_budgets', d); },
 
-  getDebts() { return this.get('mylife_debts', []); },
+  getDebts() {
+    const list = this.get('mylife_debts', []);
+    if (Array.isArray(list) && list.some(d => d.nama === 'Andi' || d.nama === 'Budi')) {
+      this.set('mylife_debts', []);
+      return [];
+    }
+    return list;
+  },
   setDebts(d) { this.set('mylife_debts', d); },
 
   getEvents() { return this.get('mylife_events', []); },
   setEvents(d) { this.set('mylife_events', d); },
 
   getProjects() {
-    return this.get('mylife_projects', [
-      { id: 'p1', title: 'Mobile App', sub: 'E-commerce', date: 'May 30, 2022', progress: 56, icon: 'smartphone', type: 'navy' },
-      { id: 'p2', title: 'Dashboard', sub: 'Home', date: 'May 30, 2022', progress: 46, icon: 'layout', type: 'light', iconClass: 'blue-box' },
-      { id: 'p3', title: 'Banner', sub: 'Marketing', date: 'May 30, 2022', progress: 87, icon: 'megaphone', type: 'light', iconClass: 'red-box' },
-      { id: 'p4', title: 'UI/UX', sub: 'Design', date: 'May 30, 2022', progress: 24, icon: 'box', type: 'light', iconClass: 'purple-box' }
-    ]);
+    const list = this.get('mylife_projects', []);
+    if (Array.isArray(list) && list.some(p => p.id === 'p1' || p.title === 'Mobile App')) {
+      this.set('mylife_projects', []);
+      return [];
+    }
+    return list;
   },
   setProjects(d) { this.set('mylife_projects', d); },
 
   getProfil() {
     return this.get('mylife_profil', {
-      name: 'Hafiz', univ: '', jurusan: '', semester: '',
+      name: '', univ: '', jurusan: '', semester: '',
       apiKey: '', darkMode: false, notif: true
     });
   },
@@ -64,18 +85,19 @@ const Store = {
   },
 
   clearAll() {
-    const keys = ['mylife_jadwal','mylife_tugas','mylife_catatan','mylife_transaksi','mylife_goals','mylife_budgets','mylife_debts','mylife_events','mylife_profil','mylife_seeded'];
+    const keys = ['mylife_jadwal','mylife_tugas','mylife_catatan','mylife_transaksi','mylife_goals','mylife_budgets','mylife_debts','mylife_events','mylife_projects','mylife_profil','mylife_seeded'];
     keys.forEach(k => localStorage.removeItem(k));
   },
 
   initSeedData() {
-    // Pastikan tidak ada data dummy pada transaksi, tabungan, anggaran, hutang
-    if (!localStorage.getItem('mylife_clean_finance_v4')) {
+    // Pastikan tidak ada data dummy pada transaksi, tabungan, anggaran, hutang, proyek
+    if (!localStorage.getItem('mylife_clean_v6')) {
       this.setTransaksi([]);
       this.setGoals([]);
       this.setBudgets([]);
       this.setDebts([]);
-      this.set('mylife_clean_finance_v4', true);
+      this.setProjects([]);
+      this.set('mylife_clean_v6', true);
     }
   }
 };
