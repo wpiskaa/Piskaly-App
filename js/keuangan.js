@@ -12,11 +12,46 @@ const CATEGORY_ICONS = {
   'Uang Saku': '💰', 'Kerja': '💼', 'Lainnya': '📦'
 };
 
+let activeFinTab = 'ringkasan';
+
+// Total dana (semua waktu): saldo dompet, tabungan terpisah, dan saldo yang masih bebas dipakai
+function getFinanceTotals() {
+  const all = Store.getTransaksi();
+  const income = all.filter(t => t.type === 'income').reduce((s, t) => s + t.jumlah, 0);
+  const expense = all.filter(t => t.type === 'expense').reduce((s, t) => s + t.jumlah, 0);
+  const savings = typeof goalSaved === 'function'
+    ? Store.getGoals().reduce((s, g) => s + goalSaved(g), 0) : 0;
+  return { income, expense, wallet: income - expense, savings, available: income - expense - savings };
+}
+
 function renderKeuangan() {
   renderBalanceSummary();
   renderFinanceChart();
   renderCategoryBreakdown();
   renderTransactionList();
+  if (typeof renderGoals === 'function') renderGoals();
+  if (typeof renderBudgets === 'function') renderBudgets();
+  if (typeof renderDebts === 'function') renderDebts();
+}
+
+// ---- Finance tabs (Ringkasan / Tabungan / Anggaran / Hutang / Kalkulator) ----
+function setFinTab(tab) {
+  activeFinTab = tab;
+  document.querySelectorAll('.fin-tab').forEach(b => b.classList.toggle('active', b.dataset.fintab === tab));
+  document.querySelectorAll('.fin-pane').forEach(p => p.classList.toggle('active', p.id === 'finPane-' + tab));
+  const fab = document.getElementById('addTransaksiBtn');
+  if (fab) fab.style.display = tab === 'kalkulator' ? 'none' : '';
+  if (tab === 'ringkasan') renderFinanceChart();
+}
+
+// Tombol + menyesuaikan tab yang sedang dibuka
+function finFabAction() {
+  if (activeFinTab === 'tabungan') return openGoalModal();
+  if (activeFinTab === 'anggaran') return openBudgetModal();
+  if (activeFinTab === 'hutang') return openDebtModal();
+  editingTransId = null;
+  resetTransaksiForm();
+  openModal('modalTransaksi');
 }
 
 function renderBalanceSummary() {
@@ -27,11 +62,15 @@ function renderBalanceSummary() {
   });
   const income = transaksi.filter(t => t.type === 'income').reduce((s, t) => s + t.jumlah, 0);
   const expense = transaksi.filter(t => t.type === 'expense').reduce((s, t) => s + t.jumlah, 0);
-  const saldo = income - expense;
+  const totals = getFinanceTotals();
 
-  document.getElementById('totalBalance').textContent = formatRupiahFull(saldo);
+  document.getElementById('totalBalance').textContent = formatRupiahFull(totals.available);
   document.getElementById('totalIncome').textContent = formatRupiahFull(income);
   document.getElementById('totalExpense').textContent = formatRupiahFull(expense);
+  const sv = document.getElementById('cardSavingsTotal');
+  const tf = document.getElementById('cardTotalFunds');
+  if (sv) sv.textContent = formatRupiahFull(totals.savings);
+  if (tf) tf.textContent = formatRupiahFull(totals.wallet);
   document.getElementById('homeIncome').textContent = formatRupiah(income);
   document.getElementById('homeExpense').textContent = formatRupiah(expense);
 }
@@ -265,10 +304,10 @@ function resetTransaksiForm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('addTransaksiBtn').addEventListener('click', () => {
-    editingTransId = null;
-    resetTransaksiForm();
-    openModal('modalTransaksi');
+  document.getElementById('addTransaksiBtn').addEventListener('click', finFabAction);
+
+  document.querySelectorAll('.fin-tab').forEach(btn => {
+    btn.addEventListener('click', () => setFinTab(btn.dataset.fintab));
   });
 
   document.getElementById('saveTransaksiBtn').addEventListener('click', saveTransaksi);

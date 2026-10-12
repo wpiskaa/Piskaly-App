@@ -132,6 +132,85 @@ function generateAllNotifications() {
     }
   });
 
+  // 3b. Notifikasi Keuangan: tenggat target tabungan, jatuh tempo hutang, anggaran
+  try {
+    const goals = (typeof Store !== 'undefined' && Store.getGoals) ? Store.getGoals() : [];
+    goals.forEach(g => {
+      if (!g.deadline) return;
+      const saved = (g.history || []).reduce((s, h) => s + (h.type === 'in' ? h.jumlah : -h.jumlah), 0);
+      if (saved >= g.target) return;
+      const d = typeof finDaysUntil === 'function' ? finDaysUntil(g.deadline) : null;
+      if (d === null || d > 7) return;
+      const sisa = g.target - saved;
+      const nid = `goal-${g.id}-${d < 0 ? 'late' : d}`;
+      notifications.push({
+        id: nid,
+        category: 'finance',
+        type: d <= 1 ? 'urgent' : 'warning',
+        icon: 'piggy-bank',
+        title: d < 0 ? `Tenggat Tabungan Lewat: ${g.nama}` : `Target Tabungan Mendekat: ${g.nama}`,
+        message: `Masih kurang ${formatRupiahFull(sisa)} untuk target "${g.nama}"${d >= 0 ? ` (${d === 0 ? 'tenggat hari ini' : `${d} hari lagi`})` : ''}.`,
+        timeStr: d < 0 ? 'Terlewat' : d === 0 ? 'Hari Ini' : `H-${d}`,
+        badge: 'Tabungan',
+        targetPage: 'keuangan',
+        targetSubTab: 'tabungan',
+        read: readIds.includes(nid)
+      });
+    });
+
+    const debts = (typeof Store !== 'undefined' && Store.getDebts) ? Store.getDebts() : [];
+    debts.forEach(db => {
+      if (!db.jatuhTempo) return;
+      const paid = (db.payments || []).reduce((s, p) => s + p.jumlah, 0);
+      const sisa = Math.max(db.jumlah - paid, 0);
+      if (sisa <= 0) return;
+      const d = typeof finDaysUntil === 'function' ? finDaysUntil(db.jatuhTempo) : null;
+      if (d === null || d > 7) return;
+      const owe = db.tipe === 'hutang';
+      const nid = `debt-${db.id}-${d < 0 ? 'late' : d}`;
+      notifications.push({
+        id: nid,
+        category: 'finance',
+        type: d <= 0 ? 'urgent' : 'warning',
+        icon: 'handshake',
+        title: owe ? `Jatuh Tempo Hutang: ${db.nama}` : `Tagih Piutang: ${db.nama}`,
+        message: `${owe ? 'Bayar' : 'Tagih'} ${formatRupiahFull(sisa)} ${d < 0 ? `(terlambat ${-d} hari)` : d === 0 ? 'hari ini' : `dalam ${d} hari`}.`,
+        timeStr: d < 0 ? 'Terlambat' : d === 0 ? 'Hari Ini' : `H-${d}`,
+        badge: owe ? 'Hutang' : 'Piutang',
+        targetPage: 'keuangan',
+        targetSubTab: 'hutang',
+        read: readIds.includes(nid)
+      });
+    });
+
+    if (typeof getMonthExpenseByCategory === 'function') {
+      const spentMap = getMonthExpenseByCategory();
+      const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+      const budgets = (typeof Store !== 'undefined' && Store.getBudgets) ? Store.getBudgets() : [];
+      budgets.forEach(b => {
+        const pct = b.limit > 0 ? ((spentMap[b.kategori] || 0) / b.limit) * 100 : 0;
+        if (pct < 90) return;
+        const over = pct >= 100;
+        const nid = `budget-${b.id}-${monthKey}-${over ? 'over' : 'near'}`;
+        notifications.push({
+          id: nid,
+          category: 'finance',
+          type: over ? 'urgent' : 'warning',
+          icon: 'gauge',
+          title: over ? `Anggaran ${b.kategori} Terlampaui` : `Anggaran ${b.kategori} Hampir Habis`,
+          message: `Pengeluaran ${b.kategori} bulan ini sudah ${pct.toFixed(0)}% dari batas ${formatRupiahFull(b.limit)}.`,
+          timeStr: 'Bulan Ini',
+          badge: over ? 'Melebihi' : `${pct.toFixed(0)}%`,
+          targetPage: 'keuangan',
+          targetSubTab: 'anggaran',
+          read: readIds.includes(nid)
+        });
+      });
+    }
+  } catch (err) {
+    console.error('Error generating finance notifications:', err);
+  }
+
   // 4. Notifikasi Status Cloud Sync
   notifications.push({
     id: 'system-cloud-sync-status',
@@ -194,16 +273,24 @@ function renderNotifikasi() {
     filtered = allNotifs.filter(n => n.category === 'academic');
   } else if (notifActiveFilter === 'tasks') {
     filtered = allNotifs.filter(n => n.category === 'tasks');
+  } else if (notifActiveFilter === 'finance') {
+    filtered = allNotifs.filter(n => n.category === 'finance');
   }
 
   if (!filtered.length) {
+    let emptyMsg = 'Belum ada agenda atau tugas yang mendesak saat ini.';
+    if (notifActiveFilter === 'unread') emptyMsg = 'Semua pemberitahuan sudah Anda baca.';
+    else if (notifActiveFilter === 'finance') emptyMsg = 'Target tabungan, anggaran, dan hutang piutang masih dalam batas aman.';
+    else if (notifActiveFilter === 'academic') emptyMsg = 'Tidak ada jadwal kuliah atau kegiatan mendesak.';
+    else if (notifActiveFilter === 'tasks') emptyMsg = 'Tidak ada tugas yang mendekati tenggat waktu.';
+
     container.innerHTML = `
       <div class="empty-state notif-empty-state">
         <div class="notif-empty-icon-wrap">
           <i data-lucide="bell-off"></i>
         </div>
         <h4>Tidak Ada Pemberitahuan</h4>
-        <p>${notifActiveFilter === 'unread' ? 'Semua pemberitahuan sudah Anda baca.' : 'Belum ada agenda atau tugas yang mendesak saat ini.'}</p>
+        <p>${emptyMsg}</p>
       </div>
     `;
     lucide.createIcons({ nodes: [container] });
@@ -215,7 +302,7 @@ function renderNotifikasi() {
     const readClass = n.read ? 'is-read' : 'is-unread';
 
     return `
-      <div class="notif-card ${readClass} notif-${n.type}" onclick="handleNotifClick('${n.id}', '${n.targetPage}', '${n.targetDate || ''}')">
+      <div class="notif-card ${readClass} notif-${n.type}" onclick="handleNotifClick('${n.id}', '${n.targetPage}', '${n.targetDate || ''}', '${n.targetSubTab || ''}')">
         <div class="notif-icon-col">
           <div class="notif-icon-box ${n.type}">
             <i data-lucide="${n.icon}"></i>
@@ -231,7 +318,7 @@ function renderNotifikasi() {
           </div>
           <p class="notif-card-desc">${n.message}</p>
           <div class="notif-bottom-row">
-            <span class="notif-action-hint">Ketuk untuk membuka halaman ${n.targetPage} →</span>
+            <span class="notif-action-hint">Ketuk untuk membuka ${n.targetPage} →</span>
             <span class="notif-time-sub">${n.timeStr}</span>
           </div>
         </div>
@@ -243,7 +330,7 @@ function renderNotifikasi() {
 }
 
 // Handler saat notifikasi di-klik
-function handleNotifClick(notifId, targetPage, targetDate) {
+function handleNotifClick(notifId, targetPage, targetDate, targetSubTab) {
   // Tandai sebagai dibaca
   const readIds = getReadNotifIds();
   if (!readIds.includes(notifId)) {
@@ -259,6 +346,9 @@ function handleNotifClick(notifId, targetPage, targetDate) {
     navigateTo(targetPage);
     if (targetPage === 'kalender' && targetDate && typeof selectCalDay === 'function') {
       selectCalDay(targetDate);
+    }
+    if (targetPage === 'keuangan' && targetSubTab && typeof setFinTab === 'function') {
+      setFinTab(targetSubTab);
     }
   } else {
     renderNotifikasi();

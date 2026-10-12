@@ -109,6 +109,9 @@ const FirebaseService = {
       if (Array.isArray(data.tugas)) Store.setTugas(data.tugas);
       if (Array.isArray(data.catatan)) Store.setCatatan(data.catatan);
       if (Array.isArray(data.transaksi)) Store.setTransaksi(data.transaksi);
+      if (Array.isArray(data.goals)) Store.setGoals(data.goals);
+      if (Array.isArray(data.budgets)) Store.setBudgets(data.budgets);
+      if (Array.isArray(data.debts)) Store.setDebts(data.debts);
       if (Array.isArray(data.events)) Store.setEvents(data.events);
       if (Array.isArray(data.projects)) Store.setProjects(data.projects);
       if (data.profil && typeof data.profil === 'object') {
@@ -140,6 +143,9 @@ const FirebaseService = {
       tugas: Store.getTugas(),
       catatan: Store.getCatatan(),
       transaksi: Store.getTransaksi(),
+      goals: Store.getGoals(),
+      budgets: Store.getBudgets(),
+      debts: Store.getDebts(),
       events: Store.getEvents(),
       projects: Store.getProjects(),
       profil: Store.getProfil(),
@@ -180,6 +186,9 @@ const FirebaseService = {
     Store.setTugas([]);
     Store.setCatatan([]);
     Store.setTransaksi([]);
+    Store.setGoals([]);
+    Store.setBudgets([]);
+    Store.setDebts([]);
     Store.setProjects([]);
 
     if (typeof renderHome === 'function') renderHome();
@@ -230,6 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const originalSetTransaksi = Store.setTransaksi.bind(Store);
   Store.setTransaksi = function(d) { originalSetTransaksi(d); FirebaseService.queueSync(); };
+
+  const originalSetGoals = Store.setGoals.bind(Store);
+  Store.setGoals = function(d) { originalSetGoals(d); FirebaseService.queueSync(); };
+
+  const originalSetBudgets = Store.setBudgets.bind(Store);
+  Store.setBudgets = function(d) { originalSetBudgets(d); FirebaseService.queueSync(); };
+
+  const originalSetDebts = Store.setDebts.bind(Store);
+  Store.setDebts = function(d) { originalSetDebts(d); FirebaseService.queueSync(); };
 
   const originalSetEvents = Store.setEvents.bind(Store);
   Store.setEvents = function(d) { originalSetEvents(d); FirebaseService.queueSync(); };

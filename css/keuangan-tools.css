@@ -1,0 +1,261 @@
+/* ===========================
+   KEUANGAN LANJUTAN
+   Tab, Tabungan, Anggaran, Hutang, Kalkulator
+   =========================== */
+
+/* -- Savings line inside the wallet card -- */
+.card-savings-line {
+  display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px;
+  font-size: 11.5px; color: rgba(255, 255, 255, 0.72); font-weight: 500;
+}
+.card-savings-line span { display: inline-flex; align-items: center; gap: 5px; }
+.card-savings-line svg { width: 13px; height: 13px; }
+.card-savings-line b { color: #fff; font-weight: 700; }
+
+/* -- Finance tabs -- */
+.fin-tabs {
+  display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 6px; margin: 4px 0 16px;
+  scrollbar-width: none;
+}
+.fin-tabs::-webkit-scrollbar { display: none; }
+.fin-tab {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 15px; border-radius: 99px;
+  font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
+  background: var(--bg-card); border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm); transition: var(--transition); cursor: pointer;
+}
+.fin-tab svg { width: 15px; height: 15px; }
+.fin-tab.active {
+  background: var(--primary-gradient); color: #fff; border-color: transparent;
+  box-shadow: var(--shadow-glow);
+}
+.fin-tab:active { transform: scale(0.95); }
+.fin-pane { display: none; animation: finPaneIn 0.28s ease; }
+.fin-pane.active { display: block; }
+@keyframes finPaneIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* -- Stat boxes -- */
+.fin-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+.fin-stat-row.two { grid-template-columns: repeat(2, 1fr); }
+.fin-stat-box {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 12px; box-shadow: var(--shadow-sm); min-width: 0;
+}
+.fin-stat-box span { display: block; font-size: 10.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+.fin-stat-box b { display: block; font-size: 15px; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fin-stat-box.danger b { color: var(--danger); }
+.fin-stat-box.success b { color: var(--success); }
+
+/* -- Empty state -- */
+.fin-empty {
+  text-align: center; padding: 30px 22px; background: var(--bg-card);
+  border: 1px dashed var(--border-hover); border-radius: var(--radius);
+}
+.fin-empty-icon { font-size: 38px; margin-bottom: 8px; }
+.fin-empty h4 { font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; }
+.fin-empty p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
+
+/* -- Goals -- */
+.goal-list { display: flex; flex-direction: column; gap: 14px; }
+.goal-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow-sm); transition: var(--transition);
+}
+.goal-card.done { border-color: rgba(16, 185, 129, 0.45); }
+.goal-top { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.goal-icon {
+  width: 46px; height: 46px; border-radius: 14px; font-size: 24px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; background: var(--bg-input);
+}
+.goal-info { flex: 1; min-width: 0; }
+.goal-name { font-size: 14.5px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.goal-amounts { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.goal-amounts b { color: var(--text-primary); }
+.goal-pct { font-size: 17px; font-weight: 800; color: var(--primary-light); }
+.goal-card.done .goal-pct { color: var(--success); }
+.goal-deadline { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.goal-deadline.ok { background: var(--info-bg); color: var(--info); }
+.goal-deadline.soon { background: var(--warning-bg); color: var(--warning); }
+.goal-deadline.late { background: var(--danger-bg); color: var(--danger); }
+.goal-bar, .budget-bar, .debt-bar {
+  height: 8px; border-radius: 99px; background: var(--bg-input); overflow: hidden; margin: 12px 0 10px;
+}
+.goal-bar-fill {
+  height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(90deg, var(--primary-light), var(--accent-2));
+}
+.goal-card.done .goal-bar-fill { background: linear-gradient(90deg, #10b981, #34d399); }
+.goal-plan { font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; }
+.goal-plan b { color: var(--text-primary); }
+.goal-actions { display: flex; gap: 8px; margin-top: 12px; }
+.goal-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 9px 10px; border-radius: 11px; font-size: 12.5px; font-weight: 700;
+  background: var(--bg-input); color: var(--text-primary); transition: var(--transition);
+}
+.goal-btn svg { width: 14px; height: 14px; }
+.goal-btn.primary { background: var(--primary-light); color: #fff; }
+.goal-btn.icon { flex: 0 0 38px; padding: 9px 0; color: var(--text-secondary); }
+.goal-btn.danger { color: var(--danger); }
+.goal-btn:active { transform: scale(0.94); }
+.goal-history { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-hover); }
+.goal-hist-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+.goal-hist-date { color: var(--text-muted); flex: 0 0 74px; font-size: 11px; }
+.goal-hist-note { flex: 1; color: var(--text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.goal-hist-amt { font-weight: 700; }
+.goal-hist-amt.in { color: var(--success); }
+.goal-hist-amt.out { color: var(--danger); }
+.goal-hist-del { color: var(--text-muted); width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; }
+.goal-hist-del svg { width: 13px; height: 13px; }
+.goal-hist-empty { font-size: 12px; color: var(--text-muted); text-align: center; padding: 6px 0; }
+
+/* -- Modal helpers -- */
+.emoji-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.emoji-btn {
+  width: 42px; height: 42px; border-radius: 12px; font-size: 21px;
+  background: var(--bg-input); border: 2px solid transparent; transition: var(--transition);
+}
+.emoji-btn.active { border-color: var(--primary-light); background: var(--info-bg); transform: scale(1.06); }
+.deposit-goal-name {
+  display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; padding: 12px 14px;
+  border-radius: var(--radius-sm); background: var(--bg-input); font-size: 14px; color: var(--text-primary);
+}
+.deposit-goal-name span { font-size: 12px; color: var(--text-secondary); }
+.quick-amounts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.quick-amounts button {
+  padding: 6px 12px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  background: var(--info-bg); color: var(--primary-light);
+}
+.check-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.check-row input { width: 18px; height: 18px; accent-color: var(--primary-light); }
+
+/* -- Budget -- */
+.budget-summary-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 18px; box-shadow: var(--shadow-sm);
+}
+.budget-sum-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.budget-sum-lbl { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 3px; }
+.budget-sum-val { font-size: 22px; font-weight: 800; }
+.budget-sum-val.ok { color: var(--success); }
+.budget-sum-val.warn { color: var(--warning); }
+.budget-sum-val.over { color: var(--danger); }
+.budget-sum-right { text-align: right; font-size: 13px; color: var(--text-primary); }
+.budget-sum-right small { color: var(--text-muted); }
+.budget-sum-title { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.budget-sum-hint { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.budget-sum-hint b { color: var(--text-primary); }
+.budget-bar.big { height: 10px; }
+.budget-bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.budget-bar-fill.ok { background: linear-gradient(90deg, #10b981, #34d399); }
+.budget-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.budget-bar-fill.over { background: linear-gradient(90deg, #ef4444, #f87171); }
+.budget-list { display: flex; flex-direction: column; gap: 12px; }
+.budget-item {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow-sm);
+}
+.budget-item-top { display: flex; align-items: center; gap: 12px; }
+.budget-cat-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.budget-item-info { flex: 1; min-width: 0; }
+.budget-item-name { font-size: 14px; font-weight: 800; color: var(--text-primary); }
+.budget-item-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+.budget-item-pct { font-size: 15px; font-weight: 800; }
+.budget-item-pct.ok, .budget-left.ok { color: var(--success); }
+.budget-item-pct.warn, .budget-left.warn { color: var(--warning); }
+.budget-item-pct.over, .budget-left.over { color: var(--danger); }
+.budget-item-bottom { display: flex; justify-content: space-between; align-items: center; }
+.budget-left { font-size: 12px; font-weight: 700; }
+.budget-item-actions { display: inline-flex; gap: 4px; }
+.budget-item-actions button {
+  width: 30px; height: 30px; border-radius: 9px; background: var(--bg-input); color: var(--text-secondary);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.budget-item-actions button.danger { color: var(--danger); }
+.budget-item-actions svg { width: 14px; height: 14px; }
+
+/* -- Debts -- */
+.debt-tab {
+  padding: 6px 12px; border-radius: 99px; font-size: 11.5px; font-weight: 700;
+  color: var(--text-secondary); background: var(--bg-input); transition: var(--transition);
+}
+.debt-tab.active { background: var(--primary-light); color: #fff; }
+.debt-list { display: flex; flex-direction: column; gap: 12px; }
+.debt-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; box-shadow: var(--shadow-sm);
+}
+.debt-card.paid { opacity: 0.6; }
+.debt-top { display: flex; align-items: center; gap: 12px; }
+.debt-avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; font-weight: 800; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.debt-avatar.hutang { background: linear-gradient(135deg, #ef4444, #f97316); }
+.debt-avatar.piutang { background: linear-gradient(135deg, #10b981, #06b6d4); }
+.debt-info { flex: 1; min-width: 0; }
+.debt-name { font-size: 14px; font-weight: 800; color: var(--text-primary); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.debt-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.debt-amount { font-size: 14px; font-weight: 800; white-space: nowrap; }
+.debt-amount.hutang { color: var(--danger); }
+.debt-amount.piutang { color: var(--success); }
+.debt-due { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.debt-due.ok { background: var(--success-bg); color: var(--success); }
+.debt-due.soon { background: var(--warning-bg); color: var(--warning); }
+.debt-due.late { background: var(--danger-bg); color: var(--danger); }
+.debt-bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+.debt-bar-fill.hutang { background: linear-gradient(90deg, #ef4444, #f97316); }
+.debt-bar-fill.piutang { background: linear-gradient(90deg, #10b981, #06b6d4); }
+.debt-bottom { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.debt-progress-text { font-size: 11.5px; color: var(--text-secondary); }
+.debt-actions { display: inline-flex; gap: 6px; }
+.debt-btn {
+  padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
+  background: var(--primary-light); color: #fff; display: inline-flex; align-items: center;
+}
+.debt-btn.danger { background: var(--bg-input); color: var(--danger); padding: 7px 9px; }
+.debt-btn svg { width: 14px; height: 14px; }
+
+/* -- Calculators -- */
+.calc-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+}
+.calc-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; color: var(--primary-light); }
+.calc-card-head h4 { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+.calc-card-head svg { width: 20px; height: 20px; }
+.calc-seg { display: flex; padding: 4px; background: var(--bg-input); border-radius: 12px; margin-bottom: 14px; }
+.calc-seg-btn { flex: 1; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 700; color: var(--text-secondary); transition: var(--transition); }
+.calc-seg-btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+.calc-inline { display: flex; gap: 10px; }
+.calc-inline > input { flex: 1; min-width: 0; }
+.calc-inline select { flex: 0 0 110px; }
+.calc-inline.two > .form-group { flex: 1; min-width: 0; }
+.calc-btn { width: 100%; margin-top: 4px; }
+.calc-result {
+  margin-top: 14px; padding: 16px; border-radius: var(--radius-sm); text-align: center;
+  background: linear-gradient(135deg, rgba(30, 79, 216, 0.1), rgba(56, 189, 248, 0.12));
+  border: 1px solid var(--border); animation: finPaneIn 0.3s ease;
+}
+.calc-res-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+.calc-res-big { font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 2px 0 12px; }
+.calc-res-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.calc-res-grid.two { grid-template-columns: repeat(2, 1fr); }
+.calc-res-grid div { background: var(--bg-card); border-radius: 10px; padding: 8px 4px; }
+.calc-res-grid span { display: block; font-size: 10.5px; color: var(--text-secondary); }
+.calc-res-grid b { display: block; font-size: 12px; font-weight: 800; color: var(--text-primary); margin-top: 2px; }
+.calc-res-note { font-size: 11.5px; color: var(--text-secondary); margin-top: 10px; }
+
+.quick-calc { background: var(--bg-input); border-radius: var(--radius-sm); padding: 12px; }
+.qc-expr { min-height: 18px; text-align: right; font-size: 12.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qc-display { text-align: right; font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 2px 0 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.qc-key {
+  padding: 14px 0; border-radius: 13px; font-size: 17px; font-weight: 700;
+  background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-sm); transition: var(--transition);
+}
+.qc-key:active { transform: scale(0.92); }
+.qc-key.op { background: var(--info-bg); color: var(--primary-light); }
+.qc-key.fn { color: var(--danger); }
+.qc-key.eq { background: var(--primary-light); color: #fff; }

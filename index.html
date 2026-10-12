@@ -35,21 +35,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Modular Architecture Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.8" />
-  <link rel="stylesheet" href="css/layout.css?v=3.8" />
-  <link rel="stylesheet" href="css/navigation.css?v=3.8" />
-  <link rel="stylesheet" href="css/drawer.css?v=3.8" />
-  <link rel="stylesheet" href="css/components.css?v=3.8" />
-  <link rel="stylesheet" href="css/home.css?v=3.8" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.8" />
-  <link rel="stylesheet" href="css/tugas.css?v=3.8" />
-  <link rel="stylesheet" href="css/catatan.css?v=3.8" />
-  <link rel="stylesheet" href="css/keuangan.css?v=3.8" />
-  <link rel="stylesheet" href="css/kalender.css?v=3.8" />
-  <link rel="stylesheet" href="css/ai.css?v=3.8" />
-  <link rel="stylesheet" href="css/profil.css?v=3.8" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.8" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.8" />
+  <link rel="stylesheet" href="css/base.css?v=3.9" />
+  <link rel="stylesheet" href="css/layout.css?v=3.9" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.9" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.9" />
+  <link rel="stylesheet" href="css/components.css?v=3.9" />
+  <link rel="stylesheet" href="css/home.css?v=3.9" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.9" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.9" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.9" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.9" />
+  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.9" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.9" />
+  <link rel="stylesheet" href="css/ai.css?v=3.9" />
+  <link rel="stylesheet" href="css/profil.css?v=3.9" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.9" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.9" />
 </head>
 <body>
 
@@ -388,8 +389,12 @@
 
               <!-- Middle Row: Balance Label & Big Amount -->
               <div class="card-balance-section">
-                <span class="card-balance-lbl">Total Saldo Aktif</span>
+                <span class="card-balance-lbl">Saldo Tersedia</span>
                 <h2 class="card-main-balance" id="totalBalance">Rp 0</h2>
+                <div class="card-savings-line">
+                  <span><i data-lucide="piggy-bank"></i> Tabungan <b id="cardSavingsTotal">Rp 0</b></span>
+                  <span><i data-lucide="wallet"></i> Total Dana <b id="cardTotalFunds">Rp 0</b></span>
+                </div>
               </div>
 
               <!-- Bottom Row: Income & Expense (Side by Side in 2 Columns) -->
@@ -416,6 +421,17 @@
               </div>
             </div>
 
+            <!-- Finance Tabs -->
+            <div class="fin-tabs" id="finTabs">
+              <button class="fin-tab active" data-fintab="ringkasan"><i data-lucide="layout-dashboard"></i><span>Ringkasan</span></button>
+              <button class="fin-tab" data-fintab="tabungan"><i data-lucide="piggy-bank"></i><span>Tabungan</span></button>
+              <button class="fin-tab" data-fintab="anggaran"><i data-lucide="gauge"></i><span>Anggaran</span></button>
+              <button class="fin-tab" data-fintab="hutang"><i data-lucide="handshake"></i><span>Hutang</span></button>
+              <button class="fin-tab" data-fintab="kalkulator"><i data-lucide="calculator"></i><span>Kalkulator</span></button>
+            </div>
+
+            <!-- TAB: RINGKASAN -->
+            <div class="fin-pane active" id="finPane-ringkasan">
             <!-- Chart -->
             <div class="chart-card">
               <div class="section-header" style="margin-bottom:12px">
@@ -448,7 +464,96 @@
               </div>
               <div id="transactionList" class="transaction-list"></div>
             </div>
-            <button class="fab" id="addTransaksiBtn" aria-label="Tambah Transaksi">
+            </div><!-- /#finPane-ringkasan -->
+
+            <!-- TAB: TABUNGAN & TARGET -->
+            <div class="fin-pane" id="finPane-tabungan">
+              <div class="fin-stat-row">
+                <div class="fin-stat-box"><span>Total Tabungan</span><b id="goalStatSaved">Rp 0</b></div>
+                <div class="fin-stat-box"><span>Total Target</span><b id="goalStatTarget">Rp 0</b></div>
+                <div class="fin-stat-box"><span>Tercapai</span><b id="goalStatDone">0/0</b></div>
+              </div>
+              <div class="section-header">
+                <h3 class="section-title">Target Menabung</h3>
+                <button class="section-link" onclick="openGoalModal()">+ Target Baru</button>
+              </div>
+              <div id="goalList" class="goal-list"></div>
+            </div>
+
+            <!-- TAB: ANGGARAN -->
+            <div class="fin-pane" id="finPane-anggaran">
+              <div class="budget-summary-card" id="budgetSummary"></div>
+              <div class="section-header">
+                <h3 class="section-title">Anggaran Bulan Ini</h3>
+                <button class="section-link" onclick="openBudgetModal()">+ Atur Anggaran</button>
+              </div>
+              <div id="budgetList" class="budget-list"></div>
+            </div>
+
+            <!-- TAB: HUTANG & PIUTANG -->
+            <div class="fin-pane" id="finPane-hutang">
+              <div class="fin-stat-row two">
+                <div class="fin-stat-box danger"><span>Hutang Saya</span><b id="debtStatOwe">Rp 0</b></div>
+                <div class="fin-stat-box success"><span>Piutang (Dipinjam)</span><b id="debtStatLent">Rp 0</b></div>
+              </div>
+              <div class="section-header">
+                <h3 class="section-title">Catatan Hutang</h3>
+                <div class="trans-type-tabs">
+                  <button class="debt-tab active" data-debtfilter="all">Semua</button>
+                  <button class="debt-tab" data-debtfilter="hutang">Hutang</button>
+                  <button class="debt-tab" data-debtfilter="piutang">Piutang</button>
+                </div>
+              </div>
+              <div id="debtList" class="debt-list"></div>
+            </div>
+
+            <!-- TAB: KALKULATOR -->
+            <div class="fin-pane" id="finPane-kalkulator">
+              <!-- Simulasi Tabungan -->
+              <div class="calc-card">
+                <div class="calc-card-head"><i data-lucide="target"></i><h4>Simulasi Menabung</h4></div>
+                <div class="calc-seg">
+                  <button class="calc-seg-btn active" data-simmode="duration">Target &amp; Waktu</button>
+                  <button class="calc-seg-btn" data-simmode="rate">Nabung Rutin</button>
+                </div>
+                <div class="form-group"><label>Target Dana (Rp)</label><input type="number" id="simTarget" placeholder="mis. 5000000" min="0" /></div>
+                <div class="form-group"><label>Sudah Terkumpul (Rp)</label><input type="number" id="simSaved" placeholder="0" min="0" /></div>
+                <div class="form-group" id="simDurationWrap"><label>Jangka Waktu (bulan)</label><input type="number" id="simMonths" placeholder="mis. 6" min="1" /></div>
+                <div class="form-group hidden" id="simRateWrap">
+                  <label>Nabung Berapa (Rp)</label>
+                  <div class="calc-inline">
+                    <input type="number" id="simRate" placeholder="mis. 200000" min="0" />
+                    <select id="simRatePeriod"><option value="day">/ hari</option><option value="week">/ minggu</option><option value="month" selected>/ bulan</option></select>
+                  </div>
+                </div>
+                <button class="btn-primary calc-btn" onclick="runSavingsSim()">Hitung</button>
+                <div class="calc-result hidden" id="simResult"></div>
+              </div>
+
+              <!-- Split Bill -->
+              <div class="calc-card">
+                <div class="calc-card-head"><i data-lucide="users"></i><h4>Patungan / Split Bill</h4></div>
+                <div class="form-group"><label>Total Tagihan (Rp)</label><input type="number" id="splitTotal" placeholder="0" min="0" /></div>
+                <div class="calc-inline two">
+                  <div class="form-group"><label>Jumlah Orang</label><input type="number" id="splitPeople" value="2" min="1" /></div>
+                  <div class="form-group"><label>Pajak/Service (%)</label><input type="number" id="splitTax" value="0" min="0" /></div>
+                </div>
+                <button class="btn-primary calc-btn" onclick="runSplitBill()">Hitung</button>
+                <div class="calc-result hidden" id="splitResult"></div>
+              </div>
+
+              <!-- Kalkulator Cepat -->
+              <div class="calc-card">
+                <div class="calc-card-head"><i data-lucide="calculator"></i><h4>Kalkulator Cepat</h4></div>
+                <div class="quick-calc">
+                  <div class="qc-expr" id="qcExpr">&nbsp;</div>
+                  <div class="qc-display" id="qcDisplay">0</div>
+                  <div class="qc-grid" id="qcGrid"></div>
+                </div>
+              </div>
+            </div>
+
+            <button class="fab" id="addTransaksiBtn" aria-label="Tambah">
               <i data-lucide="plus"></i>
             </button>
           </div>
@@ -696,6 +801,7 @@
               <button class="notif-tab" data-filter="unread">Belum Dibaca</button>
               <button class="notif-tab" data-filter="academic">Kuliah & Agenda</button>
               <button class="notif-tab" data-filter="tasks">Tugas</button>
+              <button class="notif-tab" data-filter="finance">Keuangan</button>
             </div>
 
             <!-- Notification Dynamic List -->
@@ -1049,6 +1155,149 @@
     </div>
   </div>
 
+  <!-- Modal: Target Tabungan -->
+  <div class="modal hidden" id="modalGoal">
+    <div class="modal-header">
+      <h3 id="modalGoalTitle">Target Baru</h3>
+      <button class="modal-close" data-modal="modalGoal"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nama Target *</label>
+        <input type="text" id="goalNama" placeholder="mis. Beli Laptop" />
+      </div>
+      <div class="form-group">
+        <label>Ikon</label>
+        <div class="emoji-picker" id="goalIconPicker"></div>
+      </div>
+      <div class="form-group">
+        <label>Target Dana (Rp) *</label>
+        <input type="number" id="goalTarget" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Tenggat Waktu (opsional)</label>
+        <input type="date" id="goalDeadline" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalGoal">Batal</button>
+      <button class="btn-primary" id="saveGoalBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Nabung / Tarik -->
+  <div class="modal hidden" id="modalGoalDeposit">
+    <div class="modal-header">
+      <h3 id="modalDepositTitle">Nabung</h3>
+      <button class="modal-close" data-modal="modalGoalDeposit"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="deposit-goal-name" id="depositGoalName"></div>
+      <div class="form-group">
+        <label>Jumlah (Rp) *</label>
+        <input type="number" id="depositJumlah" placeholder="0" min="0" />
+        <div class="quick-amounts" id="depositQuick">
+          <button type="button" data-amt="10000">10rb</button>
+          <button type="button" data-amt="25000">25rb</button>
+          <button type="button" data-amt="50000">50rb</button>
+          <button type="button" data-amt="100000">100rb</button>
+          <button type="button" data-amt="500000">500rb</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Catatan</label>
+        <input type="text" id="depositCatatan" placeholder="Opsional" />
+      </div>
+      <div class="form-group">
+        <label>Tanggal</label>
+        <input type="date" id="depositTanggal" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalGoalDeposit">Batal</button>
+      <button class="btn-primary" id="saveDepositBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Anggaran -->
+  <div class="modal hidden" id="modalBudget">
+    <div class="modal-header">
+      <h3 id="modalBudgetTitle">Atur Anggaran</h3>
+      <button class="modal-close" data-modal="modalBudget"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Kategori</label>
+        <select id="budgetKategori"></select>
+      </div>
+      <div class="form-group">
+        <label>Batas per Bulan (Rp) *</label>
+        <input type="number" id="budgetLimit" placeholder="0" min="0" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalBudget">Batal</button>
+      <button class="btn-primary" id="saveBudgetBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Hutang / Piutang -->
+  <div class="modal hidden" id="modalDebt">
+    <div class="modal-header">
+      <h3 id="modalDebtTitle">Catat Hutang</h3>
+      <button class="modal-close" data-modal="modalDebt"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="trans-type-switch">
+        <button class="type-sw-btn debt-type-btn active" data-debttype="hutang" type="button">Saya Berhutang</button>
+        <button class="type-sw-btn debt-type-btn" data-debttype="piutang" type="button">Saya Meminjamkan</button>
+      </div>
+      <div class="form-group">
+        <label id="debtNamaLabel">Berhutang ke siapa? *</label>
+        <input type="text" id="debtNama" placeholder="Nama orang" />
+      </div>
+      <div class="form-group">
+        <label>Jumlah (Rp) *</label>
+        <input type="number" id="debtJumlah" placeholder="0" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Jatuh Tempo (opsional)</label>
+        <input type="date" id="debtJatuhTempo" />
+      </div>
+      <div class="form-group">
+        <label>Catatan</label>
+        <input type="text" id="debtCatatan" placeholder="Opsional" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalDebt">Batal</button>
+      <button class="btn-primary" id="saveDebtBtn">Simpan</button>
+    </div>
+  </div>
+
+  <!-- Modal: Bayar / Terima Cicilan -->
+  <div class="modal hidden" id="modalDebtPay">
+    <div class="modal-header">
+      <h3 id="modalDebtPayTitle">Bayar Cicilan</h3>
+      <button class="modal-close" data-modal="modalDebtPay"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="deposit-goal-name" id="debtPayInfo"></div>
+      <div class="form-group">
+        <label>Jumlah (Rp) *</label>
+        <input type="number" id="debtPayJumlah" placeholder="0" min="0" />
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="debtPayRecord" checked />
+        <span>Catat juga ke riwayat transaksi</span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalDebtPay">Batal</button>
+      <button class="btn-primary" id="saveDebtPayBtn">Simpan</button>
+    </div>
+  </div>
+
   <!-- Modal: Tambah Event Kalender -->
   <div class="modal hidden" id="modalEvent">
     <div class="modal-header">
@@ -1290,19 +1539,23 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.4"></script>
-  <script src="js/firebase-service.js?v=3.4"></script>
+  <script src="js/firebase-config.js?v=3.9"></script>
+  <script src="js/firebase-service.js?v=3.9"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.7"></script>
-  <script src="js/app.js?v=3.7"></script>
-  <script src="js/jadwal.js?v=3.7"></script>
-  <script src="js/tugas.js?v=3.7"></script>
-  <script src="js/catatan.js?v=3.7"></script>
-  <script src="js/keuangan.js?v=3.7"></script>
-  <script src="js/kalender.js?v=3.8"></script>
-  <script src="js/notifikasi.js?v=3.8"></script>
-  <script src="js/ai.js?v=3.8"></script>
+  <script src="js/storage.js?v=3.9"></script>
+  <script src="js/app.js?v=3.9"></script>
+  <script src="js/jadwal.js?v=3.9"></script>
+  <script src="js/tugas.js?v=3.9"></script>
+  <script src="js/catatan.js?v=3.9"></script>
+  <script src="js/keuangan.js?v=3.9"></script>
+  <script src="js/tabungan.js?v=3.9"></script>
+  <script src="js/anggaran.js?v=3.9"></script>
+  <script src="js/hutang.js?v=3.9"></script>
+  <script src="js/kalkulator.js?v=3.9"></script>
+  <script src="js/kalender.js?v=3.9"></script>
+  <script src="js/notifikasi.js?v=3.9"></script>
+  <script src="js/ai.js?v=3.9"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1313,7 +1566,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.8').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.9').catch(() => {});
       });
     }
   </script>

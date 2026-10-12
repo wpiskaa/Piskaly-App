@@ -27,6 +27,16 @@ const Store = {
   getTransaksi() { return this.get('mylife_transaksi', []); },
   setTransaksi(d) { this.set('mylife_transaksi', d); },
 
+  // Manajemen keuangan lanjutan: target tabungan, anggaran, hutang/piutang
+  getGoals() { return this.get('mylife_goals', []); },
+  setGoals(d) { this.set('mylife_goals', d); },
+
+  getBudgets() { return this.get('mylife_budgets', []); },
+  setBudgets(d) { this.set('mylife_budgets', d); },
+
+  getDebts() { return this.get('mylife_debts', []); },
+  setDebts(d) { this.set('mylife_debts', d); },
+
   getEvents() { return this.get('mylife_events', []); },
   setEvents(d) { this.set('mylife_events', d); },
 
@@ -54,7 +64,7 @@ const Store = {
   },
 
   clearAll() {
-    const keys = ['mylife_jadwal','mylife_tugas','mylife_catatan','mylife_transaksi','mylife_events','mylife_profil','mylife_seeded'];
+    const keys = ['mylife_jadwal','mylife_tugas','mylife_catatan','mylife_transaksi','mylife_goals','mylife_budgets','mylife_debts','mylife_events','mylife_profil','mylife_seeded'];
     keys.forEach(k => localStorage.removeItem(k));
   },
 

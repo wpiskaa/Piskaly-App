@@ -25,6 +25,7 @@ Piskaly/
 │   ├── 🎨 tugas.css           # Manajemen tugas, indikator deadline, filter status
 │   ├── 🎨 catatan.css         # Grid catatan, kartu catatan warna-warni, pin note
 │   ├── 🎨 keuangan.css        # Dompet fintech, pemasukan/pengeluaran, Chart.js report
+│   ├── 🎨 keuangan-tools.css  # Stylesheet tab keuangan, target menabung, anggaran, hutang & kalkulator
 │   ├── 🎨 kalender.css        # Grid kalender interaktif, agenda countdown harian
 │   ├── 🎨 ai.css              # Aiden AI chatbot, message bubbles, suggested prompt chips
 │   ├── 🎨 profil.css          # Profil pengguna, Firebase Cloud Sync card, backup data
@@ -37,11 +38,15 @@ Piskaly/
 │   ├── ⚡ firebase-service.js  # Sinkronisasi cloud dua arah otomatis (Silent Sync)
 │   ├── ⚡ storage.js          # Abstraksi localStorage & model data (CRUD)
 │   ├── ⚡ app.js              # Routing SPA, audio pop synthesizer, modal & drawer controller
-│   ├── ⚡ notifikasi.js       # Generator notifikasi pintar (deadline, jadwal, kalender)
+│   ├── ⚡ notifikasi.js       # Generator notifikasi pintar (deadline, jadwal, kalender, keuangan)
 │   ├── ⚡ jadwal.js           # Logika jadwal kuliah & all-day view
 │   ├── ⚡ tugas.js            # Logika tugas, filter status & countdown deadline
 │   ├── ⚡ catatan.js          # Logika pembuatan, edit, dan penghapusan catatan
-│   ├── ⚡ keuangan.js         # Logika kas masuk/keluar & integrasi grafik Chart.js
+│   ├── ⚡ keuangan.js         # Logika kas masuk/keluar, saldo dompet, & Chart.js
+│   ├── ⚡ tabungan.js         # Target menabung, nabung/tarik, simulasi nabung per hari/minggu/bulan
+│   ├── ⚡ anggaran.js         # Anggaran bulanan per kategori & batas pengeluaran aman harian
+│   ├── ⚡ hutang.js           # Catatan hutang & piutang dengan pelacakan cicilan lunas
+│   ├── ⚡ kalkulator.js       # Simulasi tabungan, split bill / patungan, & kalkulator cepat
 │   ├── ⚡ kalender.js         # Logika kalender bulanan, event, dan kalkulasi H- agenda
 │   └── ⚡ ai.js               # Integrasi AI Assistant (Gemini API & fallback offline)
 │
