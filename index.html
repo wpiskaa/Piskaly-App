@@ -37,23 +37,23 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Modular Architecture Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.13" />
-  <link rel="stylesheet" href="css/layout.css?v=3.13" />
-  <link rel="stylesheet" href="css/navigation.css?v=3.13" />
-  <link rel="stylesheet" href="css/drawer.css?v=3.13" />
-  <link rel="stylesheet" href="css/components.css?v=3.13" />
-  <link rel="stylesheet" href="css/home.css?v=3.13" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.13" />
-  <link rel="stylesheet" href="css/tugas.css?v=3.13" />
-  <link rel="stylesheet" href="css/catatan.css?v=3.13" />
-  <link rel="stylesheet" href="css/keuangan.css?v=3.13" />
-  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.13" />
-  <link rel="stylesheet" href="css/kalender.css?v=3.13" />
-  <link rel="stylesheet" href="css/ai.css?v=3.13" />
-  <link rel="stylesheet" href="css/profil.css?v=3.14" />
-  <link rel="stylesheet" href="css/auth.css?v=3.14" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.14" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.14" />
+  <link rel="stylesheet" href="css/base.css?v=3.16" />
+  <link rel="stylesheet" href="css/layout.css?v=3.16" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.16" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.16" />
+  <link rel="stylesheet" href="css/components.css?v=3.16" />
+  <link rel="stylesheet" href="css/home.css?v=3.16" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.16" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.16" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.16" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.16" />
+  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.16" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.16" />
+  <link rel="stylesheet" href="css/ai.css?v=3.16" />
+  <link rel="stylesheet" href="css/profil.css?v=3.16" />
+  <link rel="stylesheet" href="css/auth.css?v=3.16" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.16" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.16" />
 </head>
 <body>
 
@@ -523,8 +523,8 @@
           <div class="ai-container">
             <div class="ai-header-banner">
               <div class="ai-banner-content">
-                <div class="ai-avatar" style="overflow:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;background:transparent;">
-                  <img src="icons/icon-192.png" alt="Pisku" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />
+                <div class="ai-avatar">
+                  <img src="icons/icon-piska.jpg?v=3.16" alt="Pisku" />
                 </div>
                 <div>
                   <h3 class="ai-name">Pisku AI</h3>
@@ -556,7 +556,7 @@
             <!-- Chat Messages -->
             <div class="ai-messages" id="aiMessages">
               <div class="ai-msg assistant">
-                <div class="msg-avatar"><img src="icons/icon-192.png" alt="Pisku" class="pisku-msg-img" /></div>
+                <div class="msg-avatar"><img src="icons/icon-piska.jpg?v=3.16" alt="Pisku" class="pisku-msg-img" /></div>
                 <div class="msg-bubble">
                   <p>Halo! Aku <b>Pisku</b>, asisten AI pintar kamu 🤖✨</p>
                   <p>Aku bisa bantu obrolan, mengolah file/foto dokumen, serta <b>langsung memasukkan data otomatis</b> (jadwal kuliah, catatan pengeluaran, tugas, agenda kalender, tabungan, dll). Ketik atau lampirkan file yang ingin kamu proses!</p>
@@ -876,7 +876,7 @@
               <span>Kalender &amp; Agenda</span>
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('ai'); closeDrawer();">
-              <img src="icons/icon-72.png" alt="Pisku" style="width:20px;height:20px;border-radius:6px;object-fit:cover;margin-right:2px;" />
+              <img src="icons/icon-piska.jpg?v=3.16" alt="Pisku" style="width:20px;height:20px;border-radius:6px;object-fit:cover;margin-right:2px;" />
               <span>Pisku AI (Gemini)</span>
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('notifikasi'); closeDrawer();">
@@ -1598,28 +1598,37 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/gemini-config.js?v=3.15"></script>
-  <script src="js/firebase-config.js?v=3.15"></script>
-  <script src="js/firebase-service.js?v=3.15"></script>
+  <script src="js/gemini-config.js?v=3.16"></script>
+  <script src="js/firebase-config.js?v=3.16"></script>
+  <script src="js/firebase-service.js?v=3.16"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.15"></script>
-  <script src="js/auth.js?v=3.15"></script>
-  <script src="js/app.js?v=3.15"></script>
-  <script src="js/jadwal.js?v=3.15"></script>
-  <script src="js/tugas.js?v=3.15"></script>
-  <script src="js/catatan.js?v=3.15"></script>
-  <script src="js/keuangan.js?v=3.15"></script>
-  <script src="js/tabungan.js?v=3.15"></script>
-  <script src="js/anggaran.js?v=3.15"></script>
-  <script src="js/hutang.js?v=3.15"></script>
-  <script src="js/kalkulator.js?v=3.15"></script>
-  <script src="js/kalender.js?v=3.15"></script>
-  <script src="js/notifikasi.js?v=3.15"></script>
-  <script src="js/ai.js?v=3.15"></script>
+  <script src="js/storage.js?v=3.16"></script>
+  <script src="js/auth.js?v=3.16"></script>
+  <script src="js/app.js?v=3.16"></script>
+  <script src="js/jadwal.js?v=3.16"></script>
+  <script src="js/tugas.js?v=3.16"></script>
+  <script src="js/catatan.js?v=3.16"></script>
+  <script src="js/keuangan.js?v=3.16"></script>
+  <script src="js/tabungan.js?v=3.16"></script>
+  <script src="js/anggaran.js?v=3.16"></script>
+  <script src="js/hutang.js?v=3.16"></script>
+  <script src="js/kalkulator.js?v=3.16"></script>
+  <script src="js/kalender.js?v=3.16"></script>
+  <script src="js/notifikasi.js?v=3.16"></script>
+  <script src="js/ai.js?v=3.16"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
+    if ('caches' in window) {
+      caches.keys().then(keys => {
+        keys.forEach(key => {
+          if (key !== 'mylife-v3.16') {
+            caches.delete(key);
+          }
+        });
+      });
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
         for (let reg of regs) {
@@ -1627,7 +1636,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.15').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.16').catch(() => {});
       });
     }
   </script>
