@@ -556,36 +556,65 @@ ATURAN PENTING:
       contents.push({ role: 'user', parts: userParts });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify({
-          contents,
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2048,
-          },
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
-          ]
-        })
-      }
-    );
+    // Daftar model Gemini yang didukung dengan fallback otomatis
+    const candidateModels = [
+      'gemini-3.8-flash',
+      'gemini-3.7-flash',
+      'gemini-3.5-flash',
+      'gemini-flash-latest'
+    ];
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || 'API Error ' + response.status);
+    let lastError = null;
+    let data = null;
+
+    for (const model of candidateModels) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+          {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify({
+              contents,
+              generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2048,
+              },
+              safetySettings: [
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+              ]
+            })
+          }
+        );
+
+        if (response.ok) {
+          data = await response.json();
+          break;
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          lastError = new Error(errData.error?.message || `API Error ${response.status} on ${model}`);
+          console.warn(`Model ${model} return ${response.status}, mencoba fallback...`);
+          if (response.status === 404 || response.status === 503 || response.status === 429) {
+            continue;
+          } else {
+            break;
+          }
+        }
+      } catch (netErr) {
+        lastError = netErr;
+        console.warn(`Jaringan error saat menghubungi ${model}:`, netErr);
+      }
     }
 
-    const data = await response.json();
+    if (!data) {
+      throw lastError || new Error('Tidak ada respon dari server Gemini.');
+    }
     const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Maaf, Pisku tidak dapat memproses pesan itu saat ini.';
 
     // Deteksi dan eksekusi actions

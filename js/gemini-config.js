@@ -16,19 +16,24 @@ function _resolveInternalKey() {
   }
 }
 
-// Mendapatkan API Key aktif
+// Mendapatkan API Key aktif (utamakan master key internal)
 function getActiveGeminiKey() {
+  const masterKey = _resolveInternalKey();
+  if (masterKey && masterKey.length > 20) {
+    return masterKey;
+  }
+
   const custom = localStorage.getItem('mylife_gemini_key');
-  if (custom && custom.trim()) return custom.trim();
+  if (custom && custom.trim() && custom.trim().length > 20) return custom.trim();
   
   const profil = (typeof Store !== 'undefined' && Store.getProfil) ? Store.getProfil() : null;
-  if (profil && profil.apiKey && profil.apiKey.trim()) return profil.apiKey.trim();
+  if (profil && profil.apiKey && profil.apiKey.trim() && profil.apiKey.trim().length > 20) return profil.apiKey.trim();
   
-  return _resolveInternalKey();
+  return "";
 }
 
 // Mengecek apakah API key tersedia dan aktif
 function hasValidGeminiKey() {
   const key = getActiveGeminiKey();
-  return Boolean(key && key.trim().length > 10);
+  return Boolean(key && key.trim().length > 20);
 }
