@@ -27,7 +27,7 @@ Piskaly/
 │   ├── 🎨 keuangan.css        # Dompet fintech, pemasukan/pengeluaran, Chart.js report
 │   ├── 🎨 keuangan-tools.css  # Stylesheet tab keuangan, target menabung, anggaran, hutang & kalkulator
 │   ├── 🎨 kalender.css        # Grid kalender interaktif, agenda countdown harian
-│   ├── 🎨 ai.css              # Aiden AI chatbot, message bubbles, suggested prompt chips
+│   ├── 🎨 ai.css              # Pisku AI chatbot, message bubbles, file attachments, prompt chips
 │   ├── 🎨 profil.css          # Profil pengguna, Firebase Cloud Sync card, backup data
 │   ├── 🎨 notifikasi.css      # Pusat notifikasi (filter tab, kartu notif, unread dot)
 │   ├── 🎨 utilities.css       # Toast pop-up, haptic feedback, responsive iPad/desktop

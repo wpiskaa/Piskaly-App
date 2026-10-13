@@ -35,22 +35,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Modular Architecture Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.11" />
-  <link rel="stylesheet" href="css/layout.css?v=3.11" />
-  <link rel="stylesheet" href="css/navigation.css?v=3.11" />
-  <link rel="stylesheet" href="css/drawer.css?v=3.11" />
-  <link rel="stylesheet" href="css/components.css?v=3.11" />
-  <link rel="stylesheet" href="css/home.css?v=3.11" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.11" />
-  <link rel="stylesheet" href="css/tugas.css?v=3.11" />
-  <link rel="stylesheet" href="css/catatan.css?v=3.11" />
-  <link rel="stylesheet" href="css/keuangan.css?v=3.11" />
-  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.11" />
-  <link rel="stylesheet" href="css/kalender.css?v=3.11" />
-  <link rel="stylesheet" href="css/ai.css?v=3.11" />
-  <link rel="stylesheet" href="css/profil.css?v=3.11" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.11" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.11" />
+  <link rel="stylesheet" href="css/base.css?v=3.12" />
+  <link rel="stylesheet" href="css/layout.css?v=3.12" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.12" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.12" />
+  <link rel="stylesheet" href="css/components.css?v=3.12" />
+  <link rel="stylesheet" href="css/home.css?v=3.12" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.12" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.12" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.12" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.12" />
+  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.12" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.12" />
+  <link rel="stylesheet" href="css/ai.css?v=3.12" />
+  <link rel="stylesheet" href="css/profil.css?v=3.12" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.12" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.12" />
 </head>
 <body>
 
@@ -534,18 +534,23 @@
                   </svg>
                 </div>
                 <div>
-                  <h3 class="ai-name">Aiden AI</h3>
-                  <p class="ai-status"><span class="ai-dot"></span> Online &amp; Siap membantu</p>
+                  <h3 class="ai-name">Pisku AI</h3>
+                  <p class="ai-status"><span class="ai-dot"></span> Online &amp; Asisten Pribadi</p>
                 </div>
               </div>
-              <div class="ai-model-badge">Gemini</div>
+              <div class="ai-header-actions">
+                <button type="button" class="ai-hdr-btn" id="aiResetChatBtn" title="Reset Percakapan (Otomatis tiap 24 jam)">
+                  <i data-lucide="rotate-ccw"></i>
+                </button>
+                <div class="ai-model-badge">Pisku 1.5</div>
+              </div>
             </div>
 
             <!-- API Key Setup -->
             <div id="apiKeySetup" class="api-setup-card">
               <div class="api-setup-icon"><i data-lucide="key"></i></div>
-              <h4>Hubungkan Gemini AI</h4>
-              <p>Masukkan Gemini API Key kamu untuk mengaktifkan asisten AI personal.</p>
+              <h4>Hubungkan Pisku AI</h4>
+              <p>Masukkan Gemini API Key kamu untuk mengaktifkan asisten AI personal, membaca file &amp; auto-input data.</p>
               <div class="api-input-row">
                 <input type="password" id="geminiApiKeyInput" placeholder="AIza..." />
                 <button class="api-save-btn" id="saveApiKeyBtn">Simpan</button>
@@ -557,12 +562,12 @@
 
             <!-- Suggestion Chips -->
             <div class="ai-suggestions" id="aiSuggestions">
-              <p class="suggestions-label">Tanya sesuatu:</p>
+              <p class="suggestions-label">Coba minta Pisku:</p>
               <div class="chips-row">
-                <button class="chip" onclick="sendSuggestion('Buatkan jadwal belajar efektif untuk minggu ini')">📅 Jadwal belajar</button>
-                <button class="chip" onclick="sendSuggestion('Tips manajemen waktu untuk mahasiswa')">⏰ Tips waktu</button>
-                <button class="chip" onclick="sendSuggestion('Bagaimana cara mengatur keuangan sebagai mahasiswa?')">💰 Tips keuangan</button>
-                <button class="chip" onclick="sendSuggestion('Motivasi untuk belajar hari ini')">✨ Motivasi</button>
+                <button class="chip" onclick="sendSuggestion('Pisku, masukin jadwal kuliahku: Senin 08.00-10.00 Pemrograman Web (Lab 1) Pak Budi, Selasa 13.00-15.00 Basis Data (R.301)')">📅 Masukin Jadwal</button>
+                <button class="chip" onclick="sendSuggestion('Catat pengeluaran makan siang 25rb sama beli bensin 35rb')">💸 Catat Pengeluaran</button>
+                <button class="chip" onclick="sendSuggestion('Ada tugas Pemrograman Web deadline hari Jumat jam 23.59')">📝 Tambah Tugas</button>
+                <button class="chip" onclick="sendSuggestion('Catat ada seminar kampus tanggal 25 Oktober jam 09.00')">📆 Agenda Kalender</button>
               </div>
             </div>
 
@@ -571,16 +576,21 @@
               <div class="ai-msg assistant">
                 <div class="msg-avatar"><i data-lucide="sparkles"></i></div>
                 <div class="msg-bubble">
-                  <p>Halo! Aku Aiden, asisten AI personal kamu 🤖✨</p>
-                  <p>Aku bisa bantu kamu dengan jadwal kuliah, tugas, keuangan, atau apapun yang kamu butuhkan. Tanya aja!</p>
+                  <p>Halo! Aku <b>Pisku</b>, asisten AI pintar kamu 🤖✨</p>
+                  <p>Aku bisa bantu obrolan, mengolah file/foto dokumen, serta <b>langsung memasukkan data otomatis</b> (jadwal kuliah, catatan pengeluaran, tugas, agenda kalender, tabungan, dll). Ketik atau lampirkan file yang ingin kamu proses!</p>
                 </div>
               </div>
             </div>
 
-            <!-- Input -->
+            <!-- Input & File Attachment -->
             <div class="ai-input-wrap" id="aiInputWrap">
+              <div id="aiFilePreview" class="ai-file-preview hidden"></div>
               <div class="ai-input-row">
-                <textarea id="aiInput" placeholder="Tulis pesanmu..." rows="1"></textarea>
+                <input type="file" id="aiFileInput" accept="image/*,.pdf,.txt,.csv,.json,.doc,.docx" class="hidden" />
+                <button type="button" class="ai-attach-btn" id="aiAttachBtn" title="Lampirkan File / Foto Jadwal">
+                  <i data-lucide="paperclip"></i>
+                </button>
+                <textarea id="aiInput" placeholder="Ketik pesan atau lampirkan file/foto jadwal..." rows="1"></textarea>
                 <button class="ai-send-btn" id="aiSendBtn" aria-label="Kirim">
                   <i data-lucide="send"></i>
                 </button>
@@ -810,7 +820,7 @@
             <button class="qa-item" onclick="closeModal('modalQuickAction'); navigateTo('ai');">
               <div class="qa-icon indigo"><i data-lucide="sparkles"></i></div>
               <div class="qa-text">
-                <strong>Aiden AI</strong>
+                <strong>Pisku AI</strong>
                 <span>Tanya AI tentang jadwal &amp; saran</span>
               </div>
               <i data-lucide="chevron-right"></i>
@@ -863,7 +873,7 @@
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('ai'); closeDrawer();">
               <i data-lucide="sparkles"></i>
-              <span>Aiden AI (Gemini)</span>
+              <span>Pisku AI (Gemini)</span>
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('notifikasi'); closeDrawer();">
               <i data-lucide="bell"></i>
@@ -1504,23 +1514,23 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.11"></script>
-  <script src="js/firebase-service.js?v=3.11"></script>
+  <script src="js/firebase-config.js?v=3.12"></script>
+  <script src="js/firebase-service.js?v=3.12"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.11"></script>
-  <script src="js/app.js?v=3.11"></script>
-  <script src="js/jadwal.js?v=3.11"></script>
-  <script src="js/tugas.js?v=3.11"></script>
-  <script src="js/catatan.js?v=3.11"></script>
-  <script src="js/keuangan.js?v=3.11"></script>
-  <script src="js/tabungan.js?v=3.11"></script>
-  <script src="js/anggaran.js?v=3.11"></script>
-  <script src="js/hutang.js?v=3.11"></script>
-  <script src="js/kalkulator.js?v=3.11"></script>
-  <script src="js/kalender.js?v=3.11"></script>
-  <script src="js/notifikasi.js?v=3.11"></script>
-  <script src="js/ai.js?v=3.11"></script>
+  <script src="js/storage.js?v=3.12"></script>
+  <script src="js/app.js?v=3.12"></script>
+  <script src="js/jadwal.js?v=3.12"></script>
+  <script src="js/tugas.js?v=3.12"></script>
+  <script src="js/catatan.js?v=3.12"></script>
+  <script src="js/keuangan.js?v=3.12"></script>
+  <script src="js/tabungan.js?v=3.12"></script>
+  <script src="js/anggaran.js?v=3.12"></script>
+  <script src="js/hutang.js?v=3.12"></script>
+  <script src="js/kalkulator.js?v=3.12"></script>
+  <script src="js/kalender.js?v=3.12"></script>
+  <script src="js/notifikasi.js?v=3.12"></script>
+  <script src="js/ai.js?v=3.12"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1531,7 +1541,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.11').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.12').catch(() => {});
       });
     }
   </script>

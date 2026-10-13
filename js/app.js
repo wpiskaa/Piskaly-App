@@ -212,7 +212,7 @@ function navigateTo(page) {
   const titles = {
     home: 'Home', jadwal: 'Jadwal Kuliah', tugas: 'Tugas & Deadline',
     catatan: 'Catatan', keuangan: 'Manajemen Uang', kalender: 'Kalender',
-    ai: 'Aiden AI', profil: 'Profil', notifikasi: 'Pemberitahuan'
+    ai: 'Pisku AI', profil: 'Profil', notifikasi: 'Pemberitahuan'
   };
   const titleEl = document.getElementById('pageTitle');
   if (titleEl) titleEl.textContent = titles[page] || page;
