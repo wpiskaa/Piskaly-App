@@ -624,10 +624,16 @@
                   <span class="auth-card-id" id="authProfileId">@id</span>
                 </div>
               </div>
-              <button type="button" class="auth-switch-btn" onclick="AuthService.logout()" title="Keluar atau Ganti Pengguna">
-                <i data-lucide="log-out"></i>
-                <span>Ganti Akun</span>
-              </button>
+              <div class="auth-account-actions">
+                <button type="button" class="auth-action-btn" onclick="AuthService.openChangePinModal()" title="Ubah PIN Keamanan">
+                  <i data-lucide="key-round"></i>
+                  <span>Ubah PIN</span>
+                </button>
+                <button type="button" class="auth-switch-btn" onclick="AuthService.logout()" title="Keluar atau Ganti Pengguna">
+                  <i data-lucide="log-out"></i>
+                  <span>Ganti Akun</span>
+                </button>
+              </div>
             </div>
 
             <div class="profil-form">
@@ -1591,6 +1597,51 @@
     </div>
   </div>
 
+  <!-- Modal: Ubah PIN Keamanan -->
+  <div class="modal hidden" id="modalChangePin">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; border-radius:10px; background:rgba(37,99,235,0.12); color:var(--primary-light); display:flex; align-items:center; justify-content:center;">
+          <i data-lucide="key-round"></i>
+        </div>
+        <div>
+          <h3 style="margin:0; font-size:16px;">Ubah PIN Keamanan</h3>
+          <p style="margin:0; font-size:11px; color:var(--text-secondary);">Amankan akun <strong id="changePinTargetId">@id</strong></p>
+        </div>
+      </div>
+      <button class="modal-close" data-modal="modalChangePin"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="padding: 16px 20px 24px;">
+      <div id="changePinAlert" class="auth-alert hidden"></div>
+      <form id="formChangePin" onsubmit="event.preventDefault(); AuthService.submitChangePin();">
+        <div class="form-group">
+          <label style="font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block;">PIN Lama Saat Ini *</label>
+          <div class="input-with-icon">
+            <input type="password" id="changePinOld" inputmode="numeric" maxlength="8" placeholder="Masukkan PIN saat ini" required style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:14px;" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block;">PIN Baru (4-8 Digit) *</label>
+          <div class="input-with-icon">
+            <input type="password" id="changePinNew" inputmode="numeric" maxlength="8" placeholder="Minimal 4 digit angka" required style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:14px;" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:block;">Konfirmasi PIN Baru *</label>
+          <div class="input-with-icon">
+            <input type="password" id="changePinConfirm" inputmode="numeric" maxlength="8" placeholder="Ulangi PIN baru" required style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:14px;" />
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:16px 0 0 0; margin-top:16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn-secondary" data-modal="modalChangePin" onclick="closeModal('modalChangePin')">Batal</button>
+          <button type="submit" class="btn-primary" id="btnSubmitChangePin">
+            <i data-lucide="check"></i> Simpan PIN Baru
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden"></div>
 
@@ -1598,32 +1649,32 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/gemini-config.js?v=3.16"></script>
-  <script src="js/firebase-config.js?v=3.16"></script>
-  <script src="js/firebase-service.js?v=3.16"></script>
+  <script src="js/gemini-config.js?v=3.17"></script>
+  <script src="js/firebase-config.js?v=3.17"></script>
+  <script src="js/firebase-service.js?v=3.17"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.16"></script>
-  <script src="js/auth.js?v=3.16"></script>
-  <script src="js/app.js?v=3.16"></script>
-  <script src="js/jadwal.js?v=3.16"></script>
-  <script src="js/tugas.js?v=3.16"></script>
-  <script src="js/catatan.js?v=3.16"></script>
-  <script src="js/keuangan.js?v=3.16"></script>
-  <script src="js/tabungan.js?v=3.16"></script>
-  <script src="js/anggaran.js?v=3.16"></script>
-  <script src="js/hutang.js?v=3.16"></script>
-  <script src="js/kalkulator.js?v=3.16"></script>
-  <script src="js/kalender.js?v=3.16"></script>
-  <script src="js/notifikasi.js?v=3.16"></script>
-  <script src="js/ai.js?v=3.16"></script>
+  <script src="js/storage.js?v=3.17"></script>
+  <script src="js/auth.js?v=3.17"></script>
+  <script src="js/app.js?v=3.17"></script>
+  <script src="js/jadwal.js?v=3.17"></script>
+  <script src="js/tugas.js?v=3.17"></script>
+  <script src="js/catatan.js?v=3.17"></script>
+  <script src="js/keuangan.js?v=3.17"></script>
+  <script src="js/tabungan.js?v=3.17"></script>
+  <script src="js/anggaran.js?v=3.17"></script>
+  <script src="js/hutang.js?v=3.17"></script>
+  <script src="js/kalkulator.js?v=3.17"></script>
+  <script src="js/kalender.js?v=3.17"></script>
+  <script src="js/notifikasi.js?v=3.17"></script>
+  <script src="js/ai.js?v=3.17"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(key => {
-          if (key !== 'mylife-v3.16') {
+          if (key !== 'mylife-v3.17') {
             caches.delete(key);
           }
         });
@@ -1636,7 +1687,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.16').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.17').catch(() => {});
       });
     }
   </script>

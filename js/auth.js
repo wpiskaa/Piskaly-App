@@ -421,6 +421,160 @@ const AuthService = {
     showToast('👋 Kamu telah keluar dari akun.', 'info');
   },
 
+  // Buka modal Ubah PIN
+  openChangePinModal() {
+    const user = Store.getCurrentUser();
+    if (!user) {
+      showToast('Silakan masuk ke akun kamu terlebih dahulu', 'warning');
+      return;
+    }
+    const targetEl = document.getElementById('changePinTargetId');
+    if (targetEl) targetEl.textContent = '@' + user.id;
+
+    const oldInput = document.getElementById('changePinOld');
+    const newInput = document.getElementById('changePinNew');
+    const confInput = document.getElementById('changePinConfirm');
+    const alertEl = document.getElementById('changePinAlert');
+
+    if (oldInput) oldInput.value = '';
+    if (newInput) newInput.value = '';
+    if (confInput) confInput.value = '';
+    if (alertEl) {
+      alertEl.textContent = '';
+      alertEl.classList.add('hidden');
+    }
+
+    if (typeof openModal === 'function') {
+      openModal('modalChangePin');
+    } else {
+      const modal = document.getElementById('modalChangePin');
+      const backdrop = document.getElementById('modalBackdrop');
+      if (modal) modal.classList.remove('hidden');
+      if (backdrop) backdrop.classList.remove('hidden');
+    }
+    if (window.lucide) lucide.createIcons();
+    setTimeout(() => { if (oldInput) oldInput.focus(); }, 150);
+  },
+
+  // Simpan perubahan PIN baru
+  async submitChangePin() {
+    const user = Store.getCurrentUser();
+    if (!user) return;
+
+    const oldPin = document.getElementById('changePinOld') ? document.getElementById('changePinOld').value.trim() : '';
+    const newPin = document.getElementById('changePinNew') ? document.getElementById('changePinNew').value.trim() : '';
+    const confPin = document.getElementById('changePinConfirm') ? document.getElementById('changePinConfirm').value.trim() : '';
+    const alertEl = document.getElementById('changePinAlert');
+    const btn = document.getElementById('btnSubmitChangePin');
+
+    const showModalAlert = (msg, type = 'error') => {
+      if (alertEl) {
+        alertEl.textContent = msg;
+        alertEl.className = `auth-alert ${type}`;
+        alertEl.classList.remove('hidden');
+      } else {
+        showToast(msg, type);
+      }
+    };
+
+    if (!oldPin) {
+      showModalAlert('Masukkan PIN lama kamu saat ini!');
+      return;
+    }
+    if (!newPin || newPin.length < 4) {
+      showModalAlert('PIN baru minimal 4 digit angka/karakter!');
+      return;
+    }
+    if (newPin !== confPin) {
+      showModalAlert('Konfirmasi PIN baru tidak cocok!');
+      return;
+    }
+    if (oldPin === newPin) {
+      showModalAlert('PIN baru tidak boleh sama dengan PIN saat ini!');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Memverifikasi...';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    try {
+      const hashedOldPin = await this.hashPin(oldPin);
+      const hashedNewPin = await this.hashPin(newPin);
+
+      // Verifikasi PIN lama dari data lokal atau Firestore
+      let isValidOld = false;
+      const localAccounts = Store.get('mylife_local_accounts', {});
+      const userKey = user.id.toLowerCase();
+      const localAcc = localAccounts[userKey];
+      if (localAcc && (localAcc.pinHash === hashedOldPin || localAcc.pin === oldPin)) {
+        isValidOld = true;
+      }
+
+      if (!isValidOld && typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+        try {
+          const doc = await FirebaseService.db.collection('piskaly_users').doc(userKey).get();
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.pinHash === hashedOldPin || data.pin === oldPin) {
+              isValidOld = true;
+            }
+          }
+        } catch (e) {
+          console.warn('Verifikasi Cloud error:', e);
+        }
+      }
+
+      if (!isValidOld) {
+        showModalAlert('PIN Lama yang kamu masukkan salah! Periksa kembali.');
+        return;
+      }
+
+      // PIN lama cocok -> Update ke PIN baru
+      // 1. Simpan di akun lokal browser
+      localAccounts[userKey] = {
+        id: userKey,
+        name: user.name || userKey,
+        pinHash: hashedNewPin
+      };
+      Store.set('mylife_local_accounts', localAccounts);
+
+      // 2. Simpan di Cloud Firestore jika aktif
+      if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+        try {
+          await FirebaseService.db.collection('piskaly_users').doc(userKey).update({
+            pinHash: hashedNewPin,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch (cloudErr) {
+          console.warn('Update PIN di cloud Firestore:', cloudErr);
+        }
+      }
+
+      if (typeof closeModal === 'function') {
+        closeModal('modalChangePin');
+      } else {
+        const modal = document.getElementById('modalChangePin');
+        const backdrop = document.getElementById('modalBackdrop');
+        if (modal) modal.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+      }
+
+      showToast('🔐 PIN Keamanan berhasil diperbarui!', 'success', 3000);
+    } catch (err) {
+      console.error('Gagal ubah PIN:', err);
+      showModalAlert('Terjadi kesalahan: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="check"></i> Simpan PIN Baru';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+  },
+
   setupListeners() {
     // Tombol tab
     const tabLogin = document.getElementById('authTabLogin');
