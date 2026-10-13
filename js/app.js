@@ -843,6 +843,11 @@ function initApp() {
   // Apply saved theme (default is light mode / false)
   applyTheme(profil.darkMode === true);
 
+  // Init User Authentication (ID & PIN)
+  if (typeof AuthService !== 'undefined') {
+    AuthService.init();
+  }
+
   // Update profil form
   document.getElementById('profileNameInput').value = profil.name || '';
   document.getElementById('profileUnivInput').value = profil.univ || '';
@@ -963,6 +968,10 @@ function initApp() {
     btn.addEventListener('click', () => closeModal(btn.dataset.modal || btn.closest('.modal').id));
   });
   document.getElementById('modalBackdrop').addEventListener('click', () => {
+    const authModal = document.getElementById('modalAuth');
+    if (authModal && !authModal.classList.contains('hidden') && (!Store.getCurrentUser || !Store.getCurrentUser())) {
+      return;
+    }
     document.querySelectorAll('.modal:not(.hidden)').forEach(m => closeModal(m.id));
   });
 
@@ -1052,6 +1061,12 @@ function saveProfil() {
     notif: document.getElementById('notifToggle').checked
   };
   Store.setProfil(profil);
+  const curUser = (typeof Store.getCurrentUser === 'function') ? Store.getCurrentUser() : null;
+  if (curUser) {
+    curUser.name = profil.name;
+    Store.setCurrentUser(curUser);
+    if (typeof AuthService !== 'undefined') AuthService.updateUserUI(curUser);
+  }
   updateGeminiStatusUI();
   document.getElementById('profilName').textContent = profil.name || 'Nama Kamu';
   document.getElementById('profilAvatarInitial').textContent = (profil.name?.[0] || 'A').toUpperCase();

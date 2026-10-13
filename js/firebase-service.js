@@ -55,57 +55,40 @@ const FirebaseService = {
     }
   },
 
-  // Sinkronisasi dua arah instan tanpa login
+  // Referensi dokumen Firestore per User ID unik
+  getUserDocRef() {
+    if (!this.db) return null;
+    const user = (typeof Store !== 'undefined' && Store.getCurrentUser) ? Store.getCurrentUser() : null;
+    if (!user || !user.id) return null;
+    const safeId = encodeURIComponent(user.id.toLowerCase().trim());
+    return this.db.collection('piskaly_users').doc(safeId);
+  },
+
+  // Sinkronisasi dua arah instan khusus akun aktif
   async startDirectSync() {
     if (!this.db) return;
 
-    const docRef = this.db.collection('piskaly_app').doc('main_data');
+    const docRef = this.getUserDocRef();
+    if (!docRef) {
+      console.log('⚡ Firebase Sync: menunggu user masuk/login.');
+      return;
+    }
 
     try {
-      // 1. Ambil data awal dari cloud jika ada
+      // 1. Ambil data awal dari cloud akun jika ada
       const doc = await docRef.get();
       if (doc.exists) {
-        const cloudData = doc.data() || {};
-
-        // Deteksi dan bersihkan data dummy lama (Uang Saku Rp 2jt, Makan Rp 150rb, hutang Andi/Budi, dan proyek dummy p1-p4)
-        const hasDummyTrans = Array.isArray(cloudData.transaksi) && cloudData.transaksi.some(t => t.keterangan === 'Uang Saku' || t.jumlah === 2000000 || t.jumlah === 150000);
-        const hasDummyDebts = Array.isArray(cloudData.debts) && cloudData.debts.some(d => d.nama === 'Andi' || d.nama === 'Budi');
-        const hasDummyProjects = Array.isArray(cloudData.projects) && cloudData.projects.some(p => p.id === 'p1' || p.title === 'Mobile App');
-
-        if (hasDummyTrans || hasDummyDebts || hasDummyProjects || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
-          console.log('🧹 Membersihkan data dummy lama di Cloud Firestore...');
-          if (hasDummyTrans || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
-            cloudData.transaksi = [];
-            cloudData.goals = [];
-            cloudData.budgets = [];
-          }
-          if (hasDummyDebts || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
-            cloudData.debts = [];
-          }
-          if (hasDummyProjects || !localStorage.getItem('mylife_cloud_cleaned_v6')) {
-            cloudData.projects = [];
-          }
-
-          await docRef.set({
-            transaksi: cloudData.transaksi || [],
-            goals: cloudData.goals || [],
-            budgets: cloudData.budgets || [],
-            debts: cloudData.debts || [],
-            projects: cloudData.projects || []
-          }, { merge: true });
-
-          localStorage.setItem('mylife_cloud_cleaned_v6', 'true');
-        }
-
+        const cloudDoc = doc.data() || {};
+        const cloudData = cloudDoc.data || cloudDoc;
         this.applyCloudDataToLocal(cloudData);
-        console.log('☁️ Data cloud berhasil dimuat otomatis');
+        console.log('☁️ Data cloud akun berhasil dimuat otomatis');
       } else {
-        // Jika di cloud masih kosong, simpan data lokal saat ini ke cloud
-        await this.syncUploadAll();
-        console.log('☁️ Data awal berhasil disimpan ke cloud');
+        // Jika di cloud akun masih kosong, simpan data lokal saat ini
+        await this.syncUploadAll(false);
+        console.log('☁️ Data awal akun berhasil disimpan ke cloud');
       }
 
-      // 2. Pasang realtime listener (live sync ke semua perangkat)
+      // 2. Pasang realtime listener khusus user ini
       if (this.unsubscribeSnapshot) this.unsubscribeSnapshot();
 
       this.unsubscribeSnapshot = docRef.onSnapshot((snapshot) => {
@@ -113,8 +96,9 @@ const FirebaseService = {
         if (snapshot.metadata.hasPendingWrites) return;
 
         if (snapshot.exists) {
-          const data = snapshot.data();
-          this.applyCloudDataToLocal(data);
+          const cloudDoc = snapshot.data() || {};
+          const cloudData = cloudDoc.data || cloudDoc;
+          this.applyCloudDataToLocal(cloudData);
           this.updateUIStatus('connected');
         }
       }, (err) => {
@@ -122,8 +106,7 @@ const FirebaseService = {
       });
 
     } catch (err) {
-      console.error('Error saat sinkronisasi langsung:', err);
-      // Jika aturan Firebase membutuhkan permission, beri notifikasi ramah
+      console.error('Error saat sinkronisasi langsung user:', err);
       if (err.code === 'permission-denied') {
         showToast('⚠️ Izin Firestore belum diizinkan. Pastikan Rules diatur: allow read, write: if true;', 'warning');
       }
@@ -165,6 +148,9 @@ const FirebaseService = {
         Store.setProfil({ ...p, ...data.profil });
       }
 
+      if (Array.isArray(data.pisku_messages)) Store.setAiMessages(data.pisku_messages);
+      if (data.pisku_last_time) Store.setAiLastTime(data.pisku_last_time);
+
       // Refresh seluruh tampilan yang sedang aktif
       if (typeof renderHome === 'function') renderHome();
       if (typeof renderJadwal === 'function') renderJadwal();
@@ -184,6 +170,10 @@ const FirebaseService = {
   async syncUploadAll(notify = true) {
     if (!this.isInitialized || this.isSyncingFromCloud) return;
 
+    const docRef = this.getUserDocRef();
+    if (!docRef) return;
+
+    const user = Store.getCurrentUser();
     const payload = {
       jadwal: Store.getJadwal(),
       tugas: Store.getTugas(),
@@ -195,13 +185,20 @@ const FirebaseService = {
       events: Store.getEvents(),
       projects: Store.getProjects(),
       profil: Store.getProfil(),
+      read_notifs: Store.getReadNotifs(),
+      pisku_messages: Store.getAiMessages(),
+      pisku_last_time: Store.getAiLastTime(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
-      const docRef = this.db.collection('piskaly_app').doc('main_data');
-      await docRef.set(payload, { merge: true });
-      console.log('⚡ Data langsung tersimpan di Cloud Firestore');
+      await docRef.set({
+        id: user ? user.id : 'unknown',
+        name: user ? (user.name || user.id) : 'User',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        data: payload
+      }, { merge: true });
+      console.log('⚡ Data akun berhasil disimpan di Cloud Firestore');
       if (notify && typeof showToast === 'function') {
         showToast('☁️ Data tersinkron ke Cloud!', 'success', 2200);
       }

@@ -1,5 +1,6 @@
 // ===========================
-// STORAGE MODULE
+// STORAGE MODULE (js/storage.js)
+// Penyimpanan Terisolasi Multi-Pengguna (Scoped per User ID)
 // ===========================
 const Store = {
   get(key, fallback = null) {
@@ -14,70 +15,119 @@ const Store = {
   },
   remove(key) { localStorage.removeItem(key); },
 
-  // Specific getters/setters
-  getJadwal() { return this.get('mylife_jadwal', []); },
-  setJadwal(d) { this.set('mylife_jadwal', d); },
+  // Sesi Pengguna Aktif
+  getCurrentUser() {
+    return this.get('mylife_auth_user', null);
+  },
+  setCurrentUser(u) {
+    this.set('mylife_auth_user', u);
+  },
+  clearCurrentUser() {
+    this.remove('mylife_auth_user');
+  },
 
-  getTugas() { return this.get('mylife_tugas', []); },
-  setTugas(d) { this.set('mylife_tugas', d); },
+  // Prefix dinamis: memisahkan 100% data antar ID pengguna
+  _k(baseKey) {
+    const u = this.getCurrentUser();
+    if (u && u.id) {
+      return `mylife_u_${u.id.toLowerCase()}_${baseKey}`;
+    }
+    return `mylife_${baseKey}`;
+  },
 
-  getCatatan() { return this.get('mylife_catatan', []); },
-  setCatatan(d) { this.set('mylife_catatan', d); },
+  // Migrasi otomatis data lama perangkat saat akun pertama kali didaftarkan
+  migrateLegacyDataIfAny(userId) {
+    if (!userId) return;
+    const safeId = userId.toLowerCase().trim();
+    const keys = [
+      'jadwal', 'tugas', 'catatan', 'transaksi', 'goals', 'budgets',
+      'debts', 'events', 'projects', 'profil', 'read_notifs',
+      'pisku_messages', 'pisku_last_time'
+    ];
+    keys.forEach(k => {
+      const legacyKey = `mylife_${k}`;
+      const userKey = `mylife_u_${safeId}_${k}`;
+      const legacyVal = localStorage.getItem(legacyKey);
+      const userVal = localStorage.getItem(userKey);
+      if (legacyVal !== null && userVal === null) {
+        localStorage.setItem(userKey, legacyVal);
+      }
+    });
+  },
+
+  // Getter & Setter spesifik per Pengguna Aktif
+  getJadwal() { return this.get(this._k('jadwal'), []); },
+  setJadwal(d) { this.set(this._k('jadwal'), d); },
+
+  getTugas() { return this.get(this._k('tugas'), []); },
+  setTugas(d) { this.set(this._k('tugas'), d); },
+
+  getCatatan() { return this.get(this._k('catatan'), []); },
+  setCatatan(d) { this.set(this._k('catatan'), d); },
 
   getTransaksi() {
-    const list = this.get('mylife_transaksi', []);
+    const list = this.get(this._k('transaksi'), []);
     if (Array.isArray(list) && list.some(t => t.keterangan === 'Uang Saku' || t.jumlah === 2000000 || t.jumlah === 150000)) {
-      this.set('mylife_transaksi', []);
+      this.set(this._k('transaksi'), []);
       return [];
     }
     return list;
   },
-  setTransaksi(d) { this.set('mylife_transaksi', d); },
+  setTransaksi(d) { this.set(this._k('transaksi'), d); },
 
-  // Manajemen keuangan lanjutan: target tabungan, anggaran, hutang/piutang
-  getGoals() { return this.get('mylife_goals', []); },
-  setGoals(d) { this.set('mylife_goals', d); },
+  getGoals() { return this.get(this._k('goals'), []); },
+  setGoals(d) { this.set(this._k('goals'), d); },
 
   getBudgets() {
-    const list = this.get('mylife_budgets', []);
+    const list = this.get(this._k('budgets'), []);
     if (Array.isArray(list) && list.some(b => b.kategori === 'Makan' && b.limit === 500000)) {
-      this.set('mylife_budgets', []);
+      this.set(this._k('budgets'), []);
       return [];
     }
     return list;
   },
-  setBudgets(d) { this.set('mylife_budgets', d); },
+  setBudgets(d) { this.set(this._k('budgets'), d); },
 
   getDebts() {
-    const list = this.get('mylife_debts', []);
+    const list = this.get(this._k('debts'), []);
     if (Array.isArray(list) && list.some(d => d.nama === 'Andi' || d.nama === 'Budi')) {
-      this.set('mylife_debts', []);
+      this.set(this._k('debts'), []);
       return [];
     }
     return list;
   },
-  setDebts(d) { this.set('mylife_debts', d); },
+  setDebts(d) { this.set(this._k('debts'), d); },
 
-  getEvents() { return this.get('mylife_events', []); },
-  setEvents(d) { this.set('mylife_events', d); },
+  getEvents() { return this.get(this._k('events'), []); },
+  setEvents(d) { this.set(this._k('events'), d); },
 
   getProjects() {
-    const list = this.get('mylife_projects', []);
+    const list = this.get(this._k('projects'), []);
     if (Array.isArray(list) && list.some(p => p.id === 'p1' || p.title === 'Mobile App')) {
-      this.set('mylife_projects', []);
+      this.set(this._k('projects'), []);
       return [];
     }
     return list;
   },
-  setProjects(d) { this.set('mylife_projects', d); },
+  setProjects(d) { this.set(this._k('projects'), d); },
 
   getProfil() {
-    return this.get('mylife_profil', {
+    return this.get(this._k('profil'), {
       name: '', univ: '', jurusan: '', semester: '',
       apiKey: '', darkMode: false, notif: true
     });
   },
-  setProfil(d) { this.set('mylife_profil', d); },
+  setProfil(d) { this.set(this._k('profil'), d); },
+
+  getReadNotifs() { return this.get(this._k('read_notifs'), []); },
+  setReadNotifs(d) { this.set(this._k('read_notifs'), d); },
+
+  // Chat AI Pisku scoped per akun
+  getAiMessages() { return this.get(this._k('pisku_messages'), []); },
+  setAiMessages(d) { this.set(this._k('pisku_messages'), d); },
+
+  getAiLastTime() { return this.get(this._k('pisku_last_time'), 0); },
+  setAiLastTime(d) { this.set(this._k('pisku_last_time'), d); },
 
   getApiKey() {
     if (typeof getActiveGeminiKey === 'function') {
@@ -93,18 +143,18 @@ const Store = {
   },
 
   clearAll() {
-    const keys = ['mylife_jadwal','mylife_tugas','mylife_catatan','mylife_transaksi','mylife_goals','mylife_budgets','mylife_debts','mylife_events','mylife_projects','mylife_profil','mylife_seeded'];
-    keys.forEach(k => localStorage.removeItem(k));
+    const u = this.getCurrentUser();
+    if (u && u.id) {
+      const keys = ['jadwal','tugas','catatan','transaksi','goals','budgets','debts','events','projects','profil','read_notifs','pisku_messages','pisku_last_time'];
+      keys.forEach(k => localStorage.removeItem(this._k(k)));
+    } else {
+      const keys = ['mylife_jadwal','mylife_tugas','mylife_catatan','mylife_transaksi','mylife_goals','mylife_budgets','mylife_debts','mylife_events','mylife_projects','mylife_profil','mylife_seeded'];
+      keys.forEach(k => localStorage.removeItem(k));
+    }
   },
 
   initSeedData() {
-    // Pastikan tidak ada data dummy pada transaksi, tabungan, anggaran, hutang, proyek
     if (!localStorage.getItem('mylife_clean_v6')) {
-      this.setTransaksi([]);
-      this.setGoals([]);
-      this.setBudgets([]);
-      this.setDebts([]);
-      this.setProjects([]);
       this.set('mylife_clean_v6', true);
     }
   }

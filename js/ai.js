@@ -23,7 +23,7 @@ function checkApiKeyStatus() {
 
 // ---- Auto-Reset & Restore Chat (24 Jam) ----
 function checkAndRestorePiskuChat() {
-  const lastTime = parseInt(localStorage.getItem('mylife_pisku_last_time') || '0', 10);
+  const lastTime = parseInt((Store.getAiLastTime && Store.getAiLastTime()) || '0', 10);
   const now = Date.now();
 
   if (!lastTime || (now - lastTime >= RESET_INTERVAL_MS)) {
@@ -36,8 +36,13 @@ function checkAndRestorePiskuChat() {
 }
 
 function resetPiskuChat(notify = true) {
-  localStorage.removeItem('mylife_pisku_messages');
-  localStorage.setItem('mylife_pisku_last_time', Date.now().toString());
+  if (Store.setAiMessages) {
+    Store.setAiMessages([]);
+    Store.setAiLastTime(Date.now());
+  } else {
+    localStorage.removeItem('mylife_pisku_messages');
+    localStorage.setItem('mylife_pisku_last_time', Date.now().toString());
+  }
   chatHistory = [];
 
   const container = document.getElementById('aiMessages');
@@ -62,10 +67,16 @@ function resetPiskuChat(notify = true) {
 
 function savePiskuMessageToStorage(msgObj) {
   try {
-    const list = JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]');
+    const list = (Store.getAiMessages ? Store.getAiMessages() : JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]')) || [];
     list.push(msgObj);
-    localStorage.setItem('mylife_pisku_messages', JSON.stringify(list.slice(-30))); // Simpan max 30 pesan terakhir
-    localStorage.setItem('mylife_pisku_last_time', Date.now().toString());
+    const trimmed = list.slice(-30);
+    if (Store.setAiMessages) {
+      Store.setAiMessages(trimmed);
+      Store.setAiLastTime(Date.now());
+    } else {
+      localStorage.setItem('mylife_pisku_messages', JSON.stringify(trimmed));
+      localStorage.setItem('mylife_pisku_last_time', Date.now().toString());
+    }
   } catch (e) {
     console.warn('Gagal menyimpan riwayat chat Pisku:', e);
   }
@@ -76,7 +87,7 @@ function loadSavedPiskuMessages() {
   if (!container) return;
 
   try {
-    const list = JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]');
+    const list = (Store.getAiMessages ? Store.getAiMessages() : JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]')) || [];
     if (!list.length) {
       resetPiskuChat(false);
       return;

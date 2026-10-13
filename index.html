@@ -48,9 +48,10 @@
   <link rel="stylesheet" href="css/keuangan-tools.css?v=3.13" />
   <link rel="stylesheet" href="css/kalender.css?v=3.13" />
   <link rel="stylesheet" href="css/ai.css?v=3.13" />
-  <link rel="stylesheet" href="css/profil.css?v=3.13" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.13" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.13" />
+  <link rel="stylesheet" href="css/profil.css?v=3.14" />
+  <link rel="stylesheet" href="css/auth.css?v=3.14" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.14" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.14" />
 </head>
 <body>
 
@@ -619,6 +620,24 @@
               </div>
             </div>
 
+            <!-- Card Akun Saya (ID & PIN) -->
+            <div class="auth-account-card">
+              <div class="auth-account-left">
+                <div class="auth-avatar-mini" id="authProfileAvatar">A</div>
+                <div class="auth-account-details">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span class="auth-badge-role">Akun Aktif</span>
+                  </div>
+                  <h4 class="auth-card-name" id="authProfileName">Nama Kamu</h4>
+                  <span class="auth-card-id" id="authProfileId">@id</span>
+                </div>
+              </div>
+              <button type="button" class="auth-switch-btn" onclick="AuthService.logout()" title="Keluar atau Ganti Pengguna">
+                <i data-lucide="log-out"></i>
+                <span>Ganti Akun</span>
+              </button>
+            </div>
+
             <div class="profil-form">
               <h4 class="form-section-title">Informasi Profil</h4>
               <div class="form-group">
@@ -881,6 +900,10 @@
             <button class="drawer-nav-item" id="drawerThemeBtn" aria-label="Ganti Tema">
               <i data-lucide="moon" id="drawerThemeIcon"></i>
               <span id="drawerThemeLabel">Mode Malam</span>
+            </button>
+            <button class="drawer-nav-item drawer-logout-item" onclick="closeDrawer(); AuthService.logout();">
+              <i data-lucide="log-out"></i>
+              <span>Keluar / Ganti Akun</span>
             </button>
           </nav>
         </div>
@@ -1500,6 +1523,82 @@
     </div>
   </div>
 
+  <!-- Modal: Akses Akun (Login / Register dengan ID & PIN) -->
+  <div class="modal auth-modal hidden" id="modalAuth">
+    <div class="modal-header auth-header">
+      <div class="auth-header-title">
+        <div class="auth-icon-badge">
+          <i data-lucide="shield-check"></i>
+        </div>
+        <div>
+          <h3>Akses Akun Piskaly</h3>
+          <p class="auth-sub">Masuk atau buat ID baru untuk memisahkan datamu</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body auth-body">
+      <!-- Alert Box -->
+      <div id="authAlert" class="auth-alert hidden"></div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="authTabLogin">
+          <i data-lucide="log-in"></i> Masuk Akun
+        </button>
+        <button type="button" class="auth-tab-btn" id="authTabRegister">
+          <i data-lucide="user-plus"></i> Buat ID Baru
+        </button>
+      </div>
+
+      <!-- Form 1: Masuk Akun -->
+      <form id="authFormLogin" class="auth-form">
+        <div class="form-group">
+          <label>ID Pengguna</label>
+          <div class="input-with-icon">
+            <span class="input-at">@</span>
+            <input type="text" id="authLoginId" placeholder="contoh: piska" autocomplete="username" autocapitalize="none" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>PIN Keamanan</label>
+          <input type="password" id="authLoginPin" placeholder="4-6 digit angka" inputmode="numeric" maxlength="8" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="auth-submit-btn" id="authLoginSubmitBtn">
+          <i data-lucide="log-in"></i> Masuk Sekarang
+        </button>
+      </form>
+
+      <!-- Form 2: Buat ID Baru -->
+      <form id="authFormRegister" class="auth-form hidden">
+        <div class="form-group">
+          <label>Nama Lengkap</label>
+          <input type="text" id="authRegName" placeholder="Nama panggilan / lengkap kamu" required />
+        </div>
+        <div class="form-group">
+          <label>ID Pengguna Baru (Unik)</label>
+          <div class="input-with-icon">
+            <span class="input-at">@</span>
+            <input type="text" id="authRegId" placeholder="contoh: piska atau budi_99" autocomplete="username" autocapitalize="none" required />
+          </div>
+          <small class="form-hint">Gunakan huruf kecil &amp; angka tanpa spasi (min 3 huruf).</small>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>PIN Baru</label>
+            <input type="password" id="authRegPin" placeholder="4-6 digit" inputmode="numeric" maxlength="8" autocomplete="new-password" required />
+          </div>
+          <div class="form-group">
+            <label>Ulangi PIN</label>
+            <input type="password" id="authRegConfirmPin" placeholder="Konfirmasi" inputmode="numeric" maxlength="8" autocomplete="new-password" required />
+          </div>
+        </div>
+        <button type="submit" class="auth-submit-btn" id="authRegisterSubmitBtn">
+          <i data-lucide="user-plus"></i> Buat Akun &amp; Masuk
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden"></div>
 
@@ -1507,24 +1606,25 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/gemini-config.js?v=3.13"></script>
-  <script src="js/firebase-config.js?v=3.13"></script>
-  <script src="js/firebase-service.js?v=3.13"></script>
+  <script src="js/gemini-config.js?v=3.14"></script>
+  <script src="js/firebase-config.js?v=3.14"></script>
+  <script src="js/firebase-service.js?v=3.14"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.13"></script>
-  <script src="js/app.js?v=3.13"></script>
-  <script src="js/jadwal.js?v=3.13"></script>
-  <script src="js/tugas.js?v=3.13"></script>
-  <script src="js/catatan.js?v=3.13"></script>
-  <script src="js/keuangan.js?v=3.13"></script>
-  <script src="js/tabungan.js?v=3.13"></script>
-  <script src="js/anggaran.js?v=3.13"></script>
-  <script src="js/hutang.js?v=3.13"></script>
-  <script src="js/kalkulator.js?v=3.13"></script>
-  <script src="js/kalender.js?v=3.13"></script>
-  <script src="js/notifikasi.js?v=3.13"></script>
-  <script src="js/ai.js?v=3.13"></script>
+  <script src="js/storage.js?v=3.14"></script>
+  <script src="js/auth.js?v=3.14"></script>
+  <script src="js/app.js?v=3.14"></script>
+  <script src="js/jadwal.js?v=3.14"></script>
+  <script src="js/tugas.js?v=3.14"></script>
+  <script src="js/catatan.js?v=3.14"></script>
+  <script src="js/keuangan.js?v=3.14"></script>
+  <script src="js/tabungan.js?v=3.14"></script>
+  <script src="js/anggaran.js?v=3.14"></script>
+  <script src="js/hutang.js?v=3.14"></script>
+  <script src="js/kalkulator.js?v=3.14"></script>
+  <script src="js/kalender.js?v=3.14"></script>
+  <script src="js/notifikasi.js?v=3.14"></script>
+  <script src="js/ai.js?v=3.14"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1535,7 +1635,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.13').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.14').catch(() => {});
       });
     }
   </script>
