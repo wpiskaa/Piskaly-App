@@ -35,22 +35,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <!-- Modular Architecture Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.12" />
-  <link rel="stylesheet" href="css/layout.css?v=3.12" />
-  <link rel="stylesheet" href="css/navigation.css?v=3.12" />
-  <link rel="stylesheet" href="css/drawer.css?v=3.12" />
-  <link rel="stylesheet" href="css/components.css?v=3.12" />
-  <link rel="stylesheet" href="css/home.css?v=3.12" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.12" />
-  <link rel="stylesheet" href="css/tugas.css?v=3.12" />
-  <link rel="stylesheet" href="css/catatan.css?v=3.12" />
-  <link rel="stylesheet" href="css/keuangan.css?v=3.12" />
-  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.12" />
-  <link rel="stylesheet" href="css/kalender.css?v=3.12" />
-  <link rel="stylesheet" href="css/ai.css?v=3.12" />
-  <link rel="stylesheet" href="css/profil.css?v=3.12" />
-  <link rel="stylesheet" href="css/notifikasi.css?v=3.12" />
-  <link rel="stylesheet" href="css/utilities.css?v=3.12" />
+  <link rel="stylesheet" href="css/base.css?v=3.13" />
+  <link rel="stylesheet" href="css/layout.css?v=3.13" />
+  <link rel="stylesheet" href="css/navigation.css?v=3.13" />
+  <link rel="stylesheet" href="css/drawer.css?v=3.13" />
+  <link rel="stylesheet" href="css/components.css?v=3.13" />
+  <link rel="stylesheet" href="css/home.css?v=3.13" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.13" />
+  <link rel="stylesheet" href="css/tugas.css?v=3.13" />
+  <link rel="stylesheet" href="css/catatan.css?v=3.13" />
+  <link rel="stylesheet" href="css/keuangan.css?v=3.13" />
+  <link rel="stylesheet" href="css/keuangan-tools.css?v=3.13" />
+  <link rel="stylesheet" href="css/kalender.css?v=3.13" />
+  <link rel="stylesheet" href="css/ai.css?v=3.13" />
+  <link rel="stylesheet" href="css/profil.css?v=3.13" />
+  <link rel="stylesheet" href="css/notifikasi.css?v=3.13" />
+  <link rel="stylesheet" href="css/utilities.css?v=3.13" />
 </head>
 <body>
 
@@ -546,19 +546,8 @@
               </div>
             </div>
 
-            <!-- API Key Setup -->
-            <div id="apiKeySetup" class="api-setup-card">
-              <div class="api-setup-icon"><i data-lucide="key"></i></div>
-              <h4>Hubungkan Pisku AI</h4>
-              <p>Masukkan Gemini API Key kamu untuk mengaktifkan asisten AI personal, membaca file &amp; auto-input data.</p>
-              <div class="api-input-row">
-                <input type="password" id="geminiApiKeyInput" placeholder="AIza..." />
-                <button class="api-save-btn" id="saveApiKeyBtn">Simpan</button>
-              </div>
-              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="api-get-link">
-                <i data-lucide="external-link"></i> Dapatkan API Key Gratis
-              </a>
-            </div>
+            <!-- API Key Setup (Tersembunyi secara internal) -->
+            <div id="apiKeySetup" class="api-setup-card hidden" style="display: none;"></div>
 
             <!-- Suggestion Chips -->
             <div class="ai-suggestions" id="aiSuggestions">
@@ -649,12 +638,16 @@
                 <input type="number" id="profileSemesterInput" placeholder="Semester ke-" min="1" max="14" />
               </div>
 
-              <h4 class="form-section-title" style="margin-top:24px">Pengaturan AI</h4>
-              <div class="form-group">
-                <label>Gemini API Key</label>
-                <div class="api-key-row">
-                  <input type="password" id="profileApiKey" placeholder="Masukkan API Key" />
-                  <button class="eye-btn" id="toggleApiKey"><i data-lucide="eye"></i></button>
+              <h4 class="form-section-title" style="margin-top:24px">Layanan Pisku AI</h4>
+              <div class="setting-row">
+                <div class="setting-info">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="setting-title">Status Gemini AI</span>
+                    <span id="geminiStatusBadge" class="api-status-badge ok">
+                      <i data-lucide="check-circle-2"></i> Terhubung
+                    </span>
+                  </div>
+                  <span class="setting-desc" id="geminiStatusDesc">Koneksi API internal aktif & siap digunakan</span>
                 </div>
               </div>
 
@@ -1514,23 +1507,24 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3.12"></script>
-  <script src="js/firebase-service.js?v=3.12"></script>
+  <script src="js/gemini-config.js?v=3.13"></script>
+  <script src="js/firebase-config.js?v=3.13"></script>
+  <script src="js/firebase-service.js?v=3.13"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.12"></script>
-  <script src="js/app.js?v=3.12"></script>
-  <script src="js/jadwal.js?v=3.12"></script>
-  <script src="js/tugas.js?v=3.12"></script>
-  <script src="js/catatan.js?v=3.12"></script>
-  <script src="js/keuangan.js?v=3.12"></script>
-  <script src="js/tabungan.js?v=3.12"></script>
-  <script src="js/anggaran.js?v=3.12"></script>
-  <script src="js/hutang.js?v=3.12"></script>
-  <script src="js/kalkulator.js?v=3.12"></script>
-  <script src="js/kalender.js?v=3.12"></script>
-  <script src="js/notifikasi.js?v=3.12"></script>
-  <script src="js/ai.js?v=3.12"></script>
+  <script src="js/storage.js?v=3.13"></script>
+  <script src="js/app.js?v=3.13"></script>
+  <script src="js/jadwal.js?v=3.13"></script>
+  <script src="js/tugas.js?v=3.13"></script>
+  <script src="js/catatan.js?v=3.13"></script>
+  <script src="js/keuangan.js?v=3.13"></script>
+  <script src="js/tabungan.js?v=3.13"></script>
+  <script src="js/anggaran.js?v=3.13"></script>
+  <script src="js/hutang.js?v=3.13"></script>
+  <script src="js/kalkulator.js?v=3.13"></script>
+  <script src="js/kalender.js?v=3.13"></script>
+  <script src="js/notifikasi.js?v=3.13"></script>
+  <script src="js/ai.js?v=3.13"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1541,7 +1535,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.12').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.13').catch(() => {});
       });
     }
   </script>

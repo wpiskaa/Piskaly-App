@@ -14,13 +14,9 @@ function checkApiKeyStatus() {
   const apiKey = Store.getApiKey();
   const setupCard = document.getElementById('apiKeySetup');
   const suggestionsEl = document.getElementById('aiSuggestions');
-  if (apiKey) {
-    if (setupCard) setupCard.style.display = 'none';
-    if (suggestionsEl) suggestionsEl.style.display = 'block';
-  } else {
-    if (setupCard) setupCard.style.display = 'block';
-    if (suggestionsEl) suggestionsEl.style.display = 'none';
-  }
+  // Kunci API internal tersembunyi & otomatis aktif
+  if (setupCard) setupCard.style.display = 'none';
+  if (suggestionsEl) suggestionsEl.style.display = 'block';
   const keyInput = document.getElementById('geminiApiKeyInput');
   if (keyInput) keyInput.value = apiKey || '';
 }
@@ -550,10 +546,13 @@ ATURAN PENTING:
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
         body: JSON.stringify({
           contents,
           generationConfig: {
@@ -711,10 +710,17 @@ function removeTypingIndicator() {
   if (indicator) indicator.remove();
 }
 
+// Masukkan template teks ke textarea agar bisa diedit manual dan dikirim secara manual
 function sendSuggestion(text) {
   const input = document.getElementById('aiInput');
-  if (input) input.value = text;
-  sendAIMessage();
+  if (!input) return;
+  input.value = text;
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  input.focus();
+  const len = input.value.length;
+  input.setSelectionRange(len, len);
+  input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function sendAIMessage() {

@@ -183,6 +183,10 @@ function closeDrawer() {
 
 // ---- Navigation ----
 function navigateTo(page) {
+  if (!page) {
+    page = (location.hash || '').replace('#', '').trim() || 'home';
+  }
+
   // Hide all pages
   document.querySelectorAll('.page').forEach(p => {
     p.classList.remove('active');
@@ -218,6 +222,13 @@ function navigateTo(page) {
   if (titleEl) titleEl.textContent = titles[page] || page;
   currentPage = page;
 
+  // Sync hash without reloading
+  if (location.hash !== '#' + page) {
+    try {
+      history.replaceState(null, '', '#' + page);
+    } catch (e) {}
+  }
+
   // Load page-specific data
   if (page === 'home') renderHome();
   if (page === 'jadwal') renderJadwal();
@@ -225,6 +236,7 @@ function navigateTo(page) {
   if (page === 'catatan') renderCatatan();
   if (page === 'keuangan') renderKeuangan();
   if (page === 'kalender') renderKalender();
+  if (page === 'profil') updateGeminiStatusUI();
   if (page === 'notifikasi' && typeof renderNotifikasi === 'function') renderNotifikasi();
 
   // Update notification badge counter
@@ -233,6 +245,14 @@ function navigateTo(page) {
   // Scroll to top of page container
   if (pagesContainer) pagesContainer.scrollTop = 0;
 }
+window.navigateTo = navigateTo;
+
+window.addEventListener('hashchange', () => {
+  const page = (location.hash || '').replace('#', '').trim();
+  if (page && page !== currentPage) {
+    navigateTo(page);
+  }
+});
 
 // ---- Home Ongoing Projects ----
 let selectedProjectStyle = 'navy';
@@ -828,7 +848,7 @@ function initApp() {
   document.getElementById('profileUnivInput').value = profil.univ || '';
   document.getElementById('profileJurusanInput').value = profil.jurusan || '';
   document.getElementById('profileSemesterInput').value = profil.semester || '';
-  document.getElementById('profileApiKey').value = profil.apiKey || '';
+  updateGeminiStatusUI();
   document.getElementById('darkModeToggle').checked = profil.darkMode === true;
   document.getElementById('notifToggle').checked = profil.notif !== false;
   document.getElementById('profilName').textContent = profil.name || 'Nama Kamu';
@@ -847,8 +867,13 @@ function initApp() {
   // AI: check API key
   checkApiKeyStatus();
 
-  // Render home
-  renderHome();
+  // Render initial page from hash or default to home
+  const initialHash = (location.hash || '').replace('#', '').trim();
+  if (initialHash && ['home','jadwal','tugas','catatan','keuangan','kalender','ai','profil','notifikasi'].includes(initialHash)) {
+    navigateTo(initialHash);
+  } else {
+    renderHome();
+  }
 
   // Nav buttons
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -944,19 +969,22 @@ function initApp() {
   // Save Profil
   document.getElementById('saveProfilBtn').addEventListener('click', saveProfil);
 
-  // Toggle API Key visibility
-  document.getElementById('toggleApiKey').addEventListener('click', () => {
-    const input = document.getElementById('profileApiKey');
-    const icon = document.getElementById('toggleApiKey').querySelector('i');
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.setAttribute('data-lucide', 'eye-off');
-    } else {
-      input.type = 'password';
-      icon.setAttribute('data-lucide', 'eye');
-    }
-    lucide.createIcons({ nodes: [document.getElementById('toggleApiKey')] });
-  });
+  // Toggle API Key visibility (if element exists)
+  const toggleApiBtn = document.getElementById('toggleApiKey');
+  if (toggleApiBtn) {
+    toggleApiBtn.addEventListener('click', () => {
+      const input = document.getElementById('profileApiKey');
+      const icon = toggleApiBtn.querySelector('i');
+      if (input && input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else if (input) {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons({ nodes: [toggleApiBtn] });
+    });
+  }
 
   // Clear Data
   document.getElementById('clearDataBtn').addEventListener('click', () => {
@@ -994,17 +1022,37 @@ function initApp() {
   lucide.createIcons();
 }
 
+function updateGeminiStatusUI() {
+  const geminiBadge = document.getElementById('geminiStatusBadge');
+  const geminiDesc = document.getElementById('geminiStatusDesc');
+  const hasKey = typeof hasValidGeminiKey === 'function' ? hasValidGeminiKey() : Boolean(Store.getApiKey());
+  if (geminiBadge && geminiDesc) {
+    if (hasKey) {
+      geminiBadge.className = 'api-status-badge ok';
+      geminiBadge.innerHTML = '<i data-lucide="check-circle-2"></i> Terhubung';
+      geminiDesc.textContent = 'Koneksi API internal aktif & siap digunakan';
+    } else {
+      geminiBadge.className = 'api-status-badge off';
+      geminiBadge.innerHTML = '<i data-lucide="alert-circle"></i> Terputus';
+      geminiDesc.textContent = 'Koneksi API belum terkonfigurasi';
+    }
+    lucide.createIcons({ nodes: [geminiBadge] });
+  }
+}
+
 function saveProfil() {
+  const currentKey = typeof getActiveGeminiKey === 'function' ? getActiveGeminiKey() : Store.getApiKey();
   const profil = {
     name: document.getElementById('profileNameInput').value.trim(),
     univ: document.getElementById('profileUnivInput').value.trim(),
     jurusan: document.getElementById('profileJurusanInput').value.trim(),
     semester: document.getElementById('profileSemesterInput').value.trim(),
-    apiKey: document.getElementById('profileApiKey').value.trim(),
+    apiKey: currentKey,
     darkMode: document.getElementById('darkModeToggle').checked,
     notif: document.getElementById('notifToggle').checked
   };
   Store.setProfil(profil);
+  updateGeminiStatusUI();
   document.getElementById('profilName').textContent = profil.name || 'Nama Kamu';
   document.getElementById('profilAvatarInitial').textContent = (profil.name?.[0] || 'A').toUpperCase();
   document.getElementById('avatarInitial').textContent = (profil.name?.[0] || 'M').toUpperCase();

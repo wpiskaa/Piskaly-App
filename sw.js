@@ -2,7 +2,7 @@
 // SERVICE WORKER - sw.js
 // ===========================
 
-const CACHE_NAME = 'mylife-v3.12';
+const CACHE_NAME = 'mylife-v3.13';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const STATIC_ASSETS = [
   './css/profil.css',
   './css/notifikasi.css',
   './css/utilities.css',
+  './js/gemini-config.js',
   './js/firebase-config.js',
   './js/firebase-service.js',
   './js/storage.js',
