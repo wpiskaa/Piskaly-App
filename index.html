@@ -14,9 +14,11 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
 
-  <!-- Apple Touch Icons -->
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/jpeg" href="icons/icon-piska.jpg" />
+  <link rel="shortcut icon" href="favicon.ico" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png" />
 
@@ -62,16 +64,10 @@
     <div id="splash-screen">
       <div class="splash-content">
         <div class="splash-icon">
-          <div class="splash-icon-inner">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-              <circle cx="30" cy="30" r="28" stroke="white" stroke-width="2.5" stroke-dasharray="4 2"/>
-              <path d="M20 30 Q25 20 30 30 Q35 40 40 30" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-              <circle cx="30" cy="30" r="4" fill="white"/>
-            </svg>
-          </div>
+          <img src="icons/icon-piska.jpg" alt="Piskaly Logo" class="splash-logo-img" />
         </div>
-        <h1 class="splash-title">MyLife</h1>
-        <p class="splash-sub">Personal Manager</p>
+        <h1 class="splash-title">Piskaly</h1>
+        <p class="splash-sub">Personal Life &amp; Student Manager</p>
         <div class="splash-loader">
           <div class="splash-loader-bar"></div>
         </div>
@@ -527,12 +523,8 @@
           <div class="ai-container">
             <div class="ai-header-banner">
               <div class="ai-banner-content">
-                <div class="ai-avatar">
-                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="14" stroke="white" stroke-width="2"/>
-                    <path d="M10 16 Q13 10 16 16 Q19 22 22 16" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <circle cx="16" cy="16" r="2.5" fill="white"/>
-                  </svg>
+                <div class="ai-avatar" style="overflow:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;background:transparent;">
+                  <img src="icons/icon-192.png" alt="Pisku" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />
                 </div>
                 <div>
                   <h3 class="ai-name">Pisku AI</h3>
@@ -564,7 +556,7 @@
             <!-- Chat Messages -->
             <div class="ai-messages" id="aiMessages">
               <div class="ai-msg assistant">
-                <div class="msg-avatar"><i data-lucide="sparkles"></i></div>
+                <div class="msg-avatar"><img src="icons/icon-192.png" alt="Pisku" class="pisku-msg-img" /></div>
                 <div class="msg-bubble">
                   <p>Halo! Aku <b>Pisku</b>, asisten AI pintar kamu 🤖✨</p>
                   <p>Aku bisa bantu obrolan, mengolah file/foto dokumen, serta <b>langsung memasukkan data otomatis</b> (jadwal kuliah, catatan pengeluaran, tugas, agenda kalender, tabungan, dll). Ketik atau lampirkan file yang ingin kamu proses!</p>
@@ -884,7 +876,7 @@
               <span>Kalender &amp; Agenda</span>
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('ai'); closeDrawer();">
-              <i data-lucide="sparkles"></i>
+              <img src="icons/icon-72.png" alt="Pisku" style="width:20px;height:20px;border-radius:6px;object-fit:cover;margin-right:2px;" />
               <span>Pisku AI (Gemini)</span>
             </button>
             <button class="drawer-nav-item" onclick="navigateTo('notifikasi'); closeDrawer();">
@@ -1528,7 +1520,7 @@
     <div class="modal-header auth-header">
       <div class="auth-header-title">
         <div class="auth-icon-badge">
-          <i data-lucide="shield-check"></i>
+          <img src="icons/icon-piska.jpg" alt="Piskaly Logo" class="auth-logo-img" />
         </div>
         <div>
           <h3>Akses Akun Piskaly</h3>
@@ -1606,25 +1598,25 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/gemini-config.js?v=3.14"></script>
-  <script src="js/firebase-config.js?v=3.14"></script>
-  <script src="js/firebase-service.js?v=3.14"></script>
+  <script src="js/gemini-config.js?v=3.15"></script>
+  <script src="js/firebase-config.js?v=3.15"></script>
+  <script src="js/firebase-service.js?v=3.15"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.14"></script>
-  <script src="js/auth.js?v=3.14"></script>
-  <script src="js/app.js?v=3.14"></script>
-  <script src="js/jadwal.js?v=3.14"></script>
-  <script src="js/tugas.js?v=3.14"></script>
-  <script src="js/catatan.js?v=3.14"></script>
-  <script src="js/keuangan.js?v=3.14"></script>
-  <script src="js/tabungan.js?v=3.14"></script>
-  <script src="js/anggaran.js?v=3.14"></script>
-  <script src="js/hutang.js?v=3.14"></script>
-  <script src="js/kalkulator.js?v=3.14"></script>
-  <script src="js/kalender.js?v=3.14"></script>
-  <script src="js/notifikasi.js?v=3.14"></script>
-  <script src="js/ai.js?v=3.14"></script>
+  <script src="js/storage.js?v=3.15"></script>
+  <script src="js/auth.js?v=3.15"></script>
+  <script src="js/app.js?v=3.15"></script>
+  <script src="js/jadwal.js?v=3.15"></script>
+  <script src="js/tugas.js?v=3.15"></script>
+  <script src="js/catatan.js?v=3.15"></script>
+  <script src="js/keuangan.js?v=3.15"></script>
+  <script src="js/tabungan.js?v=3.15"></script>
+  <script src="js/anggaran.js?v=3.15"></script>
+  <script src="js/hutang.js?v=3.15"></script>
+  <script src="js/kalkulator.js?v=3.15"></script>
+  <script src="js/kalender.js?v=3.15"></script>
+  <script src="js/notifikasi.js?v=3.15"></script>
+  <script src="js/ai.js?v=3.15"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
@@ -1635,7 +1627,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.14').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.15').catch(() => {});
       });
     }
   </script>

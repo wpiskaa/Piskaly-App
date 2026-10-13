@@ -115,16 +115,20 @@ img { max-width: 100%; }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .splash-icon {
-  width: 100px; height: 100px; border-radius: 28px;
-  background: linear-gradient(145deg, #1e3a8a, #3b82f6);
+  width: 104px; height: 104px; border-radius: 28px;
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 20px;
-  box-shadow: 0 0 60px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
   animation: splashPulse 2s infinite alternate;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.splash-logo-img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 26px;
 }
 @keyframes splashPulse {
-  from { box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
-  to { box-shadow: 0 0 80px rgba(59, 130, 246, 0.7); }
+  from { box-shadow: 0 0 35px rgba(239, 68, 68, 0.35); }
+  to { box-shadow: 0 0 65px rgba(239, 68, 68, 0.65); }
 }
 .splash-title {
   font-size: 42px; font-weight: 800; color: white; letter-spacing: -1px;

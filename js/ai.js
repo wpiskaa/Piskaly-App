@@ -49,7 +49,7 @@ function resetPiskuChat(notify = true) {
   if (container) {
     container.innerHTML = `
       <div class="ai-msg assistant">
-        <div class="msg-avatar"><i data-lucide="sparkles"></i></div>
+        <div class="msg-avatar"><img src="icons/icon-192.png" alt="Pisku" class="pisku-msg-img" /></div>
         <div class="msg-bubble">
           <p>Halo! Aku <b>Pisku</b>, asisten AI pintar kamu 🤖✨</p>
           <p>Aku bisa bantu menjawab pertanyaan, <b>mengolah foto / file dokumen</b>, dan <b>langsung menginputkan data otomatis</b> ke aplikasi (jadwal kuliah, catatan keuangan, tugas, agenda kalender, target menabung, dll).</p>
@@ -661,7 +661,7 @@ function renderMessageElement(role, text, fileObj = null, actionCardHTML = '', s
   const formatted = text ? formatAIText(text) : '';
 
   div.innerHTML = `
-    ${role === 'assistant' ? `<div class="msg-avatar"><i data-lucide="sparkles"></i></div>` : ''}
+    ${role === 'assistant' ? `<div class="msg-avatar"><img src="icons/icon-192.png" alt="Pisku" class="pisku-msg-img" /></div>` : ''}
     <div class="msg-bubble">
       ${fileAttachmentHTML}
       ${formatted}
@@ -704,7 +704,7 @@ function showTypingIndicator() {
   div.className = 'ai-msg assistant';
   div.id = 'typingIndicator';
   div.innerHTML = `
-    <div class="msg-avatar"><i data-lucide="sparkles"></i></div>
+    <div class="msg-avatar"><img src="icons/icon-192.png" alt="Pisku" class="pisku-msg-img" /></div>
     <div class="msg-bubble">
       <div class="ai-typing">
         <span></span><span></span><span></span>
