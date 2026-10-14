@@ -13,24 +13,146 @@
   let wrappedTimer = null;
 
   /* ===================================================
-     1. DAILY BRIEFING (LANGSUNG KE INTI & TANPA SUARA)
+     1. DAILY BRIEFING & PERIODIC IN-APP NOTIFICATIONS
      =================================================== */
 
-  window.checkDailyBriefing = function () {
+  function getIsoWeekNumber(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
+  window.checkPeriodicEvents = function () {
     try {
-      const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const today = typeof getLocalDateString === 'function' ? getLocalDateString() : now.toISOString().split('T')[0];
       const lastDate = Store.getLastBriefingDate();
+
+      // 1. Briefing Harian otomatis muncul di awal hari
       if (lastDate !== today) {
         setTimeout(() => {
           const user = Store.getCurrentUser ? Store.getCurrentUser() : null;
           if (user || !localStorage.getItem('mylife_users')) {
             openMorningBriefing(false);
           }
-        }, 1200);
+        }, 1100);
+        return;
+      }
+
+      // 2. Weekend Recap (Sabtu atau Minggu) - Notif in-app floating banner
+      const dayOfWeek = now.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        const weekKey = `${now.getFullYear()}-W${getIsoWeekNumber(now)}`;
+        const seenRecapWeek = Store.get('mylife_seen_recap_prompt');
+        if (seenRecapWeek !== weekKey) {
+          setTimeout(() => {
+            showInAppBanner({
+              icon: 'flame',
+              title: '📊 Rangkuman Mingguanmu Siap!',
+              msg: 'Lihat pencapaian tugas & energimu minggu ini untuk refleksi atau flexing.',
+              actionText: 'Lihat Recap',
+              onAction: () => {
+                Store.set('mylife_seen_recap_prompt', weekKey);
+                openWeeklyRecap();
+              }
+            });
+          }, 1800);
+          return;
+        }
+      }
+
+      // 3. Piskaly Wrapped (Akhir Bulan, tanggal >= 25)
+      if (now.getDate() >= 25) {
+        const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+        const seenWrappedMonth = Store.get('mylife_seen_wrapped_prompt');
+        if (seenWrappedMonth !== monthKey) {
+          setTimeout(() => {
+            showInAppBanner({
+              icon: 'sparkles',
+              title: '✨ Piskaly Wrapped Telah Tiba!',
+              msg: 'Perjalanan & pencapaianmu bulan ini sudah siap ditonton ala story Spotify.',
+              actionText: 'Tonton',
+              onAction: () => {
+                Store.set('mylife_seen_wrapped_prompt', monthKey);
+                openPiskalyWrapped();
+              }
+            });
+          }, 2000);
+          return;
+        }
+      }
+
+      // 4. Mood Check-in Notification Reminder (Jika belum isi mood hari ini)
+      if (!Store.getTodayMood()) {
+        const seenMoodPrompt = Store.get('mylife_seen_mood_prompt');
+        if (seenMoodPrompt !== today) {
+          setTimeout(() => {
+            showInAppBanner({
+              icon: 'sparkles',
+              title: '☀️ Bagaimana Energimu Hari Ini?',
+              msg: 'Catat vibe & energimu agar tercatat rapi di rangkuman mingguan.',
+              actionText: 'Isi Mood',
+              onAction: () => {
+                Store.set('mylife_seen_mood_prompt', today);
+                openMoodModal();
+              }
+            });
+          }, 2200);
+        }
       }
     } catch (e) {
-      console.warn('checkDailyBriefing error:', e);
+      console.warn('checkPeriodicEvents error:', e);
     }
+  };
+
+  window.checkDailyBriefing = function () {
+    window.checkPeriodicEvents();
+  };
+
+  // In-App Floating Notification Banner System
+  let bannerTimeout = null;
+  window.showInAppBanner = function ({ icon = 'bell', title, msg, actionText = 'Buka', onAction, autoDismissMs = 7000 }) {
+    const banner = document.getElementById('inAppEventBanner');
+    if (!banner) return;
+
+    const iconEl = document.getElementById('inAppBannerIcon');
+    const titleEl = document.getElementById('inAppBannerTitle');
+    const msgEl = document.getElementById('inAppBannerMsg');
+    const actionBtn = document.getElementById('inAppBannerAction');
+
+    if (iconEl) iconEl.innerHTML = `<i data-lucide="${icon}"></i>`;
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = msg;
+
+    if (actionBtn) {
+      actionBtn.textContent = actionText;
+      actionBtn.onclick = () => {
+        dismissInAppBanner();
+        if (typeof onAction === 'function') onAction();
+      };
+    }
+
+    banner.classList.remove('hidden');
+    banner.classList.add('show');
+    if (window.lucide) window.lucide.createIcons();
+
+    if (bannerTimeout) clearTimeout(bannerTimeout);
+    if (autoDismissMs > 0) {
+      bannerTimeout = setTimeout(() => {
+        dismissInAppBanner();
+      }, autoDismissMs);
+    }
+  };
+
+  window.dismissInAppBanner = function () {
+    const banner = document.getElementById('inAppEventBanner');
+    if (!banner) return;
+    banner.classList.remove('show');
+    setTimeout(() => {
+      banner.classList.add('hidden');
+    }, 300);
   };
 
   function generateBriefingSummary() {
@@ -137,6 +259,9 @@
       tugasLabelEl.textContent = summary.urgentTugasCount > 0 ? 'Mendesak' : 'Tugas';
     }
 
+    // Populate mood row inside briefing modal
+    populateBriefingMoodRow();
+
     modal.classList.remove('hidden');
     if (window.lucide) window.lucide.createIcons();
   };
@@ -147,7 +272,7 @@
   };
 
   /* ===================================================
-     2. MOOD & ENERGY TRACKER HARIAN + WEEKLY RECAP
+     2. MOOD & ENERGY TRACKER (1-TAP & MODAL POPUP)
      =================================================== */
 
   const MOOD_OPTIONS = [
@@ -158,81 +283,119 @@
     { key: 'mager', emoji: '😴', label: 'Mager', energy: 20, cheer: 'Wajar banget ada hari santai. Ambil napas, chill, dan jangan memaksakan diri.' }
   ];
 
-  /**
-   * Render Mood Tracker Card on Home Page
-   */
-  window.renderHomeMoodTracker = function () {
-    const container = document.getElementById('homeMoodWidget');
-    if (!container) return;
+  function populateBriefingMoodRow() {
+    const row = document.getElementById('briefingMoodRow');
+    if (!row) return;
 
     const todayMood = Store.getTodayMood();
-
-    let buttonsHtml = MOOD_OPTIONS.map(opt => {
+    row.innerHTML = MOOD_OPTIONS.map(opt => {
       const isActive = todayMood && todayMood.mood === opt.key;
       return `
-        <button class="mood-item-btn ${isActive ? 'active' : ''}" 
+        <button type="button" class="briefing-mood-btn ${isActive ? 'active' : ''}" 
                 onclick="selectTodayMood('${opt.key}')" 
                 title="${opt.label} (${opt.energy}% Energi)">
-          <span class="mood-emoji">${opt.emoji}</span>
-          <span class="mood-lbl">${opt.label}</span>
+          <span class="briefing-mood-emoji">${opt.emoji}</span>
+          <span class="briefing-mood-lbl">${opt.label}</span>
         </button>
       `;
     }).join('');
 
-    let feedbackText = todayMood 
-      ? `${todayMood.label} (${todayMood.energy}% Energi)`
-      : ``;
+    const feedbackEl = document.getElementById('briefingMoodFeedback');
+    if (feedbackEl) {
+      if (todayMood) {
+        const matched = MOOD_OPTIONS.find(m => m.key === todayMood.mood);
+        feedbackEl.textContent = matched ? matched.cheer : `${todayMood.label} (${todayMood.energy}% Energi)`;
+        feedbackEl.classList.remove('hidden');
+      } else {
+        feedbackEl.textContent = '';
+        feedbackEl.classList.add('hidden');
+      }
+    }
+  }
 
-    if (todayMood) {
-      const matched = MOOD_OPTIONS.find(m => m.key === todayMood.mood);
-      if (matched) feedbackText = matched.cheer;
+  // Quick Standalone Mood Check-in Modal
+  window.openMoodModal = function () {
+    const modal = document.getElementById('modalMoodCheck');
+    if (!modal) return;
+
+    const grid = document.getElementById('moodModalGrid');
+    const todayMood = Store.getTodayMood();
+
+    if (grid) {
+      grid.innerHTML = MOOD_OPTIONS.map(opt => {
+        const isActive = todayMood && todayMood.mood === opt.key;
+        return `
+          <button type="button" class="mood-modal-item ${isActive ? 'active' : ''}" 
+                  onclick="selectTodayMood('${opt.key}')">
+            <span class="mood-modal-emoji">${opt.emoji}</span>
+            <div class="mood-modal-info">
+              <span class="mood-modal-label">${opt.label}</span>
+              <span class="mood-modal-energy">${opt.energy}% Energi</span>
+            </div>
+          </button>
+        `;
+      }).join('');
     }
 
-    container.innerHTML = `
-      <div class="home-mood-card">
-        <div class="home-mood-header">
-          <div class="home-mood-title">
-            <i data-lucide="sparkles" style="color:#f59e0b; width:13px; height:13px;"></i>
-            <span>Mood Hari Ini</span>
-          </div>
-          <div class="home-mood-actions">
-            <button class="home-recap-pill-btn" onclick="openMorningBriefing(true)" title="Ringkasan Hari Ini">
-              <i data-lucide="sun"></i>
-              <span>Hari Ini</span>
-            </button>
-            <button class="home-recap-pill-btn" onclick="openWeeklyRecap()" title="Rangkuman Mingguan">
-              <i data-lucide="bar-chart-2"></i>
-              <span>Recap</span>
-            </button>
-            <button class="home-recap-pill-btn" onclick="openPiskalyWrapped()" title="Buka Piskaly Wrapped">
-              <i data-lucide="sparkles"></i>
-              <span>Wrapped</span>
-            </button>
-          </div>
-        </div>
-        <div class="mood-selector-row">
-          ${buttonsHtml}
-        </div>
-        ${feedbackText ? `<div class="mood-feedback-toast" id="moodFeedbackMsg">${feedbackText}</div>` : ''}
-      </div>
-    `;
+    const fb = document.getElementById('moodModalFeedback');
+    if (fb) {
+      if (todayMood) {
+        const matched = MOOD_OPTIONS.find(m => m.key === todayMood.mood);
+        fb.textContent = matched ? matched.cheer : '';
+        fb.classList.remove('hidden');
+      } else {
+        fb.textContent = '';
+        fb.classList.add('hidden');
+      }
+    }
 
+    modal.classList.remove('hidden');
     if (window.lucide) window.lucide.createIcons();
   };
 
-  /**
-   * Select a mood for today
-   */
+  window.closeMoodModal = function () {
+    const modal = document.getElementById('modalMoodCheck');
+    if (modal) modal.classList.add('hidden');
+  };
+
+  // Safe stub for any legacy renderHomeMoodTracker call
+  window.renderHomeMoodTracker = function () {
+    // No-op: Mood tracker is no longer a static card on Home
+  };
+
   window.selectTodayMood = function (key) {
     const option = MOOD_OPTIONS.find(m => m.key === key);
     if (!option) return;
 
     Store.setTodayMood(option.key, option.label, option.emoji, option.energy);
-    renderHomeMoodTracker();
+    if (typeof playPopSound === 'function') playPopSound('pop');
+
+    // Update briefing mood row if open
+    populateBriefingMoodRow();
+
+    // Update modal grid if open
+    const grid = document.getElementById('moodModalGrid');
+    if (grid) {
+      grid.querySelectorAll('.mood-modal-item').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.includes(option.label));
+      });
+      const fb = document.getElementById('moodModalFeedback');
+      if (fb) {
+        fb.textContent = option.cheer;
+        fb.classList.remove('hidden');
+      }
+      setTimeout(() => {
+        closeMoodModal();
+      }, 700);
+    }
 
     if (typeof showToast === 'function') {
-      showToast(`${option.emoji} Mood hari ini disimpan: ${option.label}!`);
+      showToast(`${option.emoji} Mood hari ini: ${option.label}!`);
     }
+
+    // Refresh notif badge & list
+    if (typeof updateNotifBadge === 'function') updateNotifBadge();
+    if (typeof renderNotifikasi === 'function') renderNotifikasi();
   };
 
   /**

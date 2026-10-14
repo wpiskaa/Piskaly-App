@@ -225,6 +225,83 @@ function generateAllNotifications() {
     read: readIds.includes('system-cloud-sync-status')
   });
 
+  // 5. Dynamic In-App Notifications: Briefing, Mood, Weekly Recap, Piskaly Wrapped
+  try {
+    const todayStr = typeof getLocalDateString === 'function' ? getLocalDateString() : now.toISOString().split('T')[0];
+
+    // a. Ringkasan Harimu (Akses cepat kapan saja tanpa simpan static di home/drawer)
+    notifications.push({
+      id: `briefing-${todayStr}`,
+      category: 'academic',
+      type: 'info',
+      icon: 'sun',
+      title: '☀️ Ringkasan Harimu',
+      message: 'Lihat jadwal kuliah, agenda kegiatan, dan tugas penting yang harus diselesaikan hari ini.',
+      timeStr: 'Hari Ini',
+      badge: 'Briefing',
+      targetPage: 'action:morning-briefing',
+      read: readIds.includes(`briefing-${todayStr}`)
+    });
+
+    // b. Mood & Energy Check-in (Hanya muncul jika belum dicatat hari ini)
+    if (typeof Store !== 'undefined' && Store.getTodayMood && !Store.getTodayMood()) {
+      notifications.push({
+        id: `mood-${todayStr}`,
+        category: 'academic',
+        type: 'info',
+        icon: 'sparkles',
+        title: 'Bagaimana Mood & Energimu Hari Ini?',
+        message: 'Catat energimu hari ini dalam 1-ketukan untuk mengisi jurnal mingguan.',
+        timeStr: 'Pagi Ini',
+        badge: 'Check-in',
+        targetPage: 'action:mood-check',
+        read: readIds.includes(`mood-${todayStr}`)
+      });
+    }
+
+    // c. Weekend Recap (Muncul otomatis di akhir pekan: Sabtu & Minggu)
+    if (now.getDay() === 0 || now.getDay() === 6) {
+      const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      const dNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dNum);
+      const yStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const wNum = Math.ceil((((d - yStart) / 86400000) + 1) / 7);
+      const weekKey = `${now.getFullYear()}-W${wNum}`;
+
+      notifications.push({
+        id: `recap-${weekKey}`,
+        category: 'academic',
+        type: 'success',
+        icon: 'flame',
+        title: '📊 Rangkuman Mingguanmu Sudah Siap!',
+        message: 'Waktunya refleksi & flexing! Lihat pencapaian tugas, mood dominan, dan salin teks story.',
+        timeStr: 'Akhir Pekan',
+        badge: 'Recap',
+        targetPage: 'action:weekly-recap',
+        read: readIds.includes(`recap-${weekKey}`)
+      });
+    }
+
+    // d. Piskaly Wrapped (Muncul otomatis saat akhir bulan tanggal >= 25)
+    if (now.getDate() >= 25) {
+      const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+      notifications.push({
+        id: `wrapped-${monthKey}`,
+        category: 'academic',
+        type: 'urgent',
+        icon: 'sparkles',
+        title: '✨ Piskaly Wrapped Bulan Ini Siap!',
+        message: 'Putar story interaktif ala Spotify dan temukan archetype kepribadianmu bulan ini!',
+        timeStr: 'Spesial',
+        badge: 'Wrapped',
+        targetPage: 'action:wrapped',
+        read: readIds.includes(`wrapped-${monthKey}`)
+      });
+    }
+  } catch (err) {
+    console.error('Error adding dynamic periodic notifications:', err);
+  }
+
   return notifications;
 }
 
@@ -318,7 +395,13 @@ function renderNotifikasi() {
           </div>
           <p class="notif-card-desc">${n.message}</p>
           <div class="notif-bottom-row">
-            <span class="notif-action-hint">Ketuk untuk membuka ${n.targetPage} →</span>
+            <span class="notif-action-hint">${
+              n.targetPage === 'action:morning-briefing' ? 'Ketuk untuk lihat ringkasan hari ini →' :
+              n.targetPage === 'action:mood-check' ? 'Ketuk untuk isi mood hari ini →' :
+              n.targetPage === 'action:weekly-recap' ? 'Ketuk untuk tonton recap & flexing →' :
+              n.targetPage === 'action:wrapped' ? 'Ketuk untuk putar Piskaly Wrapped →' :
+              `Ketuk untuk membuka ${n.targetPage} →`
+            }</span>
             <span class="notif-time-sub">${n.timeStr}</span>
           </div>
         </div>
@@ -341,8 +424,22 @@ function handleNotifClick(notifId, targetPage, targetDate, targetSubTab) {
   // Bunyikan pop feedback
   if (typeof playPopSound === 'function') playPopSound('pop');
 
-  // Navigasi ke halaman tujuan
+  // Navigasi ke halaman tujuan atau buka aksi modal dinamis
   if (targetPage) {
+    if (targetPage.startsWith('action:')) {
+      if (targetPage === 'action:morning-briefing' && typeof openMorningBriefing === 'function') {
+        openMorningBriefing(true);
+      } else if (targetPage === 'action:mood-check' && typeof openMoodModal === 'function') {
+        openMoodModal();
+      } else if (targetPage === 'action:weekly-recap' && typeof openWeeklyRecap === 'function') {
+        openWeeklyRecap();
+      } else if (targetPage === 'action:wrapped' && typeof openPiskalyWrapped === 'function') {
+        openPiskalyWrapped();
+      }
+      renderNotifikasi();
+      return;
+    }
+
     navigateTo(targetPage);
     if (targetPage === 'kalender' && targetDate && typeof selectCalDay === 'function') {
       selectCalDay(targetDate);

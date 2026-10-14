@@ -523,9 +523,6 @@ function updateGreeting() {
 // ---- Home Page ----
 function renderHome() {
   updateGreeting();
-  if (typeof renderHomeMoodTracker === 'function') {
-    renderHomeMoodTracker();
-  }
   renderOngoingProjects();
   renderHomeTodaySchedule();
   renderHomeUpcomingAgenda();
@@ -1030,8 +1027,10 @@ function initApp() {
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
-  // Daily Briefing check (langsung ke inti pada kunjungan pertama hari ini)
-  if (typeof checkDailyBriefing === 'function') {
+  // Daily Briefing & Periodic In-App Events check (briefing di awal, recap di akhir pekan, wrapped akhir bulan)
+  if (typeof checkPeriodicEvents === 'function') {
+    checkPeriodicEvents();
+  } else if (typeof checkDailyBriefing === 'function') {
     checkDailyBriefing();
   }
 

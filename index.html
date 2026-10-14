@@ -153,9 +153,6 @@
               </div>
             </div>
 
-            <!-- Mood & Energy Tracker Harian Widget -->
-            <div id="homeMoodWidget"></div>
-
             <!-- 4. Section: Ongoing Projects (2x2 Grid from reference image) -->
             <div class="home-projects-sec">
               <div class="sec-header-row">
@@ -897,15 +894,6 @@
             <button class="drawer-nav-item" onclick="navigateTo('profil'); closeDrawer();">
               <i data-lucide="user-circle"></i>
               <span>Profil &amp; Pengaturan</span>
-            </button>
-            <button class="drawer-nav-item" onclick="openMorningBriefing(true); closeDrawer();">
-              <i data-lucide="calendar"></i>
-              <span>Ringkasan Hari Ini</span>
-            </button>
-            <button class="drawer-nav-item" onclick="openPiskalyWrapped(); closeDrawer();">
-              <i data-lucide="sparkles"></i>
-              <span>Piskaly Wrapped</span>
-            </button>
             <div class="drawer-nav-divider" style="height:1px;background:var(--border);margin:8px 6px;"></div>
             <button class="drawer-nav-item" id="drawerThemeBtn" aria-label="Ganti Tema">
               <i data-lucide="moon" id="drawerThemeIcon"></i>
@@ -1711,6 +1699,16 @@
         </div>
       </div>
 
+      <!-- 1-Tap Mood Check-in di Awal Buka App -->
+      <div class="briefing-mood-box">
+        <div class="briefing-mood-header">
+          <i data-lucide="sparkles" style="color:#f59e0b; width:13px; height:13px;"></i>
+          <span>Mood &amp; Energimu Hari Ini</span>
+        </div>
+        <div class="briefing-mood-row" id="briefingMoodRow"></div>
+        <div class="briefing-mood-feedback" id="briefingMoodFeedback"></div>
+      </div>
+
       <!-- Tombol Aksi Mulai -->
       <button class="briefing-start-btn" onclick="closeMorningBriefing()">
         <span>Mulai Hariku Sekarang</span>
@@ -1821,6 +1819,39 @@
     </div>
   </div>
 
+  <!-- Modal: Quick Mood Check-in -->
+  <div class="mood-modal-overlay hidden" id="modalMoodCheck">
+    <div class="mood-modal-card">
+      <div class="mood-modal-header">
+        <div class="mood-modal-title">
+          <i data-lucide="sparkles" style="color:#f59e0b; width:15px; height:15px;"></i>
+          <span>Mood &amp; Energi Hari Ini</span>
+        </div>
+        <button class="mood-modal-close" onclick="closeMoodModal()" aria-label="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <p class="mood-modal-subtitle">Pilih vibe energimu hari ini untuk dicatat ke jurnal:</p>
+      <div class="mood-modal-grid" id="moodModalGrid"></div>
+      <div class="mood-modal-feedback" id="moodModalFeedback"></div>
+    </div>
+  </div>
+
+  <!-- In-App Floating Notification Banner -->
+  <div id="inAppEventBanner" class="in-app-banner hidden">
+    <div class="in-app-banner-icon" id="inAppBannerIcon">
+      <i data-lucide="bell"></i>
+    </div>
+    <div class="in-app-banner-content">
+      <div class="in-app-banner-title" id="inAppBannerTitle">Pemberitahuan</div>
+      <div class="in-app-banner-msg" id="inAppBannerMsg">Pesan</div>
+    </div>
+    <button class="in-app-banner-action" id="inAppBannerAction">Buka</button>
+    <button class="in-app-banner-close" onclick="dismissInAppBanner()" aria-label="Tutup">
+      <i data-lucide="x"></i>
+    </button>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden"></div>
 
@@ -1828,26 +1859,26 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="js/gemini-config.js?v=3.20"></script>
-  <script src="js/firebase-config.js?v=3.20"></script>
-  <script src="js/firebase-service.js?v=3.20"></script>
+  <script src="js/gemini-config.js?v=3.33"></script>
+  <script src="js/firebase-config.js?v=3.33"></script>
+  <script src="js/firebase-service.js?v=3.33"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.25"></script>
-  <script src="js/auth.js?v=3.20"></script>
-  <script src="js/app.js?v=3.20"></script>
-  <script src="js/jadwal.js?v=3.20"></script>
-  <script src="js/tugas.js?v=3.20"></script>
-  <script src="js/catatan.js?v=3.20"></script>
-  <script src="js/keuangan.js?v=3.20"></script>
-  <script src="js/tabungan.js?v=3.20"></script>
-  <script src="js/anggaran.js?v=3.20"></script>
-  <script src="js/hutang.js?v=3.20"></script>
-  <script src="js/kalkulator.js?v=3.20"></script>
-  <script src="js/kalender.js?v=3.20"></script>
-  <script src="js/notifikasi.js?v=3.20"></script>
-  <script src="js/ai.js?v=3.27"></script>
-  <script src="js/features-fun.js?v=3.32"></script>
+  <script src="js/storage.js?v=3.33"></script>
+  <script src="js/auth.js?v=3.33"></script>
+  <script src="js/app.js?v=3.33"></script>
+  <script src="js/jadwal.js?v=3.33"></script>
+  <script src="js/tugas.js?v=3.33"></script>
+  <script src="js/catatan.js?v=3.33"></script>
+  <script src="js/keuangan.js?v=3.33"></script>
+  <script src="js/tabungan.js?v=3.33"></script>
+  <script src="js/anggaran.js?v=3.33"></script>
+  <script src="js/hutang.js?v=3.33"></script>
+  <script src="js/kalkulator.js?v=3.33"></script>
+  <script src="js/kalender.js?v=3.33"></script>
+  <script src="js/notifikasi.js?v=3.33"></script>
+  <script src="js/ai.js?v=3.33"></script>
+  <script src="js/features-fun.js?v=3.33"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
