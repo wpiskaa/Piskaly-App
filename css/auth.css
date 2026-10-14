@@ -326,6 +326,41 @@
   height: 14px;
 }
 
+/* Responsif Mobile Tampilan HP (Cegah Tabrakan Tombol Ubah PIN & Ganti Akun) */
+@media (max-width: 600px) {
+  .auth-account-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+    margin: 0 16px 16px;
+  }
+  .auth-account-left {
+    width: 100%;
+  }
+  .auth-account-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .auth-action-btn,
+  .auth-switch-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-account-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Drawer Logout Item */
 .drawer-logout-item {
   color: #ef4444 !important;

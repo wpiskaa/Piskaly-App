@@ -364,6 +364,67 @@ function formatActionPreviewList(actions) {
           title: `${tipe === 'hutang' ? 'Hutang ke' : 'Piutang dari'}: ${nama}`,
           desc: `Nominal: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(jumlah) : 'Rp ' + jumlah.toLocaleString('id-ID')} ${d.catatan ? '• ' + d.catatan : ''}`
         });
+      } else if (act.action === 'edit_jadwal') {
+        const target = d.targetMatkul || d.matkul || 'Jadwal Kuliah';
+        const hari = d.hari ? `${d.hari}, ` : '';
+        const jam = (d.jamMulai || d.jamSelesai) ? `${d.jamMulai || ''} - ${d.jamSelesai || ''}` : '';
+        const ruang = d.ruangan || d.ruang ? ` (Ruang ${d.ruangan || d.ruang})` : '';
+        previews.push({
+          icon: '✏️',
+          title: `Ubah Jadwal: ${target}${d.matkul && d.matkul !== target ? ' ➔ ' + d.matkul : ''}`,
+          desc: `Pembaruan: ${hari}${jam}${ruang}${d.dosen ? ' • Dosen: ' + d.dosen : ''}`
+        });
+      } else if (act.action === 'delete_jadwal') {
+        const target = d.targetMatkul || d.matkul || 'Jadwal Kuliah';
+        previews.push({
+          icon: '🗑️',
+          title: `Hapus Jadwal: ${target}`,
+          desc: d.targetHari || d.hari ? `Hari: ${d.targetHari || d.hari}` : 'Menghapus jadwal kuliah ini dari sistem'
+        });
+      } else if (act.action === 'edit_event') {
+        const target = d.targetNama || d.nama || 'Agenda';
+        const tgl = d.tanggal || '';
+        const jam = d.jamMulai ? `pukul ${d.jamMulai}${d.jamSelesai ? ' - ' + d.jamSelesai : ''}` : '';
+        previews.push({
+          icon: '✏️',
+          title: `Ubah Agenda: ${target}${d.nama && d.nama !== target ? ' ➔ ' + d.nama : ''}`,
+          desc: `Pembaruan: ${tgl} ${jam} ${d.lokasi ? '📍 ' + d.lokasi : ''}`
+        });
+      } else if (act.action === 'delete_event') {
+        const target = d.targetNama || d.nama || 'Agenda';
+        previews.push({
+          icon: '🗑️',
+          title: `Hapus Agenda: ${target}`,
+          desc: d.targetTanggal || d.tanggal ? `Tanggal: ${d.targetTanggal || d.tanggal}` : 'Menghapus agenda kegiatan ini dari kalender'
+        });
+      } else if (act.action === 'edit_tugas') {
+        const target = d.targetNama || d.nama || 'Tugas';
+        previews.push({
+          icon: '✏️',
+          title: `Ubah Tugas: ${target}`,
+          desc: `Pembaruan: ${d.deadline ? 'Deadline: ' + d.deadline : ''} ${d.done !== undefined ? (d.done ? '• Selesai' : '• Belum Selesai') : ''}`
+        });
+      } else if (act.action === 'delete_tugas') {
+        const target = d.targetNama || d.nama || 'Tugas';
+        previews.push({
+          icon: '🗑️',
+          title: `Hapus Tugas: ${target}`,
+          desc: 'Menghapus tugas ini dari daftar tugas'
+        });
+      } else if (act.action === 'edit_catatan') {
+        const target = d.targetJudul || d.judul || 'Catatan';
+        previews.push({
+          icon: '✏️',
+          title: `Ubah Catatan: ${target}`,
+          desc: d.judul && d.judul !== target ? `Judul baru: ${d.judul}` : 'Memperbarui isi catatan'
+        });
+      } else if (act.action === 'delete_catatan') {
+        const target = d.targetJudul || d.judul || 'Catatan';
+        previews.push({
+          icon: '🗑️',
+          title: `Hapus Catatan: ${target}`,
+          desc: 'Menghapus catatan ini dari daftar catatan'
+        });
       }
     } catch (e) {
       console.warn('Gagal memformat preview aksi:', act, e);
@@ -684,6 +745,176 @@ function executePiskuActions(actions) {
           desc: `${formatRupiahFull(jumlah)} ${item.catatan ? '• ' + item.catatan : ''}`
         });
       }
+
+      else if (act.action === 'edit_jadwal') {
+        const targetMatkul = (d.targetMatkul || d.matkul || '').trim().toLowerCase();
+        const targetHari = (d.targetHari || d.hari || '').trim().toLowerCase();
+        const list = Store.getJadwal();
+        const idx = list.findIndex(j => {
+          if (d.targetId && j.id === d.targetId) return true;
+          const matchMatkul = (j.matkul || '').toLowerCase().includes(targetMatkul);
+          if (targetHari) return matchMatkul && (j.hari || '').toLowerCase() === targetHari;
+          return matchMatkul;
+        });
+        if (idx !== -1) {
+          const old = list[idx];
+          if (d.matkul) old.matkul = d.matkul.trim();
+          if (d.hari) old.hari = d.hari.trim();
+          if (d.ruangan || d.ruang) old.ruangan = (d.ruangan || d.ruang).trim();
+          if (d.jamMulai) old.jamMulai = d.jamMulai.trim();
+          if (d.jamSelesai) old.jamSelesai = d.jamSelesai.trim();
+          if (d.dosen !== undefined) old.dosen = d.dosen.trim();
+          if (d.sks) old.sks = parseInt(d.sks) || old.sks;
+          old.updatedAt = new Date().toISOString();
+          Store.setJadwal(list);
+          results.push({
+            icon: '✏️',
+            title: `Jadwal Diperbarui: ${old.matkul}`,
+            desc: `${old.hari}, ${old.jamMulai} - ${old.jamSelesai} (${old.ruangan || '-'})`
+          });
+        }
+      }
+
+      else if (act.action === 'delete_jadwal') {
+        const targetMatkul = (d.targetMatkul || d.matkul || '').trim().toLowerCase();
+        const targetHari = (d.targetHari || d.hari || '').trim().toLowerCase();
+        let list = Store.getJadwal();
+        const initialLen = list.length;
+        list = list.filter(j => {
+          if (d.targetId && j.id === d.targetId) return false;
+          const matchMatkul = (j.matkul || '').toLowerCase().includes(targetMatkul);
+          if (targetHari) return !(matchMatkul && (j.hari || '').toLowerCase() === targetHari);
+          return !matchMatkul;
+        });
+        if (list.length !== initialLen) {
+          Store.setJadwal(list);
+          results.push({
+            icon: '🗑️',
+            title: `Jadwal Dihapus: ${d.targetMatkul || d.matkul}`,
+            desc: 'Berhasil dihapus dari jadwal kuliah'
+          });
+        }
+      }
+
+      else if (act.action === 'edit_event') {
+        const targetNama = (d.targetNama || d.nama || '').trim().toLowerCase();
+        const targetTanggal = (d.targetTanggal || d.tanggal || '').trim();
+        const list = Store.getEvents();
+        const idx = list.findIndex(e => {
+          if (d.targetId && e.id === d.targetId) return true;
+          const matchNama = (e.nama || e.title || '').toLowerCase().includes(targetNama);
+          if (targetTanggal) return matchNama && (e.tanggal || e.date) === targetTanggal;
+          return matchNama;
+        });
+        if (idx !== -1) {
+          const old = list[idx];
+          if (d.nama) old.nama = d.nama.trim();
+          if (d.tanggal) old.tanggal = d.tanggal.trim();
+          if (d.jamMulai) old.jamMulai = d.jamMulai.trim();
+          if (d.jamSelesai !== undefined) old.jamSelesai = d.jamSelesai.trim();
+          if (d.lokasi !== undefined) old.lokasi = d.lokasi.trim();
+          if (d.deskripsi !== undefined) old.deskripsi = d.deskripsi.trim();
+          if (d.color) old.color = d.color;
+          old.updatedAt = new Date().toISOString();
+          Store.setEvents(list);
+          results.push({
+            icon: '✏️',
+            title: `Agenda Diperbarui: ${old.nama}`,
+            desc: `${old.tanggal} • ${old.jamMulai} ${old.lokasi ? '📍 ' + old.lokasi : ''}`
+          });
+        }
+      }
+
+      else if (act.action === 'delete_event') {
+        const targetNama = (d.targetNama || d.nama || '').trim().toLowerCase();
+        const targetTanggal = (d.targetTanggal || d.tanggal || '').trim();
+        let list = Store.getEvents();
+        const initialLen = list.length;
+        list = list.filter(e => {
+          if (d.targetId && e.id === d.targetId) return false;
+          const matchNama = (e.nama || e.title || '').toLowerCase().includes(targetNama);
+          if (targetTanggal) return !(matchNama && (e.tanggal || e.date) === targetTanggal);
+          return !matchNama;
+        });
+        if (list.length !== initialLen) {
+          Store.setEvents(list);
+          results.push({
+            icon: '🗑️',
+            title: `Agenda Dihapus: ${d.targetNama || d.nama}`,
+            desc: 'Berhasil dihapus dari kalender'
+          });
+        }
+      }
+
+      else if (act.action === 'edit_tugas') {
+        const targetNama = (d.targetNama || d.nama || '').trim().toLowerCase();
+        const list = Store.getTugas();
+        const idx = list.findIndex(t => (d.targetId && t.id === d.targetId) || (t.nama || '').toLowerCase().includes(targetNama));
+        if (idx !== -1) {
+          const old = list[idx];
+          if (d.nama) old.nama = d.nama.trim();
+          if (d.matkul) old.matkul = d.matkul.trim();
+          if (d.deadline !== undefined) old.deadline = d.deadline.trim();
+          if (d.deskripsi !== undefined) old.deskripsi = d.deskripsi.trim();
+          if (d.prioritas) old.prioritas = d.prioritas;
+          if (d.done !== undefined) old.done = Boolean(d.done);
+          Store.setTugas(list);
+          results.push({
+            icon: '✏️',
+            title: `Tugas Diperbarui: ${old.nama}`,
+            desc: `${old.matkul} • Deadline: ${old.deadline || '-'}`
+          });
+        }
+      }
+
+      else if (act.action === 'delete_tugas') {
+        const targetNama = (d.targetNama || d.nama || '').trim().toLowerCase();
+        let list = Store.getTugas();
+        const initialLen = list.length;
+        list = list.filter(t => (d.targetId && t.id !== d.targetId) || !(t.nama || '').toLowerCase().includes(targetNama));
+        if (list.length !== initialLen) {
+          Store.setTugas(list);
+          results.push({
+            icon: '🗑️',
+            title: `Tugas Dihapus: ${d.targetNama || d.nama}`,
+            desc: 'Berhasil dihapus dari daftar tugas'
+          });
+        }
+      }
+
+      else if (act.action === 'edit_catatan') {
+        const targetJudul = (d.targetJudul || d.judul || '').trim().toLowerCase();
+        const list = Store.getCatatan();
+        const idx = list.findIndex(c => (d.targetId && c.id === d.targetId) || (c.judul || '').toLowerCase().includes(targetJudul));
+        if (idx !== -1) {
+          const old = list[idx];
+          if (d.judul) old.judul = d.judul.trim();
+          if (d.isi !== undefined) old.isi = d.isi;
+          if (d.kategori) old.kategori = d.kategori;
+          old.updatedAt = new Date().toISOString();
+          Store.setCatatan(list);
+          results.push({
+            icon: '✏️',
+            title: `Catatan Diperbarui: ${old.judul}`,
+            desc: `Kategori: ${old.kategori}`
+          });
+        }
+      }
+
+      else if (act.action === 'delete_catatan') {
+        const targetJudul = (d.targetJudul || d.judul || '').trim().toLowerCase();
+        let list = Store.getCatatan();
+        const initialLen = list.length;
+        list = list.filter(c => (d.targetId && c.id !== d.targetId) || !(c.judul || '').toLowerCase().includes(targetJudul));
+        if (list.length !== initialLen) {
+          Store.setCatatan(list);
+          results.push({
+            icon: '🗑️',
+            title: `Catatan Dihapus: ${d.targetJudul || d.judul}`,
+            desc: 'Berhasil dihapus dari catatan'
+          });
+        }
+      }
     } catch (err) {
       console.warn('Gagal memproses aksi Pisku:', act, err);
     }
@@ -829,22 +1060,40 @@ ${todayEventsText}
 3. JANGAN PERNAH MENGAKU "SUDAH MEMASUKKAN DATA KE SISTEM" TANPA VALIDASI PENGGUNA:
    - Aplikasi menggunakan sistem validasi tombol konfirmasi pengguna.
    - Bila pengguna meminta kamu mencatat atau merangkum sesuatu, buat blok aksi JSON: actions, lalu jelaskan bahwa rencana tersebut sudah kamu siapkan dan minta pengguna menekan tombol konfirmasi di bawah.
-4. FORMAT AKSI JSON (Hanya jika pengguna meminta mencatat/menambah data baru):
+4. FORMAT AKSI JSON (Untuk Menambah, Mengedit/Mengubah, atau Menghapus Data):
 \`\`\`json:actions
 [
+  // 1. Menambah data baru:
   { "action": "add_jadwal", "data": { "hari": "Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu", "matkul": "Nama Matkul", "ruangan": "Ruang/Lab", "jamMulai": "08:00", "jamSelesai": "10:00", "dosen": "Nama Dosen", "sks": 3 } },
-  { "action": "add_transaksi", "data": { "type": "expense|income", "jumlah": 25000, "kategori": "Makan|Transport|Belanja|Hiburan|Pendidikan|Kesehatan|Uang Saku|Kerja|Lainnya", "keterangan": "Keterangan", "tanggal": "YYYY-MM-DD" } },
+  { "action": "add_event", "data": { "nama": "Nama Kegiatan", "tanggal": "YYYY-MM-DD", "jamMulai": "09:00", "jamSelesai": "10:00", "lokasi": "Lokasi", "deskripsi": "Deskripsi" } },
   { "action": "add_tugas", "data": { "nama": "Nama Tugas", "matkul": "Mata Kuliah", "deadline": "YYYY-MM-DD", "deskripsi": "Deskripsi" } },
-  { "action": "add_event", "data": { "nama": "Nama Kegiatan", "tanggal": "YYYY-MM-DD", "jamMulai": "09:00", "lokasi": "Lokasi", "deskripsi": "Deskripsi" } },
+  { "action": "add_transaksi", "data": { "type": "expense|income", "jumlah": 25000, "kategori": "Makan|Transport|Belanja|Hiburan|Pendidikan|Kesehatan|Uang Saku|Kerja|Lainnya", "keterangan": "Keterangan", "tanggal": "YYYY-MM-DD" } },
   { "action": "add_catatan", "data": { "judul": "Judul Catatan", "isi": "Isi lengkap", "kategori": "Kuliah|Pribadi|Ide|Penting" } },
   { "action": "add_goal", "data": { "nama": "Target Tabungan", "target": 5000000, "deadline": "YYYY-MM-DD" } },
-  { "action": "add_debt", "data": { "tipe": "hutang|piutang", "nama": "Nama Orang", "jumlah": 50000, "jatuhTempo": "YYYY-MM-DD", "catatan": "Keterangan" } }
+  { "action": "add_debt", "data": { "tipe": "hutang|piutang", "nama": "Nama Orang", "jumlah": 50000, "jatuhTempo": "YYYY-MM-DD", "catatan": "Keterangan" } },
+
+  // 2. Mengedit/Mengubah data yang sudah ada (WAJIB gunakan ini jika pengguna ingin mengubah/mengedit, JANGAN gunakan add_* karena akan membuat data duplikat!):
+  { "action": "edit_jadwal", "data": { "targetMatkul": "Nama Matkul Lama", "targetHari": "Hari Lama (opsional)", "matkul": "Nama Baru (opsional)", "hari": "Hari Baru", "jamMulai": "08:00", "jamSelesai": "10:00", "ruangan": "Ruang Baru", "dosen": "Nama Dosen", "sks": 3 } },
+  { "action": "edit_event", "data": { "targetNama": "Nama Agenda Lama", "targetTanggal": "YYYY-MM-DD (opsional)", "nama": "Nama Baru (opsional)", "tanggal": "YYYY-MM-DD", "jamMulai": "14:00", "jamSelesai": "15:00", "lokasi": "Lokasi Baru", "deskripsi": "Keterangan Baru" } },
+  { "action": "edit_tugas", "data": { "targetNama": "Nama Tugas Lama", "nama": "Nama Tugas Baru", "deadline": "YYYY-MM-DD", "deskripsi": "...", "done": false } },
+  { "action": "edit_catatan", "data": { "targetJudul": "Judul Catatan Lama", "judul": "Judul Baru", "isi": "Isi baru", "kategori": "Kuliah" } },
+
+  // 3. Menghapus data:
+  { "action": "delete_jadwal", "data": { "targetMatkul": "Nama Matkul", "targetHari": "Hari (opsional)" } },
+  { "action": "delete_event", "data": { "targetNama": "Nama Agenda", "targetTanggal": "YYYY-MM-DD (opsional)" } },
+  { "action": "delete_tugas", "data": { "targetNama": "Nama Tugas" } },
+  { "action": "delete_catatan", "data": { "targetJudul": "Judul Catatan" } }
 ]
 \`\`\`
-5. DILARANG MEMBUAT BLOK JSON:ACTIONS JIKA TIDAK ADA PERMINTAAN INPUT DATA BARU:
+5. DILARANG MEMBUAT BLOK JSON:ACTIONS JIKA TIDAK ADA PERMINTAAN TAMBAH/UBAH/HAPUS DATA:
    - Jika pengguna HANYA bertanya (contoh: "ada kegiatan apa hari ini?", "apa jadwalku hari ini?", "tugas apa yang belum selesai?"), CUKUP jawab dengan teks penjelasan ramah berdasarkan DATA RESMI di atas.
-   - JANGAN PERNAH menyertakan blok \`\`\`json:actions ... \`\`\` jika pengguna tidak secara eksplisit meminta kamu menambahkan/mencatat/menjadwalkan data baru!
-6. Gaya Bicara: Hangat, sopan, akurat, dan jujur berdasarkan fakta database.`;
+   - JANGAN PERNAH menyertakan blok \`\`\`json:actions ... \`\`\` jika pengguna tidak meminta menambahkan/mengubah/menghapus data!
+6. KEMAMPUAN MEMINDAI GAMBAR / FOTO KALENDER & DOKUMEN (FITUR MULTIMODAL UNGGULAN):
+   - Pisku MEMILIKI KEMAMPUAN LENGKAP untuk membaca, memindai, dan mengekstrak isi gambar/foto kalender (kalender akademik, kalender dinding, screenshot agenda/kalender eksternal, poster acara, jadwal kuliah mingguan, struk belanja, dsb.) SECARA LANGSUNG SEKALIGUS ke dalam sistem Piskaly!
+   - DILARANG KERAS menolak atau berkata "Pisku belum memiliki fitur memindai gambar kalender secara langsung".
+   - Jika pengguna melampirkan gambar kalender/jadwal/dokumen, Pisku WAJIB langsung memindai setiap tanggal dan agenda penting yang ada di gambar tersebut, lalu menyusunnya sekaligus ke dalam satu blok \`\`\`json:actions ... \`\`\` (misal: serangkaian 'add_event', 'add_jadwal', atau 'add_tugas').
+   - Pengguna tinggal menekan 1 tombol konfirmasi di bawah pesanmu untuk memasukkan seluruh agenda dari gambar kalender tersebut ke aplikasi Piskaly secara otomatis!
+7. Gaya Bicara: Hangat, sopan, akurat, dan jujur berdasarkan fakta database.`;
 
   // Render pesan user di layar
   appendMessage('user', userMessage, currentFile);
