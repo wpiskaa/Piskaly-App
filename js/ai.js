@@ -28,7 +28,7 @@ function sanitizePiskuMessages() {
     const cleaned = list.filter(m => {
       if (m.text) {
         const lower = m.text.toLowerCase();
-        if (lower.includes('clinic') || lower.includes('5 agenda') || lower.includes('3 agenda') || lower.includes('duplikasi sesi') || lower.includes('16:00') || lower.includes('recovery')) {
+        if (lower.includes('ke clinic') || lower.includes('5 agenda') || lower.includes('3 agenda') || lower.includes('duplikasi sesi') || lower.includes('16:00') || lower.includes('recovery')) {
           return false;
         }
       }
@@ -818,11 +818,11 @@ ${catatanText}
 PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
 ==================================================
 1. SINKRONISASI DATA HARUS 100% SESUAI DATABASE:
-   - Agenda kegiatan hari ini (${nowIso}) di database aplikasi HANYA ADA ${todayEvents.length} AGENDA:
+   - Agenda kegiatan hari ini (${nowIso}) di database aplikasi HANYA ADA TEPAT ${todayEvents.length} AGENDA:
 ${todayEventsText}
-   - DILARANG KERAS mengarang agenda lain, menduplikasi sesi, memecah kegiatan menjadi beberapa bagian, atau menyebut agenda yang tidak ada di daftar di atas!
-   - Di database kalender aplikasi pengguna HANYA TERCATAT persis ${todayEvents.length} agenda di atas. Sebutkan HANYA agenda tersebut dengan nama, jam, dan lokasi yang sama persis!
-   - Jangan pernah menyebutkan ada 3 agenda atau 5 agenda, karena faktanya di database kalender pengguna hanya ada ${todayEvents.length} agenda!
+   - Kamu WAJIB secara tegas dan jujur menyatakan bahwa hari ini HANYA TERCATAT ${todayEvents.length} AGENDA di sistem kalender Piskaly.
+   - Sebutkan HANYA agenda resmi di atas (nama, jam, dan lokasi yang sama persis). DILARANG KERAS mengarang agenda fiktif, menduplikasi sesi, memecah satu agenda menjadi beberapa bagian, atau menyebut kegiatan lain!
+   - Jika pengguna memprotes atau menyinggung riwayat chat yang salah sebelumnya, sampaikan permohonan maaf dengan ramah dan jelaskan bahwa data riil yang valid dan tersimpan di database aplikasi hanyalah ${todayEvents.length} agenda tersebut.
 2. DILARANG KERAS MENGARANG ATAU MENAMBAHKAN JADWAL/AGENDA/ACARA FIKTIF:
    - Rujuk HANYA data nomor 1 (Jadwal Kuliah Hari Ini) dan nomor 2 (Kegiatan Kalender Hari Ini).
    - Sebutkan HANYA yang ada di daftar tersebut dengan jam dan nama yang persis sama.
@@ -881,7 +881,7 @@ ${todayEventsText}
     const safeHistory = chatHistory
       .filter(msg => {
         const txt = (msg.parts?.[0]?.text || '').toLowerCase();
-        if (txt.includes('16:00') || txt.includes('clinic') || txt.includes('5 agenda') || txt.includes('3 agenda') || txt.includes('recovery') || txt.includes('duplikasi')) {
+        if (txt.includes('16:00') || txt.includes('ke clinic') || txt.includes('5 agenda') || txt.includes('3 agenda') || txt.includes('recovery') || txt.includes('duplikasi')) {
           return false;
         }
         return true;
@@ -890,12 +890,14 @@ ${todayEventsText}
     safeHistory.forEach(msg => contents.push(msg));
     contents.push({ role: 'user', parts: userParts });
 
-    // Model tercepat dan stabil untuk performa maksimal
+    // Model Gemini resmi tercepat, stabil, dan memiliki kuota aktif
     const candidateModels = [
-      'gemini-3-flash-preview',
-      'gemini-3.1-flash-lite-preview',
-      'gemini-flash-latest',
-      'gemini-3.8-flash'
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.8-flash',
+      'gemini-flash-latest'
     ];
 
     let lastError = null;
