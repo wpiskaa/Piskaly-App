@@ -1,276 +1,19 @@
 /**
  * PISKALY FUN & ENGAGING FEATURES
- * 1. Pisku Morning Briefing & Voice Greeting (Asisten Hidup ala Jarvis)
- * 2. Mood & Energy Tracker Harian + Weekly Recap (Jurnal Emosi Cepat & Flexing)
- * 3. Piskaly Wrapped (Spotify-style Interactive Story Recap)
+ * 1. Mood & Energy Tracker Harian + Weekly Recap (Jurnal Emosi Cepat & Flexing)
+ * 2. Piskaly Wrapped (Spotify-style Interactive Story Recap)
  */
 
 (function () {
   'use strict';
 
-  // State variables for voice & wrapped
-  let currentUtterance = null;
-  let isSpeaking = false;
+  // State variables for wrapped
   let wrappedCurrentSlide = 0;
   const WRAPPED_TOTAL_SLIDES = 5;
   let wrappedTimer = null;
 
   /* ===================================================
-     1. PISKU MORNING BRIEFING & VOICE GREETING
-     =================================================== */
-
-  /**
-   * Check if today's briefing should be shown automatically on first visit of the day
-   */
-  window.checkDailyBriefing = function () {
-    try {
-      const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
-      const lastDate = Store.getLastBriefingDate();
-      
-      // If user hasn't seen the briefing today, show after a short pleasant delay
-      if (lastDate !== today) {
-        setTimeout(() => {
-          // Double check app is active and user is logged in
-          const user = Store.getCurrentUser ? Store.getCurrentUser() : null;
-          if (user || !localStorage.getItem('mylife_users')) {
-            openMorningBriefing(false);
-          }
-        }, 1200);
-      }
-    } catch (e) {
-      console.warn('checkDailyBriefing error:', e);
-    }
-  };
-
-  /**
-   * Build smart briefing data based on calendar, schedule, tasks & finances
-   */
-  function generateBriefingSummary() {
-    const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
-    const profil = Store.getProfil() || {};
-    const userName = (profil.nama || 'Piska').split(' ')[0];
-
-    // Day name in Indonesian
-    const dateObj = new Date();
-    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const dayName = dayNames[dateObj.getDay()];
-    const dateFormatted = `${dayName}, ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-
-    // 1. Jadwal Kuliah Hari Ini
-    const allJadwal = Store.getJadwal() || [];
-    const todayJadwal = allJadwal.filter(j => j.hari && j.hari.toLowerCase() === dayName.toLowerCase());
-
-    // 2. Agenda Hari Ini
-    const allEvents = Store.getEvents() || [];
-    const todayEvents = allEvents.filter(ev => {
-      if (!ev.tanggal) return false;
-      return ev.tanggal === today;
-    });
-
-    // 3. Tugas Deadline Terdekat / Pending
-    const allTugas = Store.getTugas() || [];
-    const pendingTugas = allTugas.filter(t => t.status !== 'done');
-    const urgentTugas = pendingTugas.filter(t => {
-      if (!t.deadline) return false;
-      const diff = new Date(t.deadline) - dateObj;
-      return diff >= 0 && diff <= 3 * 24 * 60 * 60 * 1000; // <= 3 hari
-    });
-
-    // 4. Saldo / Tabungan
-    const trans = Store.getTransaksi() || [];
-    let saldo = 0;
-    trans.forEach(t => {
-      const amt = Number(t.nominal) || 0;
-      if (t.tipe === 'masuk') saldo += amt;
-      else if (t.tipe === 'keluar') saldo -= amt;
-    });
-
-    // Greeting time based on hour
-    const hour = dateObj.getHours();
-    let timeGreeting = 'Selamat pagi';
-    let greetingEmoji = '☀️';
-    if (hour >= 11 && hour < 15) {
-      timeGreeting = 'Selamat siang';
-      greetingEmoji = '🌤️';
-    } else if (hour >= 15 && hour < 18) {
-      timeGreeting = 'Selamat sore';
-      greetingEmoji = '🌇';
-    } else if (hour >= 18 || hour < 4) {
-      timeGreeting = 'Selamat malam';
-      greetingEmoji = '🌙';
-    }
-
-    // Build spoken text (natural Indonesian)
-    let spokenScript = `${timeGreeting}, ${userName}! Pisku siap mendampingi harimu di ${dayName}. `;
-
-    if (todayJadwal.length > 0) {
-      spokenScript += `Hari ini kamu ada ${todayJadwal.length} jadwal kuliah, termasuk ${todayJadwal[0].matkul || 'mata kuliah utama'}. `;
-    } else {
-      spokenScript += `Hari ini jadwal kuliahmu libur, waktu yang tepat untuk produktif atau istirahat sejenak. `;
-    }
-
-    if (todayEvents.length > 0) {
-      spokenScript += `Tercatat ada ${todayEvents.length} agenda kegiatan penting yang menantimu. `;
-    }
-
-    if (urgentTugas.length > 0) {
-      spokenScript += `Perhatian, ada ${urgentTugas.length} tugas yang mendekati batas waktu. `;
-    } else if (pendingTugas.length > 0) {
-      spokenScript += `Ada ${pendingTugas.length} tugas aktif yang bisa kamu cicil perlahan. `;
-    } else {
-      spokenScript += `Hebat, semua tugasmu sudah beres tercatat! `;
-    }
-
-    spokenScript += `Jaga semangat dan energi positifmu ya!`;
-
-    return {
-      userName,
-      timeGreeting,
-      greetingEmoji,
-      dateFormatted,
-      dayName,
-      jadwalCount: todayJadwal.length,
-      todayJadwal,
-      eventCount: todayEvents.length,
-      todayEvents,
-      urgentTugasCount: urgentTugas.length,
-      pendingTugasCount: pendingTugas.length,
-      saldoFormatted: 'Rp ' + Math.max(0, saldo).toLocaleString('id-ID'),
-      spokenScript
-    };
-  }
-
-  /**
-   * Open the Morning Briefing Modal
-   */
-  window.openMorningBriefing = function (force = true) {
-    const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
-    Store.setLastBriefingDate(today);
-
-    const summary = generateBriefingSummary();
-    const modal = document.getElementById('modalMorningBriefing');
-    if (!modal) return;
-
-    // Populate UI elements
-    const greetingEl = document.getElementById('briefingGreeting');
-    const dateEl = document.getElementById('briefingDate');
-    const scriptEl = document.getElementById('briefingSpeechText');
-    const kuliahStatEl = document.getElementById('briefingKuliahCount');
-    const agendaStatEl = document.getElementById('briefingAgendaCount');
-    const tugasStatEl = document.getElementById('briefingTugasCount');
-    const tugasLabelEl = document.getElementById('briefingTugasLabel');
-
-    if (greetingEl) greetingEl.textContent = `${summary.timeGreeting}, ${summary.userName}! ${summary.greetingEmoji}`;
-    if (dateEl) dateEl.textContent = summary.dateFormatted;
-    if (scriptEl) scriptEl.textContent = `"${summary.spokenScript}"`;
-    if (kuliahStatEl) kuliahStatEl.textContent = summary.jadwalCount;
-    if (agendaStatEl) agendaStatEl.textContent = summary.eventCount;
-    if (tugasStatEl) {
-      tugasStatEl.textContent = (summary.urgentTugasCount > 0 ? summary.urgentTugasCount : summary.pendingTugasCount);
-    }
-    if (tugasLabelEl) {
-      tugasLabelEl.textContent = summary.urgentTugasCount > 0 ? 'Mendesak' : 'Tugas';
-    }
-
-    // Reset voice button state
-    stopBriefingVoice();
-    const voiceBtn = document.getElementById('briefingVoiceBtn');
-    const wavesEl = document.getElementById('briefingWaves');
-    if (voiceBtn) {
-      voiceBtn.innerHTML = '<i data-lucide="volume-2"></i> <span>Dengarkan Suara</span>';
-    }
-    if (wavesEl) wavesEl.classList.remove('speaking');
-
-    modal.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
-  };
-
-  /**
-   * Close the Morning Briefing Modal
-   */
-  window.closeMorningBriefing = function () {
-    stopBriefingVoice();
-    const modal = document.getElementById('modalMorningBriefing');
-    if (modal) modal.classList.add('hidden');
-  };
-
-  /**
-   * Toggle Voice Greeting (Text-to-Speech)
-   */
-  window.toggleBriefingVoice = function () {
-    if (isSpeaking) {
-      stopBriefingVoice();
-    } else {
-      const summary = generateBriefingSummary();
-      playBriefingVoice(summary.spokenScript);
-    }
-  };
-
-  function playBriefingVoice(text) {
-    if (!('speechSynthesis' in window)) {
-      if (typeof showToast === 'function') {
-        showToast('Browser kamu belum mendukung audio suara langsung');
-      }
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    currentUtterance = new SpeechSynthesisUtterance(text);
-    currentUtterance.lang = 'id-ID';
-    currentUtterance.rate = 1.0;
-    currentUtterance.pitch = 1.05;
-
-    // Pick Indonesian voice if found
-    const voices = window.speechSynthesis.getVoices();
-    const indonesianVoice = voices.find(v => v.lang.startsWith('id') || v.name.toLowerCase().includes('indonesia'));
-    if (indonesianVoice) {
-      currentUtterance.voice = indonesianVoice;
-    }
-
-    const voiceBtn = document.getElementById('briefingVoiceBtn');
-    const wavesEl = document.getElementById('briefingWaves');
-
-    currentUtterance.onstart = function () {
-      isSpeaking = true;
-      if (voiceBtn) {
-        voiceBtn.innerHTML = '<i data-lucide="square"></i> <span>Hentikan</span>';
-        if (window.lucide) window.lucide.createIcons();
-      }
-      if (wavesEl) wavesEl.classList.add('speaking');
-    };
-
-    currentUtterance.onend = function () {
-      stopBriefingVoice();
-    };
-
-    currentUtterance.onerror = function (err) {
-      console.warn('Speech error:', err);
-      stopBriefingVoice();
-    };
-
-    window.speechSynthesis.speak(currentUtterance);
-  }
-
-  function stopBriefingVoice() {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    isSpeaking = false;
-    currentUtterance = null;
-    const voiceBtn = document.getElementById('briefingVoiceBtn');
-    const wavesEl = document.getElementById('briefingWaves');
-    if (voiceBtn) {
-      voiceBtn.innerHTML = '<i data-lucide="volume-2"></i> <span>Dengarkan Suara</span>';
-      if (window.lucide) window.lucide.createIcons();
-    }
-    if (wavesEl) wavesEl.classList.remove('speaking');
-  }
-
-
-  /* ===================================================
-     2. MOOD & ENERGY TRACKER HARIAN + WEEKLY RECAP
+     1. MOOD & ENERGY TRACKER HARIAN + WEEKLY RECAP
      =================================================== */
 
   const MOOD_OPTIONS = [
@@ -320,13 +63,13 @@
             <span>Mood & Energi Hari Ini</span>
           </div>
           <div style="display:flex; gap:6px;">
-            <button class="home-recap-pill-btn" onclick="openMorningBriefing(true)" title="Dengarkan Suara & Briefing Pisku">
-              <i data-lucide="sun" style="width:12px; height:12px;"></i>
-              <span>Briefing</span>
-            </button>
             <button class="home-recap-pill-btn" onclick="openWeeklyRecap()" title="Rangkuman 7 Hari Terakhir">
               <i data-lucide="bar-chart-2" style="width:12px; height:12px;"></i>
               <span>Recap</span>
+            </button>
+            <button class="home-recap-pill-btn" onclick="openPiskalyWrapped()" title="Buka Piskaly Wrapped">
+              <i data-lucide="sparkles" style="width:12px; height:12px;"></i>
+              <span>Wrapped</span>
             </button>
           </div>
         </div>

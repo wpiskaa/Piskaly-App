@@ -54,7 +54,7 @@
   <link rel="stylesheet" href="css/auth.css?v=3.26" />
   <link rel="stylesheet" href="css/notifikasi.css?v=3.20" />
   <link rel="stylesheet" href="css/utilities.css?v=3.20" />
-  <link rel="stylesheet" href="css/features-fun.css?v=3.29" />
+  <link rel="stylesheet" href="css/features-fun.css?v=3.30" />
 </head>
 <body>
 
@@ -898,10 +898,6 @@
               <i data-lucide="user-circle"></i>
               <span>Profil &amp; Pengaturan</span>
             </button>
-            <button class="drawer-nav-item" onclick="openMorningBriefing(true); closeDrawer();">
-              <i data-lucide="sun"></i>
-              <span>Pisku Morning Briefing</span>
-            </button>
             <button class="drawer-nav-item" onclick="openPiskalyWrapped(); closeDrawer();">
               <i data-lucide="sparkles"></i>
               <span>Piskaly Wrapped</span>
@@ -1661,88 +1657,17 @@
 
   <!-- ===== FUN & ENGAGING MODALS ===== -->
 
-  <!-- Modal: Pisku Morning Briefing & Voice Greeting -->
-  <div class="briefing-modal-overlay hidden" id="modalMorningBriefing">
-    <div class="briefing-card">
-      <div class="briefing-glow-accent"></div>
-      
-      <div class="briefing-header">
-        <div class="briefing-badge">
-          <i data-lucide="sparkles" style="width:12px; height:12px;"></i>
-          <span>Pisku Briefing</span>
-        </div>
-        <button class="briefing-close-btn" onclick="closeMorningBriefing()" aria-label="Tutup">
-          <i data-lucide="x"></i>
-        </button>
-      </div>
-
-      <div class="briefing-avatar-row">
-        <div class="briefing-avatar-box">
-          <i data-lucide="bot"></i>
-          <span class="briefing-online-status"></span>
-        </div>
-        <div class="briefing-title-col">
-          <h2 class="briefing-title" id="briefingGreeting">Selamat malam, Piska! 🌙</h2>
-          <p class="briefing-date-text" id="briefingDate">Kamis, 15 Oktober 2026</p>
-        </div>
-      </div>
-
-      <div class="briefing-bubble">
-        <p class="briefing-speech-text" id="briefingSpeechText">
-          "Hari ini jadwal kuliahmu libur, namun ada beberapa agenda kegiatan menantimu. Tetap semangat dan jaga fokus!"
-        </p>
-      </div>
-
-      <div class="briefing-voice-container">
-        <button class="briefing-voice-play-btn" id="briefingVoiceBtn" onclick="toggleBriefingVoice()">
-          <i data-lucide="volume-2"></i>
-          <span>Dengarkan Suara</span>
-        </button>
-        <div class="briefing-voice-waves" id="briefingWaves">
-          <div class="wave-bar"></div>
-          <div class="wave-bar"></div>
-          <div class="wave-bar"></div>
-          <div class="wave-bar"></div>
-          <div class="wave-bar"></div>
-        </div>
-      </div>
-
-      <div class="briefing-stats-grid">
-        <div class="briefing-stat-card">
-          <span class="briefing-stat-icon blue"><i data-lucide="graduation-cap"></i></span>
-          <span class="briefing-stat-title" id="briefingKuliahCount">0</span>
-          <span class="briefing-stat-sub">Kuliah</span>
-        </div>
-        <div class="briefing-stat-card">
-          <span class="briefing-stat-icon amber"><i data-lucide="calendar"></i></span>
-          <span class="briefing-stat-title" id="briefingAgendaCount">0</span>
-          <span class="briefing-stat-sub">Agenda</span>
-        </div>
-        <div class="briefing-stat-card">
-          <span class="briefing-stat-icon rose"><i data-lucide="check-circle-2"></i></span>
-          <span class="briefing-stat-title" id="briefingTugasCount">0</span>
-          <span class="briefing-stat-sub" id="briefingTugasLabel">Tugas</span>
-        </div>
-      </div>
-
-      <button class="briefing-start-btn" onclick="closeMorningBriefing()">
-        <span>Mulai Hariku Sekarang</span>
-        <i data-lucide="arrow-right"></i>
-      </button>
-    </div>
-  </div>
-
   <!-- Modal: Weekly Recap Story (Flexing) -->
-  <div class="briefing-modal-overlay hidden" id="modalWeeklyRecap">
+  <div class="recap-modal-overlay hidden" id="modalWeeklyRecap">
     <div class="recap-card">
       <div class="recap-glow"></div>
 
-      <div class="briefing-header">
+      <div class="recap-top-header">
         <div class="recap-top-badge">
           <i data-lucide="flame" style="width:13px; height:13px; color:#f59e0b;"></i>
           <span>WEEKLY RECAP &amp; FLEXING</span>
         </div>
-        <button class="briefing-close-btn" style="background:rgba(255,255,255,0.1); color:white; border-color:rgba(255,255,255,0.2);" onclick="closeWeeklyRecap()" aria-label="Tutup">
+        <button class="recap-close-icon-btn" onclick="closeWeeklyRecap()" aria-label="Tutup">
           <i data-lucide="x"></i>
         </button>
       </div>
@@ -1860,14 +1785,14 @@
   <script src="js/kalender.js?v=3.20"></script>
   <script src="js/notifikasi.js?v=3.20"></script>
   <script src="js/ai.js?v=3.27"></script>
-  <script src="js/features-fun.js?v=3.29"></script>
+  <script src="js/features-fun.js?v=3.30"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(key => {
-          if (key !== 'mylife-v3.29') {
+          if (key !== 'mylife-v3.30') {
             caches.delete(key);
           }
         });
@@ -1880,7 +1805,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.29').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.30').catch(() => {});
       });
     }
   </script>
