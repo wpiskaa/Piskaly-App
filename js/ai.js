@@ -26,10 +26,9 @@ function sanitizePiskuMessages() {
   try {
     const list = (Store.getAiMessages ? Store.getAiMessages() : JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]')) || [];
     const cleaned = list.filter(m => {
-      if (m.role === 'assistant' && m.text) {
+      if (m.text) {
         const lower = m.text.toLowerCase();
-        // Bersihkan pesan asisten lama yang pernah memuat 3 agenda atau halusinasi jam 16:00 / klinik fiktif
-        if (lower.includes('16:00') || (lower.includes('clinic') && lower.includes('siang ini')) || (lower.includes('ke clinic') && lower.includes('sport massage'))) {
+        if (lower.includes('clinic') || lower.includes('5 agenda') || lower.includes('3 agenda') || lower.includes('duplikasi sesi') || lower.includes('16:00') || lower.includes('recovery')) {
           return false;
         }
       }
@@ -819,13 +818,11 @@ ${catatanText}
 PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
 ==================================================
 1. SINKRONISASI DATA HARUS 100% SESUAI DATABASE:
-   - Agenda kegiatan hari ini (${nowIso}) di database aplikasi HANYA BERISI ${todayEvents.length} AGENDA:
+   - Agenda kegiatan hari ini (${nowIso}) di database aplikasi HANYA ADA ${todayEvents.length} AGENDA:
 ${todayEventsText}
-   - DILARANG KERAS mengarang ada 3 agenda atau memecah agenda tersebut.
-   - Jika pengguna bertanya tentang kegiatannya hari ini atau bertanya mengapa sempat ada 3 agenda:
-     * Jelaskan secara transparan dan sopan bahwa di DATABASE RESMI APLIKASI HANYA ADA ${todayEvents.length} AGENDA yang tersimpan.
-     * Sebutkan rincian agenda resmi tersebut (Nama, jam, lokasi, keterangan).
-     * Terangkan bahwa agenda fiktif lainnya ("Ke Clinic jam 13:00" dan "Sport Massage Recovery jam 16:00") adalah murni sisa percakapan lama AI sebelum database disinkronkan, TIDAK ADA di kalender aplikasi, dan sekarang sudah dibersihkan.
+   - DILARANG KERAS mengarang agenda lain, menduplikasi sesi, memecah kegiatan menjadi beberapa bagian, atau menyebut agenda yang tidak ada di daftar di atas!
+   - Di database kalender aplikasi pengguna HANYA TERCATAT persis ${todayEvents.length} agenda di atas. Sebutkan HANYA agenda tersebut dengan nama, jam, dan lokasi yang sama persis!
+   - Jangan pernah menyebutkan ada 3 agenda atau 5 agenda, karena faktanya di database kalender pengguna hanya ada ${todayEvents.length} agenda!
 2. DILARANG KERAS MENGARANG ATAU MENAMBAHKAN JADWAL/AGENDA/ACARA FIKTIF:
    - Rujuk HANYA data nomor 1 (Jadwal Kuliah Hari Ini) dan nomor 2 (Kegiatan Kalender Hari Ini).
    - Sebutkan HANYA yang ada di daftar tersebut dengan jam dan nama yang persis sama.
@@ -879,19 +876,17 @@ ${todayEventsText}
       userParts.push({ text: userMessage });
     }
 
-    // Bangun riwayat percakapan murni & aman (bersihkan pesan halusinasi asisten lama)
+    // Bangun riwayat percakapan murni & aman (bersihkan sisa halusinasi asisten lama)
     const contents = [];
     const safeHistory = chatHistory
       .filter(msg => {
-        if (msg.role === 'model') {
-          const txt = (msg.parts?.[0]?.text || '').toLowerCase();
-          if (txt.includes('16:00') || (txt.includes('clinic') && txt.includes('massage')) || txt.includes('recovery')) {
-            return false;
-          }
+        const txt = (msg.parts?.[0]?.text || '').toLowerCase();
+        if (txt.includes('16:00') || txt.includes('clinic') || txt.includes('5 agenda') || txt.includes('3 agenda') || txt.includes('recovery') || txt.includes('duplikasi')) {
+          return false;
         }
         return true;
       })
-      .slice(-6);
+      .slice(-4);
     safeHistory.forEach(msg => contents.push(msg));
     contents.push({ role: 'user', parts: userParts });
 
