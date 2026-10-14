@@ -718,7 +718,7 @@ function renderHomeUpcomingAgenda() {
 function openAddEventModal() {
   if (typeof resetEventForm === 'function') resetEventForm();
   const dInput = document.getElementById('eventTanggal');
-  if (dInput) dInput.value = new Date().toISOString().slice(0, 10);
+  if (dInput) dInput.value = getLocalDateString();
   openModal('modalEvent');
 }
 

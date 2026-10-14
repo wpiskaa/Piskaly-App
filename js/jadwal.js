@@ -39,8 +39,8 @@ function renderJadwalCardHtml(j, showDayBadge = false) {
         </div>
       </div>
       <div class="jadwal-actions">
-        <button class="action-btn edit" onclick="editJadwal('${j.id}')">Edit</button>
-        <button class="action-btn delete" onclick="deleteJadwal('${j.id}')">Hapus</button>
+        <button type="button" class="action-btn edit" onclick="editJadwal('${j.id}')">Edit</button>
+        <button type="button" class="action-btn delete" onclick="deleteJadwal('${j.id}', event)">Hapus</button>
       </div>
     </div>
   `;
@@ -117,7 +117,7 @@ function renderJadwalList() {
 }
 
 function editJadwal(id) {
-  const jadwal = Store.getJadwal().find(j => j.id === id);
+  const jadwal = Store.getJadwal().find(j => String(j.id) === String(id));
   if (!jadwal) return;
   editingJadwalId = id;
   document.getElementById('modalJadwalTitle').textContent = 'Edit Jadwal';
@@ -130,17 +130,50 @@ function editJadwal(id) {
   document.getElementById('jadwalDosen').value = jadwal.dosen || '';
   selectedJadwalColor = jadwal.color || '#2563eb';
   updateColorPicker('jadwalColorPicker', selectedJadwalColor);
+
+  const delBtn = document.getElementById('deleteJadwalModalBtn');
+  if (delBtn) {
+    delBtn.style.display = 'inline-flex';
+    lucide.createIcons({ nodes: [delBtn] });
+  }
+
   openModal('modalJadwal');
 }
 
-function deleteJadwal(id) {
-  if (!confirm('Hapus jadwal ini?')) return;
-  const jadwal = Store.getJadwal().filter(j => j.id !== id);
-  Store.setJadwal(jadwal);
+function deleteJadwal(id, e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  if (!id) return;
+  if (!window.confirm('Apakah kamu yakin ingin menghapus jadwal kuliah ini?')) return;
+  executeDeleteJadwal(id);
+}
+
+function deleteCurrentEditingJadwal() {
+  if (!editingJadwalId) return;
+  if (!window.confirm('Hapus jadwal kuliah yang sedang dibuka ini?')) return;
+  executeDeleteJadwal(editingJadwalId);
+}
+
+function executeDeleteJadwal(id) {
+  if (!id) return;
+  const current = Store.getJadwal();
+  const filtered = current.filter(j => String(j.id) !== String(id));
+  Store.setJadwal(filtered);
+
+  if (editingJadwalId && String(editingJadwalId) === String(id)) {
+    closeModal('modalJadwal');
+    editingJadwalId = null;
+  }
+
   renderJadwalList();
-  if (currentPage === 'home') renderHome();
-  updateStats();
-  showToast('🗑️ Jadwal dihapus', 'error');
+  if (typeof renderHome === 'function') renderHome();
+  if (typeof updateStats === 'function') updateStats();
+  if (typeof FirebaseService !== 'undefined' && FirebaseService.isInitialized) {
+    FirebaseService.syncUploadAll(false);
+  }
+  showToast('🗑️ Jadwal kuliah dihapus', 'error');
 }
 
 function saveJadwal() {
@@ -167,7 +200,7 @@ function saveJadwal() {
 
   let jadwal = Store.getJadwal();
   if (editingJadwalId) {
-    jadwal = jadwal.map(j => j.id === editingJadwalId ? { ...j, ...data } : j);
+    jadwal = jadwal.map(j => String(j.id) === String(editingJadwalId) ? { ...j, ...data } : j);
   } else {
     jadwal.push(data);
   }
@@ -183,6 +216,9 @@ function saveJadwal() {
   renderJadwalList();
   if (currentPage === 'home') renderHome();
   updateStats();
+  if (typeof FirebaseService !== 'undefined' && FirebaseService.isInitialized) {
+    FirebaseService.syncUploadAll(false);
+  }
   showToast(editingJadwalId ? '✅ Jadwal diperbarui!' : '✅ Jadwal ditambahkan!', 'success');
   editingJadwalId = null;
 }
@@ -194,6 +230,8 @@ function resetJadwalForm() {
   document.getElementById('modalJadwalTitle').textContent = 'Tambah Jadwal Kuliah';
   selectedJadwalColor = '#2563eb';
   updateColorPicker('jadwalColorPicker', selectedJadwalColor);
+  const delBtn = document.getElementById('deleteJadwalModalBtn');
+  if (delBtn) delBtn.style.display = 'none';
   editingJadwalId = null;
 }
 

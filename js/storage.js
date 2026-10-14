@@ -2,6 +2,19 @@
 // STORAGE MODULE (js/storage.js)
 // Penyimpanan Terisolasi Multi-Pengguna (Scoped per User ID)
 // ===========================
+
+// Helper Tanggal Lokal Format YYYY-MM-DD (Mencegah off-by-one akibat konversi UTC toISOString)
+function getLocalDateString(d = new Date()) {
+  if (typeof d === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+    d = new Date(d);
+  }
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 const Store = {
   get(key, fallback = null) {
     try {

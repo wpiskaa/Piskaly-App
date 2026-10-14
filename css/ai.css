@@ -182,35 +182,200 @@
 }
 .msg-file-chip svg { width: 14px; height: 14px; }
 
-/* AI Action Summary Card */
+/* AI Action Summary Card & Validation UI */
 .ai-action-card {
-  margin-top: 10px; padding: 12px; border-radius: 12px;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(16, 185, 129, 0.08));
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
 }
 .ai-action-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 8px; font-size: 12px; font-weight: 800; color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ai-action-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary-light);
+}
+.ai-action-spark {
+  font-size: 14px;
+}
+.ai-action-note {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
 }
 .ai-action-badge {
-  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 99px;
-  background: var(--success-bg); color: var(--success);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ai-action-badge.pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.ai-action-badge.success {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.ai-action-badge.cancelled {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
 }
 .ai-action-list {
-  display: flex; flex-direction: column; gap: 6px; list-style: none; padding: 0; margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
 }
 .ai-action-item {
-  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px;
-  background: var(--bg-card); font-size: 12.5px; border: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  font-size: 12.5px;
+  border: 1px solid var(--border);
 }
 .ai-action-icon {
-  font-size: 16px; line-height: 1; flex-shrink: 0;
+  font-size: 17px;
+  line-height: 1.2;
+  flex-shrink: 0;
 }
 .ai-action-text {
-  flex: 1; min-width: 0; color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
 }
-.ai-action-text b { font-weight: 700; color: var(--text-primary); }
-.ai-action-text small { display: block; font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+.ai-action-text b {
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+.ai-action-text small {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+.ai-action-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.ai-btn-confirm {
+  flex: 1;
+  min-width: 170px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  transition: var(--transition);
+}
+.ai-btn-confirm:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.ai-btn-confirm:active {
+  transform: scale(0.97);
+}
+.ai-btn-confirm svg {
+  width: 15px;
+  height: 15px;
+}
+.ai-btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.ai-btn-cancel:hover {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: var(--danger-bg);
+}
+.ai-btn-cancel:active {
+  transform: scale(0.97);
+}
+.ai-btn-cancel svg {
+  width: 15px;
+  height: 15px;
+}
+.ai-action-status-confirmed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.ai-action-status-confirmed svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.ai-action-status-cancelled {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+}
+.ai-action-status-cancelled svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
 
 .ai-input-wrap {
   position: fixed; bottom: calc(var(--nav-height) + var(--safe-bottom));

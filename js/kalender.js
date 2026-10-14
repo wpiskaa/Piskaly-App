@@ -22,6 +22,10 @@ function renderCalendarGrid() {
   // Month title
   document.getElementById('calMonthTitle').textContent = `${MONTHS_ID[month]} ${year}`;
 
+  // Helper format YYYY-MM-DD lokal aman tanpa pergeseran zona waktu
+  const formatYMD = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const todayStr = formatYMD(today.getFullYear(), today.getMonth(), today.getDate());
+
   // Grid
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -37,13 +41,14 @@ function renderCalendarGrid() {
       // Prev month
       day = daysInPrevMonth - firstDay + i + 1;
       cls += ' other-month';
-      const d = new Date(year, month - 1, day);
-      dateStr = d.toISOString().slice(0, 10);
+      const prevM = month === 0 ? 11 : month - 1;
+      const prevY = month === 0 ? year - 1 : year;
+      dateStr = formatYMD(prevY, prevM, day);
     } else if (dayCount < daysInMonth) {
       dayCount++;
       day = dayCount;
-      dateStr = new Date(year, month, day).toISOString().slice(0, 10);
-      if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+      dateStr = formatYMD(year, month, day);
+      if (dateStr === todayStr) {
         cls += ' today';
         if (!selectedCalDate) selectedCalDate = dateStr;
       }
@@ -51,8 +56,9 @@ function renderCalendarGrid() {
     } else {
       day = i - firstDay - daysInMonth + 1;
       cls += ' other-month';
-      const d = new Date(year, month + 1, day);
-      dateStr = d.toISOString().slice(0, 10);
+      const nextM = month === 11 ? 0 : month + 1;
+      const nextY = month === 11 ? year + 1 : year;
+      dateStr = formatYMD(nextY, nextM, day);
     }
 
     // Check events

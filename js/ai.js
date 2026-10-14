@@ -94,8 +94,19 @@ function loadSavedPiskuMessages() {
     }
 
     container.innerHTML = '';
+    const storedPendingMap = getPendingPiskuActionsFromStore();
+
     list.forEach(item => {
-      renderMessageElement(item.role, item.text, item.file, item.actionCardHTML, false);
+      let cardHTML = item.actionCardHTML || '';
+      if (item.pendingId && item.pendingActions) {
+        const actionInfo = storedPendingMap[item.pendingId] || { status: item.actionStatus || 'pending' };
+        if (actionInfo.status === 'pending') {
+          window.pendingPiskuActions[item.pendingId] = item.pendingActions;
+        }
+        cardHTML = generateActionCardHTML(item.pendingId, item.pendingActions, actionInfo.status);
+      }
+
+      renderMessageElement(item.role, item.text, item.file, cardHTML, false, item.pendingId, item.pendingActions, item.actionStatus || 'pending');
       if (item.text) {
         chatHistory.push({
           role: item.role === 'user' ? 'user' : 'model',
@@ -215,12 +226,272 @@ function clearAttachedFile() {
   if (attachBtn) attachBtn.classList.remove('has-file');
 }
 
-// ---- Eksekusi Tindakan Otomatis (Auto-Input Actions) ----
+// ---- Manajemen Tindakan & Validasi Pengguna (Human-in-the-Loop Validation) ----
+window.pendingPiskuActions = window.pendingPiskuActions || {};
+
+function getPendingPiskuActionsFromStore() {
+  return Store.get('mylife_pisku_pending_map', {}) || {};
+}
+
+function savePendingPiskuActionToStore(pendingId, actions, status = 'pending') {
+  try {
+    const map = getPendingPiskuActionsFromStore();
+    map[pendingId] = { actions, status, updatedAt: Date.now() };
+    Store.set('mylife_pisku_pending_map', map);
+  } catch (e) {
+    console.warn('Gagal menyimpan pending action Pisku:', e);
+  }
+}
+
+function updateSavedMessageActionStatus(pendingId, newStatus, actions) {
+  try {
+    const list = (Store.getAiMessages ? Store.getAiMessages() : JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]')) || [];
+    const updated = list.map(item => {
+      if (item.pendingId === pendingId) {
+        return {
+          ...item,
+          actionStatus: newStatus,
+          actionCardHTML: generateActionCardHTML(pendingId, actions || item.pendingActions || [], newStatus)
+        };
+      }
+      return item;
+    });
+    if (Store.setAiMessages) {
+      Store.setAiMessages(updated);
+    } else {
+      localStorage.setItem('mylife_pisku_messages', JSON.stringify(updated));
+    }
+  } catch (e) {
+    console.warn('Gagal update status pesan aksi Pisku:', e);
+  }
+}
+
+// Format ringkasan data sebelum dikonfirmasi pengguna
+function formatActionPreviewList(actions) {
+  if (!Array.isArray(actions)) return [];
+  const previews = [];
+  const nowStr = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+
+  actions.forEach(act => {
+    const d = act.data || {};
+    try {
+      if (act.action === 'add_jadwal') {
+        const matkul = (d.matkul || '').trim();
+        if (!matkul) return;
+        const hari = d.hari || 'Senin';
+        const jam = `${d.jamMulai || '08:00'} - ${d.jamSelesai || '10:00'}`;
+        const ruang = d.ruangan || d.ruang || '-';
+        const dosen = d.dosen ? ` • Dosen: ${d.dosen}` : '';
+        previews.push({
+          icon: '📅',
+          title: `Jadwal Kuliah: ${matkul}`,
+          desc: `${hari}, ${jam} (Ruang ${ruang})${dosen} • ${d.sks || 2} SKS`
+        });
+      } else if (act.action === 'add_transaksi') {
+        const jumlah = parseFloat(d.jumlah) || 0;
+        if (!jumlah || jumlah <= 0) return;
+        const type = d.type === 'income' ? 'income' : 'expense';
+        const tgl = d.tanggal || nowStr;
+        previews.push({
+          icon: type === 'income' ? '💰' : '💸',
+          title: `${type === 'income' ? 'Pemasukan' : 'Pengeluaran'}: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(jumlah) : 'Rp ' + jumlah.toLocaleString('id-ID')}`,
+          desc: `${d.keterangan || (type === 'income' ? 'Pemasukan' : 'Pengeluaran')} • Kategori: ${d.kategori || 'Lainnya'} • Tanggal: ${tgl}`
+        });
+      } else if (act.action === 'add_tugas') {
+        const nama = (d.nama || '').trim();
+        if (!nama) return;
+        previews.push({
+          icon: '📝',
+          title: `Tugas Kuliah: ${nama}`,
+          desc: `Mata Kuliah: ${d.matkul || 'Umum'} ${d.deadline ? '• Deadline: ' + d.deadline : ''}`
+        });
+      } else if (act.action === 'add_event') {
+        const nama = (d.nama || d.title || '').trim();
+        if (!nama) return;
+        const tgl = d.tanggal || d.date || nowStr;
+        const jam = d.jamMulai || d.time || '09:00';
+        previews.push({
+          icon: '📆',
+          title: `Agenda Kalender: ${nama}`,
+          desc: `Tanggal: ${tgl} • Pukul: ${jam} ${d.lokasi ? '• ' + d.lokasi : ''}`
+        });
+      } else if (act.action === 'add_catatan') {
+        const judul = (d.judul || '').trim();
+        if (!judul) return;
+        previews.push({
+          icon: '📌',
+          title: `Catatan Baru: ${judul}`,
+          desc: `Kategori: ${d.kategori || 'Kuliah'} ${d.isi ? '• ' + (d.isi.length > 50 ? d.isi.slice(0, 50) + '...' : d.isi) : ''}`
+        });
+      } else if (act.action === 'add_goal') {
+        const nama = (d.nama || '').trim();
+        const target = parseFloat(d.target) || 0;
+        if (!nama || !target || target <= 0) return;
+        previews.push({
+          icon: '🎯',
+          title: `Target Tabungan: ${nama}`,
+          desc: `Target Dana: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(target) : 'Rp ' + target.toLocaleString('id-ID')} ${d.deadline ? '• Deadline: ' + d.deadline : ''}`
+        });
+      } else if (act.action === 'add_debt') {
+        const nama = (d.nama || '').trim();
+        const jumlah = parseFloat(d.jumlah) || 0;
+        if (!nama || !jumlah || jumlah <= 0) return;
+        const tipe = d.tipe === 'piutang' ? 'piutang' : 'hutang';
+        previews.push({
+          icon: '🤝',
+          title: `${tipe === 'hutang' ? 'Hutang ke' : 'Piutang dari'}: ${nama}`,
+          desc: `Nominal: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(jumlah) : 'Rp ' + jumlah.toLocaleString('id-ID')} ${d.catatan ? '• ' + d.catatan : ''}`
+        });
+      }
+    } catch (e) {
+      console.warn('Gagal memformat preview aksi:', act, e);
+    }
+  });
+
+  return previews;
+}
+
+// Format Kartu Validasi & Konfirmasi
+function generateActionCardHTML(pendingId, actions, status = 'pending') {
+  const previews = formatActionPreviewList(actions);
+  if (!previews.length) return '';
+
+  let badgeHTML = '';
+  let footerHTML = '';
+
+  if (status === 'confirmed') {
+    badgeHTML = `<span class="ai-action-badge success"><i data-lucide="check"></i> Data Tersimpan</span>`;
+    footerHTML = `
+      <div class="ai-action-status-confirmed">
+        <i data-lucide="check-check"></i> Data telah divalidasi dan tersimpan di aplikasi
+      </div>
+    `;
+  } else if (status === 'cancelled') {
+    badgeHTML = `<span class="ai-action-badge cancelled"><i data-lucide="x"></i> Dibatalkan</span>`;
+    footerHTML = `
+      <div class="ai-action-status-cancelled">
+        <i data-lucide="ban"></i> Input data telah dibatalkan oleh pengguna
+      </div>
+    `;
+  } else {
+    badgeHTML = `<span class="ai-action-badge pending"><i data-lucide="alert-circle"></i> Butuh Validasi</span>`;
+    footerHTML = `
+      <div class="ai-action-btns" id="btns_${pendingId}">
+        <button type="button" class="ai-btn-confirm" onclick="confirmPiskuAction('${pendingId}')">
+          <i data-lucide="check-circle-2"></i> Konfirmasi &amp; Masukkan Data
+        </button>
+        <button type="button" class="ai-btn-cancel" onclick="cancelPiskuAction('${pendingId}')">
+          <i data-lucide="x-circle"></i> Batalkan
+        </button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="ai-action-card" id="card_${pendingId}">
+      <div class="ai-action-head">
+        <div class="ai-action-title-wrap">
+          <span class="ai-action-spark">⚡</span>
+          <b>Rencana Input Pisku</b>
+        </div>
+        ${badgeHTML}
+      </div>
+      <p class="ai-action-note">${status === 'pending' ? 'Periksa kembali data di bawah sebelum dimasukkan ke aplikasi:' : 'Data hasil pemrosesan Pisku:'}</p>
+      <ul class="ai-action-list">
+        ${previews.map(r => `
+          <li class="ai-action-item">
+            <span class="ai-action-icon">${r.icon}</span>
+            <div class="ai-action-text">
+              <b>${r.title}</b>
+              ${r.desc ? `<small>${r.desc}</small>` : ''}
+            </div>
+          </li>
+        `).join('')}
+      </ul>
+      <div id="footer_${pendingId}">
+        ${footerHTML}
+      </div>
+    </div>
+  `;
+}
+
+// Handler Konfirmasi oleh Pengguna
+window.confirmPiskuAction = function(pendingId) {
+  let actions = window.pendingPiskuActions[pendingId];
+  if (!actions) {
+    const stored = getPendingPiskuActionsFromStore();
+    if (stored && stored[pendingId] && stored[pendingId].actions) {
+      actions = stored[pendingId].actions;
+    }
+  }
+
+  if (!actions || !actions.length) {
+    showToast('Data aksi tidak ditemukan atau sudah selesai diproses.', 'info');
+    return;
+  }
+
+  const results = executePiskuActions(actions);
+  savePendingPiskuActionToStore(pendingId, actions, 'confirmed');
+
+  // Update Tampilan Kartu secara langsung
+  const card = document.getElementById('card_' + pendingId);
+  if (card) {
+    const badge = card.querySelector('.ai-action-badge');
+    if (badge) {
+      badge.className = 'ai-action-badge success';
+      badge.innerHTML = '<i data-lucide="check"></i> Data Tersimpan';
+    }
+    const note = card.querySelector('.ai-action-note');
+    if (note) note.textContent = 'Data hasil pemrosesan Pisku:';
+    const footer = document.getElementById('footer_' + pendingId);
+    if (footer) {
+      footer.innerHTML = `
+        <div class="ai-action-status-confirmed">
+          <i data-lucide="check-check"></i> ${results.length} data telah divalidasi dan tersimpan di aplikasi
+        </div>
+      `;
+    }
+    lucide.createIcons({ nodes: [card] });
+  }
+
+  updateSavedMessageActionStatus(pendingId, 'confirmed', actions);
+  if (typeof playHapticFeedback === 'function') playHapticFeedback('success');
+  showToast(`⚡ ${results.length} data berhasil divalidasi & dimasukkan ke aplikasi!`, 'success', 2800);
+};
+
+// Handler Pembatalan oleh Pengguna
+window.cancelPiskuAction = function(pendingId) {
+  const actions = window.pendingPiskuActions[pendingId] || (getPendingPiskuActionsFromStore()?.[pendingId]?.actions);
+  savePendingPiskuActionToStore(pendingId, actions || [], 'cancelled');
+
+  const card = document.getElementById('card_' + pendingId);
+  if (card) {
+    const badge = card.querySelector('.ai-action-badge');
+    if (badge) {
+      badge.className = 'ai-action-badge cancelled';
+      badge.innerHTML = '<i data-lucide="x"></i> Dibatalkan';
+    }
+    const footer = document.getElementById('footer_' + pendingId);
+    if (footer) {
+      footer.innerHTML = `
+        <div class="ai-action-status-cancelled">
+          <i data-lucide="ban"></i> Input data telah dibatalkan oleh pengguna
+        </div>
+      `;
+    }
+    lucide.createIcons({ nodes: [card] });
+  }
+
+  updateSavedMessageActionStatus(pendingId, 'cancelled', actions);
+  showToast('Input data dibatalkan', 'info');
+};
+
+// ---- Eksekusi Tindakan ke Database Aplikasi ----
 function executePiskuActions(actions) {
-  if (!Array.isArray(actions) || !actions.length) return null;
+  if (!Array.isArray(actions) || !actions.length) return [];
 
   const results = [];
-  const nowStr = new Date().toISOString().split('T')[0];
+  const nowStr = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
 
   actions.forEach(act => {
     const d = act.data || {};
@@ -233,18 +504,20 @@ function executePiskuActions(actions) {
           id: typeof uid === 'function' ? uid() : 'j_' + Date.now() + Math.random().toString(36).substr(2, 4),
           hari: d.hari || 'Senin',
           matkul: matkul,
-          ruang: d.ruang || '-',
+          ruangan: d.ruangan || d.ruang || '-',
           jamMulai: d.jamMulai || '08:00',
           jamSelesai: d.jamSelesai || '10:00',
           dosen: d.dosen || '',
-          sks: parseInt(d.sks) || 2
+          sks: parseInt(d.sks) || 2,
+          color: d.color || '#2563eb',
+          createdAt: new Date().toISOString()
         };
         list.push(item);
         Store.setJadwal(list);
         results.push({
           icon: '📅',
           title: `Jadwal: ${item.matkul}`,
-          desc: `${item.hari}, ${item.jamMulai} - ${item.jamSelesai} (${item.ruang})`
+          desc: `${item.hari}, ${item.jamMulai} - ${item.jamSelesai} (${item.ruangan})`
         });
       }
 
@@ -281,6 +554,7 @@ function executePiskuActions(actions) {
           matkul: d.matkul || 'Umum',
           deadline: d.deadline || '',
           deskripsi: d.deskripsi || '',
+          prioritas: d.prioritas || 'medium',
           done: false,
           createdAt: new Date().toISOString()
         };
@@ -294,22 +568,27 @@ function executePiskuActions(actions) {
       }
 
       else if (act.action === 'add_event') {
-        const title = (d.title || '').trim();
-        if (!title) return;
+        const nama = (d.nama || d.title || '').trim();
+        if (!nama) return;
         const list = Store.getEvents();
+        const tanggal = d.tanggal || d.date || nowStr;
         const item = {
           id: typeof uid === 'function' ? uid() : 'ev_' + Date.now() + Math.random().toString(36).substr(2, 4),
-          title: title,
-          date: d.date || nowStr,
-          time: d.time || '09:00',
-          desc: d.desc || ''
+          nama: nama,
+          tanggal: tanggal,
+          jamMulai: d.jamMulai || d.time || '09:00',
+          jamSelesai: d.jamSelesai || '',
+          lokasi: d.lokasi || '',
+          deskripsi: d.deskripsi || d.desc || '',
+          color: d.color || '#2563eb',
+          createdAt: new Date().toISOString()
         };
         list.push(item);
         Store.setEvents(list);
         results.push({
           icon: '📆',
-          title: `Agenda: ${item.title}`,
-          desc: `${item.date} pukul ${item.time}`
+          title: `Agenda: ${item.nama}`,
+          desc: `${item.tanggal} pukul ${item.jamMulai} ${item.lokasi ? '📍 ' + item.lokasi : ''}`
         });
       }
 
@@ -323,6 +602,8 @@ function executePiskuActions(actions) {
           isi: d.isi || '',
           kategori: d.kategori || 'Kuliah',
           pinned: false,
+          color: d.color || '#2563eb',
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
         list.push(item);
@@ -400,41 +681,12 @@ function executePiskuActions(actions) {
     if (typeof FirebaseService !== 'undefined' && FirebaseService.isInitialized) {
       FirebaseService.syncUploadAll(false);
     }
-
-    if (typeof playHapticFeedback === 'function') playHapticFeedback('success');
-    if (typeof showToast === 'function') {
-      showToast(`⚡ Pisku berhasil memasukkan ${results.length} data ke aplikasi!`, 'success', 2600);
-    }
   }
 
   return results;
 }
 
-// Format kartu rekap hasil aksi otomatis
-function generateActionCardHTML(results) {
-  if (!results || !results.length) return '';
-  return `
-    <div class="ai-action-card">
-      <div class="ai-action-head">
-        <span>⚡ Pisku Auto-Input</span>
-        <span class="ai-action-badge">${results.length} Data Tersimpan</span>
-      </div>
-      <ul class="ai-action-list">
-        ${results.map(r => `
-          <li class="ai-action-item">
-            <span class="ai-action-icon">${r.icon}</span>
-            <div class="ai-action-text">
-              <b>${r.title}</b>
-              ${r.desc ? `<small>${r.desc}</small>` : ''}
-            </div>
-          </li>
-        `).join('')}
-      </ul>
-    </div>
-  `;
-}
-
-// ---- Komunikasi Utama Pisku (Gemini 1.5 Flash Multimodal) ----
+// ---- Komunikasi Utama Pisku (Gemini Flash Multimodal Cepat & Akurat) ----
 async function sendMessageToAI(userMessage) {
   const apiKey = Store.getApiKey();
   if (!apiKey) {
@@ -454,7 +706,7 @@ async function sendMessageToAI(userMessage) {
   const transaksi = Store.getTransaksi();
   const events = Store.getEvents();
   const now = new Date();
-  const nowIso = now.toISOString().split('T')[0];
+  const nowIso = typeof getLocalDateString === 'function' ? getLocalDateString(now) : now.toISOString().split('T')[0];
 
   const thisMonthTrans = transaksi.filter(t => {
     const d = new Date(t.tanggal);
@@ -463,46 +715,39 @@ async function sendMessageToAI(userMessage) {
   const income = thisMonthTrans.filter(t => t.type === 'income').reduce((s, t) => s + t.jumlah, 0);
   const expense = thisMonthTrans.filter(t => t.type === 'expense').reduce((s, t) => s + t.jumlah, 0);
 
-  const systemPrompt = `Kamu adalah Pisku, asisten AI personal serba bisa yang cerdas, ramah, dan suportif untuk ${profil.name || 'pengguna'} di aplikasi Piskaly.
+  const systemPrompt = `Kamu adalah Pisku, asisten AI pintar, ramah, dan solutif untuk ${profil.name || 'pengguna'} di aplikasi Piskaly.
 Pengguna adalah mahasiswa ${profil.jurusan ? 'jurusan ' + profil.jurusan : ''} ${profil.univ ? 'di ' + profil.univ : ''} semester ${profil.semester || '?'}.
 
-DATA PENGGUNA SAAT INI:
-- Hari & Tanggal Sekarang: ${now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})} (${nowIso}), pukul ${now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}
-- Jadwal kuliah: ${jadwal.length} matkul terdaftar (${jadwal.slice(0,5).map(j => `${j.hari} ${j.matkul}`).join(', ')}${jadwal.length > 5 ? '...' : ''})
-- Tugas belum selesai: ${tugas.length} tugas (${tugas.slice(0,3).map(t => `${t.nama} [${t.deadline || 'no-dl'}]`).join(', ')})
-- Keuangan bulan ini: Pemasukan ${formatRupiahFull(income)}, Pengeluaran ${formatRupiahFull(expense)}, Saldo Tersedia ${formatRupiahFull(income-expense)}
-- Agenda mendatang: ${events.length} agenda
+WAKTU & DATA REALTIME SAAT INI:
+- Hari & Tanggal Hari Ini: ${now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})} (Format YYYY-MM-DD: ${nowIso})
+- Jam Sekarang: ${now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})} WIB
+- Jadwal Kuliah: ${jadwal.length} matkul (${jadwal.slice(0,5).map(j => `${j.hari} ${j.matkul}`).join(', ')}${jadwal.length > 5 ? '...' : ''})
+- Tugas Belum Selesai: ${tugas.length} tugas (${tugas.slice(0,3).map(t => `${t.nama} [${t.deadline || 'no-dl'}]`).join(', ')})
+- Keuangan Bulan Ini: Pemasukan ${formatRupiahFull(income)}, Pengeluaran ${formatRupiahFull(expense)}, Saldo ${formatRupiahFull(income-expense)}
+- Agenda Kegiatan: ${events.length} agenda
 
-KEMAMPUAN UTAMA - AUTO-INPUT & PENGOLAHAN FILE:
-Kamu MEMILIKI KEMAMPUAN LANGSUNG untuk menginputkan data ke dalam sistem aplikasi Piskaly!
-Bila pengguna meminta untuk:
-1. Memasukkan jadwal kuliah (misal dari rangkuman teks atau foto/file jadwal yang dikirimkan).
-2. Mencatat transaksi keuangan (pemasukan/pengeluaran/struk belanja).
-3. Menambahkan tugas kuliah & deadline.
-4. Menjadwalkan agenda/kegiatan di kalender.
-5. Menulis catatan baru.
-6. Membuat target tabungan.
-7. Mencatat hutang atau piutang.
+TUGAS & KEMAMPUAN UTAMA:
+Kamu mampu membaca teks pengguna maupun melampirkan file dokumen/foto jadwal/struk belanja untuk diekstraksi ke sistem.
+Ketika pengguna meminta atau mengirimkan data jadwal kuliah, transaksi keuangan, tugas, kegiatan kalender, catatan, target tabungan, atau hutang/piutang:
+Rangkum data tersebut dan sertakan blok aksi JSON di paling bawah jawabanmu dengan format PERSIS:
 
-MAKA, di akhir jawabanmu, WAJIB sertakan blok kode aksi JSON dengan format PERSIS:
 \`\`\`json:actions
 [
-  { "action": "add_jadwal", "data": { "hari": "Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu", "matkul": "Nama Matkul", "ruang": "Ruangan/Lab", "jamMulai": "08:00", "jamSelesai": "10:00", "dosen": "Nama Dosen", "sks": 3 } },
+  { "action": "add_jadwal", "data": { "hari": "Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu", "matkul": "Nama Matkul", "ruangan": "Ruang/Lab", "jamMulai": "08:00", "jamSelesai": "10:00", "dosen": "Nama Dosen", "sks": 3 } },
   { "action": "add_transaksi", "data": { "type": "expense|income", "jumlah": 25000, "kategori": "Makan|Transport|Belanja|Hiburan|Pendidikan|Kesehatan|Uang Saku|Kerja|Lainnya", "keterangan": "Keterangan", "tanggal": "YYYY-MM-DD" } },
   { "action": "add_tugas", "data": { "nama": "Nama Tugas", "matkul": "Mata Kuliah", "deadline": "YYYY-MM-DD", "deskripsi": "Deskripsi" } },
-  { "action": "add_event", "data": { "title": "Nama Agenda", "date": "YYYY-MM-DD", "time": "HH:MM", "desc": "Deskripsi" } },
+  { "action": "add_event", "data": { "nama": "Nama Kegiatan", "tanggal": "YYYY-MM-DD", "jamMulai": "09:00", "lokasi": "Lokasi", "deskripsi": "Deskripsi" } },
   { "action": "add_catatan", "data": { "judul": "Judul Catatan", "isi": "Isi lengkap", "kategori": "Kuliah|Pribadi|Ide|Penting" } },
   { "action": "add_goal", "data": { "nama": "Target Tabungan", "target": 5000000, "deadline": "YYYY-MM-DD" } },
   { "action": "add_debt", "data": { "tipe": "hutang|piutang", "nama": "Nama Orang", "jumlah": 50000, "jatuhTempo": "YYYY-MM-DD", "catatan": "Keterangan" } }
 ]
 \`\`\`
 
-ATURAN PENTING:
-- Jika pengguna mengirim beberapa jadwal sekaligus (misal 5 matkul), buatkan 5 item "add_jadwal" di dalam array actions tersebut!
-- Jika pengguna melampirkan foto dokumen/jadwal atau file teks, baca seluruh isinya secara teliti dan ubah menjadi actions yang sesuai.
-- Hitung tanggal secara cerdas: tanggal hari ini adalah ${nowIso}. Jika pengguna bilang "besok", "lusa", "jumat depan", hitung ke format YYYY-MM-DD yang tepat.
-- Nominal uang murni angka (contoh 25000, 1000000).
-- Jawab dalam Bahasa Indonesia yang hangat, akrab, solutif, dan beri tahu pengguna bahwa data sudah berhasil diproses.`;
+ATURAN PENTING & AKURASI:
+1. AKURASI TANGGAL: Tanggal hari ini adalah ${nowIso}. Jika pengguna menyebut "besok", "lusa", "jumat depan", atau tanggal tertentu, hitung dengan tepat ke format YYYY-MM-DD tanpa meleset.
+2. VALIDASI PENGGUNA: Aplikasi memiliki sistem konfirmasi sebelum data masuk. Dalam teks balasanmu, beri tahu pengguna bahwa data sudah kamu siapkan dan minta mereka memeriksa serta menekan tombol konfirmasi.
+3. JADWAL SEMESTER: Jika pengguna mengirim teks jadwal kuliah semester atau foto jadwal, ekstraksi SEMUA mata kuliah ke dalam array actions tersebut.
+4. Jawab dalam Bahasa Indonesia yang santun, hangat, dan ringkas.`;
 
   // Render pesan user di layar
   appendMessage('user', userMessage, currentFile);
@@ -511,7 +756,6 @@ ATURAN PENTING:
   showTypingIndicator();
 
   try {
-    // Siapkan parts untuk request ke Gemini
     const userParts = [];
 
     // Jika ada lampiran file gambar / PDF
@@ -535,28 +779,12 @@ ATURAN PENTING:
       userParts.push({ text: userMessage });
     }
 
-    // Bangun riwayat percakapan
+    // Bangun riwayat percakapan murni (tanpa polusi system prompt di setiap turn)
     const contents = [];
+    chatHistory.slice(-8).forEach(msg => contents.push(msg));
+    contents.push({ role: 'user', parts: userParts });
 
-    if (chatHistory.length === 0) {
-      contents.push({
-        role: 'user',
-        parts: [{ text: systemPrompt + '\n\n[Pesan Pertama Pengguna]:' }, ...userParts]
-      });
-    } else {
-      contents.push({
-        role: 'user',
-        parts: [{ text: systemPrompt }]
-      });
-      contents.push({
-        role: 'model',
-        parts: [{ text: 'Halo! Aku Pisku, asisten AI pribadi kamu. Siap membantu percakapan, membaca file, dan mengatur data aplikasi!' }]
-      });
-      chatHistory.slice(-10).forEach(msg => contents.push(msg));
-      contents.push({ role: 'user', parts: userParts });
-    }
-
-    // Daftar model Gemini yang didukung dengan fallback otomatis
+    // Model tercepat dan stabil untuk performa maksimal
     const candidateModels = [
       'gemini-3-flash-preview',
       'gemini-3.1-flash-lite-preview',
@@ -578,12 +806,15 @@ ATURAN PENTING:
               'x-goog-api-key': apiKey
             },
             body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: systemPrompt }]
+              },
               contents,
               generationConfig: {
-                temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
-                maxOutputTokens: 2048,
+                temperature: 0.35,
+                topK: 32,
+                topP: 0.9,
+                maxOutputTokens: 1024,
               },
               safetySettings: [
                 { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
@@ -617,30 +848,35 @@ ATURAN PENTING:
     }
     const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Maaf, Pisku tidak dapat memproses pesan itu saat ini.';
 
-    // Deteksi dan eksekusi actions
+    // Deteksi aksi yang disarankan AI (TIDAK langsung input, butuh validasi user)
     let cleanText = rawAiText;
-    let actionResults = [];
+    let proposedActions = null;
+    let pendingId = null;
     const actionMatch = rawAiText.match(/```(?:json:actions|actions)\s*([\s\S]*?)\s*```/);
 
     if (actionMatch && actionMatch[1]) {
       try {
-        const parsedActions = JSON.parse(actionMatch[1]);
-        actionResults = executePiskuActions(parsedActions);
-        // Hapus blok json dari teks yang ditampilkan ke pengguna
+        const parsed = JSON.parse(actionMatch[1]);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          proposedActions = parsed;
+          pendingId = 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+          window.pendingPiskuActions[pendingId] = proposedActions;
+          savePendingPiskuActionToStore(pendingId, proposedActions, 'pending');
+        }
         cleanText = rawAiText.replace(/```(?:json:actions|actions)[\s\S]*?```/g, '').trim();
       } catch (parseErr) {
         console.warn('Gagal parsing JSON actions dari AI:', parseErr);
       }
     }
 
-    const actionCardHTML = generateActionCardHTML(actionResults);
+    const actionCardHTML = proposedActions ? generateActionCardHTML(pendingId, proposedActions, 'pending') : '';
 
     removeTypingIndicator();
-    appendMessage('assistant', cleanText, null, actionCardHTML);
+    appendMessage('assistant', cleanText, null, actionCardHTML, pendingId, proposedActions, 'pending');
 
     chatHistory.push({ role: 'user', parts: userParts.filter(p => p.text) });
     chatHistory.push({ role: 'model', parts: [{ text: cleanText }] });
-    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+    if (chatHistory.length > 16) chatHistory = chatHistory.slice(-16);
 
   } catch (err) {
     removeTypingIndicator();
@@ -659,11 +895,11 @@ ATURAN PENTING:
 }
 
 // ---- Render Message Elements ----
-function appendMessage(role, text, fileObj = null, actionCardHTML = '') {
-  renderMessageElement(role, text, fileObj, actionCardHTML, true);
+function appendMessage(role, text, fileObj = null, actionCardHTML = '', pendingId = null, pendingActions = null, actionStatus = 'pending') {
+  renderMessageElement(role, text, fileObj, actionCardHTML, true, pendingId, pendingActions, actionStatus);
 }
 
-function renderMessageElement(role, text, fileObj = null, actionCardHTML = '', saveToStorage = true) {
+function renderMessageElement(role, text, fileObj = null, actionCardHTML = '', saveToStorage = true, pendingId = null, pendingActions = null, actionStatus = 'pending') {
   const container = document.getElementById('aiMessages');
   if (!container) return;
 
@@ -709,6 +945,9 @@ function renderMessageElement(role, text, fileObj = null, actionCardHTML = '', s
       text,
       file: fileObj ? { name: fileObj.name, size: fileObj.size, isImage: fileObj.isImage, dataUrl: fileObj.isImage ? fileObj.dataUrl : null } : null,
       actionCardHTML,
+      pendingId,
+      pendingActions,
+      actionStatus,
       time: Date.now()
     });
   }

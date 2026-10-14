@@ -280,7 +280,7 @@ function saveTransaksi() {
     jumlah,
     keterangan,
     kategori: document.getElementById('transKategori').value,
-    tanggal: document.getElementById('transTanggal').value || new Date().toISOString().slice(0, 10),
+    tanggal: document.getElementById('transTanggal').value || getLocalDateString(),
     createdAt: editingTransId ? undefined : new Date().toISOString()
   };
 
@@ -305,7 +305,7 @@ function resetTransaksiForm() {
   document.getElementById('transKeterangan').value = '';
   document.getElementById('modalTransaksiTitle').textContent = 'Tambah Transaksi';
   setTransType('expense');
-  document.getElementById('transTanggal').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('transTanggal').value = getLocalDateString();
   editingTransId = null;
 }
 
@@ -334,6 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('chartPeriod').addEventListener('change', renderFinanceChart);
 
   // Set today's date as default
-  document.getElementById('transTanggal').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('transTanggal').value = getLocalDateString();
   attachRupiahFormatter(document.getElementById('transJumlah'));
 });
