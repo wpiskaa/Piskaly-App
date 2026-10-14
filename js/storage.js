@@ -111,7 +111,28 @@ const Store = {
   },
   setDebts(d) { this.set(this._k('debts'), d); },
 
-  getEvents() { return this.get(this._k('events'), []); },
+  getEvents() {
+    let list = this.get(this._k('events'), []);
+    if (!Array.isArray(list)) list = [];
+    // Bersihkan agenda duplikat/hantu peninggalan auto-input Pisku versi lama
+    const cleaned = list.filter(e => {
+      const nama = (e.nama || e.title || '').trim().toLowerCase();
+      const jam = (e.jamMulai || e.time || '').trim();
+      const desc = (e.deskripsi || e.desc || '').toLowerCase();
+      if (nama === 'ke clinic') return false;
+      if (nama.includes('sport massage') && (jam === '16:00' || desc.includes('recovery') || desc.includes('sore hari'))) return false;
+      if (desc.includes('agenda ke klinik') || desc.includes('kunjungan ke klinik')) return false;
+      return true;
+    });
+    if (cleaned.length !== list.length) {
+      this.set(this._k('events'), cleaned);
+      if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isLoggedIn && FirebaseSync.isLoggedIn()) {
+        try { FirebaseSync.saveUserData(); } catch (err) {}
+      }
+      return cleaned;
+    }
+    return list;
+  },
   setEvents(d) { this.set(this._k('events'), d); },
 
   getProjects() {

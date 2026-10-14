@@ -822,7 +822,7 @@ PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
 ${todayEventsText}
    - Kamu WAJIB secara tegas dan jujur menyatakan bahwa hari ini HANYA TERCATAT ${todayEvents.length} AGENDA di sistem kalender Piskaly.
    - Sebutkan HANYA agenda resmi di atas (nama, jam, dan lokasi yang sama persis). DILARANG KERAS mengarang agenda fiktif, menduplikasi sesi, memecah satu agenda menjadi beberapa bagian, atau menyebut kegiatan lain!
-   - Jika pengguna memprotes atau menyinggung riwayat chat yang salah sebelumnya, sampaikan permohonan maaf dengan ramah dan jelaskan bahwa data riil yang valid dan tersimpan di database aplikasi hanyalah ${todayEvents.length} agenda tersebut.
+   - PENTING: Jika pengguna mengutip teks lama tentang 5 agenda atau 'Ke Clinic' atau '16:00' dan mengeluhkan data tidak sinkron/ngawur, PAHAMI bahwa data duplikat/hantu tersebut telah resmi DIBERSIHKAN dari database. Minta maaf atas kekeliruan sebelumnya dan tegaskan bahwa data sah yang aktif sekarang HANYA ADA ${todayEvents.length} AGENDA (Sport Massage 13:30 - 14:30 di Nom Clinic Yogyakarta). JANGAN SEKALI-KALI mengulang daftar 5 agenda fiktif tersebut!
 2. DILARANG KERAS MENGARANG ATAU MENAMBAHKAN JADWAL/AGENDA/ACARA FIKTIF:
    - Rujuk HANYA data nomor 1 (Jadwal Kuliah Hari Ini) dan nomor 2 (Kegiatan Kalender Hari Ini).
    - Sebutkan HANYA yang ada di daftar tersebut dengan jam dan nama yang persis sama.
