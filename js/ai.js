@@ -21,8 +21,22 @@ function checkApiKeyStatus() {
   if (keyInput) keyInput.value = apiKey || '';
 }
 
-// ---- Auto-Reset & Restore Chat (24 Jam) ----
+// ---- Pembersihan Pesan Halusinasi & Restore Chat (24 Jam) ----
+function sanitizePiskuMessages() {
+  try {
+    const list = (Store.getAiMessages ? Store.getAiMessages() : JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]')) || [];
+    const cleaned = list.filter(m => !(m.text && (m.text.toLowerCase().includes('sport massage') || m.text.toLowerCase().includes('ke clinic'))));
+    if (cleaned.length !== list.length) {
+      if (Store.setAiMessages) Store.setAiMessages(cleaned);
+      else localStorage.setItem('mylife_pisku_messages', JSON.stringify(cleaned));
+    }
+  } catch (e) {
+    console.warn('Gagal membersihkan pesan:', e);
+  }
+}
+
 function checkAndRestorePiskuChat() {
+  sanitizePiskuMessages();
   const lastTime = parseInt((Store.getAiLastTime && Store.getAiLastTime()) || '0', 10);
   const now = Date.now();
 
@@ -818,7 +832,10 @@ PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
   { "action": "add_debt", "data": { "tipe": "hutang|piutang", "nama": "Nama Orang", "jumlah": 50000, "jatuhTempo": "YYYY-MM-DD", "catatan": "Keterangan" } }
 ]
 \`\`\`
-5. Gaya Bicara: Hangat, sopan, akurat, dan percaya diri tanpa mengarang informasi.`;
+5. DILARANG MEMBUAT BLOK JSON:ACTIONS JIKA TIDAK ADA PERMINTAAN INPUT DATA BARU:
+   - Jika pengguna HANYA bertanya (contoh: "ada kegiatan apa hari ini?", "apa jadwalku hari ini?", "tugas apa yang belum selesai?"), CUKUP jawab dengan teks penjelasan ramah berdasarkan DATA RESMI di atas.
+   - JANGAN PERNAH menyertakan blok \`\`\`json:actions ... \`\`\` jika pengguna tidak secara eksplisit meminta kamu menambahkan/mencatat/menjadwalkan data baru!
+6. Gaya Bicara: Hangat, sopan, akurat, dan jujur berdasarkan fakta data.`;
 
   // Render pesan user di layar
   appendMessage('user', userMessage, currentFile);
@@ -850,9 +867,15 @@ PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
       userParts.push({ text: userMessage });
     }
 
-    // Bangun riwayat percakapan murni (tanpa polusi system prompt di setiap turn)
+    // Bangun riwayat percakapan murni & aman (bersihkan jika ada sisa halusinasi lama)
     const contents = [];
-    chatHistory.slice(-8).forEach(msg => contents.push(msg));
+    const safeHistory = chatHistory
+      .filter(msg => {
+        const txt = (msg.parts?.[0]?.text || '').toLowerCase();
+        return !txt.includes('sport massage') && !txt.includes('clinic');
+      })
+      .slice(-6);
+    safeHistory.forEach(msg => contents.push(msg));
     contents.push({ role: 'user', parts: userParts });
 
     // Model tercepat dan stabil untuk performa maksimal
