@@ -89,9 +89,17 @@
     // Greeting time based on hour
     const hour = dateObj.getHours();
     let timeGreeting = 'Selamat pagi';
-    if (hour >= 11 && hour < 15) timeGreeting = 'Selamat siang';
-    else if (hour >= 15 && hour < 18) timeGreeting = 'Selamat sore';
-    else if (hour >= 18 || hour < 4) timeGreeting = 'Selamat malam';
+    let greetingEmoji = '☀️';
+    if (hour >= 11 && hour < 15) {
+      timeGreeting = 'Selamat siang';
+      greetingEmoji = '🌤️';
+    } else if (hour >= 15 && hour < 18) {
+      timeGreeting = 'Selamat sore';
+      greetingEmoji = '🌇';
+    } else if (hour >= 18 || hour < 4) {
+      timeGreeting = 'Selamat malam';
+      greetingEmoji = '🌙';
+    }
 
     // Build spoken text (natural Indonesian)
     let spokenScript = `${timeGreeting}, ${userName}! Pisku siap mendampingi harimu di ${dayName}. `;
@@ -119,6 +127,7 @@
     return {
       userName,
       timeGreeting,
+      greetingEmoji,
       dateFormatted,
       dayName,
       jadwalCount: todayJadwal.length,
@@ -150,28 +159,31 @@
     const kuliahStatEl = document.getElementById('briefingKuliahCount');
     const agendaStatEl = document.getElementById('briefingAgendaCount');
     const tugasStatEl = document.getElementById('briefingTugasCount');
+    const tugasLabelEl = document.getElementById('briefingTugasLabel');
 
-    if (greetingEl) greetingEl.textContent = `${summary.timeGreeting}, ${summary.userName}! ☀️`;
+    if (greetingEl) greetingEl.textContent = `${summary.timeGreeting}, ${summary.userName}! ${summary.greetingEmoji}`;
     if (dateEl) dateEl.textContent = summary.dateFormatted;
     if (scriptEl) scriptEl.textContent = `"${summary.spokenScript}"`;
-    if (kuliahStatEl) kuliahStatEl.textContent = summary.jadwalCount + ' Kuliah';
-    if (agendaStatEl) agendaStatEl.textContent = summary.eventCount + ' Agenda';
-    if (tugasStatEl) tugasStatEl.textContent = (summary.urgentTugasCount > 0 ? summary.urgentTugasCount + ' Mendesak' : summary.pendingTugasCount + ' Pending');
+    if (kuliahStatEl) kuliahStatEl.textContent = summary.jadwalCount;
+    if (agendaStatEl) agendaStatEl.textContent = summary.eventCount;
+    if (tugasStatEl) {
+      tugasStatEl.textContent = (summary.urgentTugasCount > 0 ? summary.urgentTugasCount : summary.pendingTugasCount);
+    }
+    if (tugasLabelEl) {
+      tugasLabelEl.textContent = summary.urgentTugasCount > 0 ? 'Mendesak' : 'Tugas';
+    }
 
     // Reset voice button state
     stopBriefingVoice();
     const voiceBtn = document.getElementById('briefingVoiceBtn');
     const wavesEl = document.getElementById('briefingWaves');
     if (voiceBtn) {
-      voiceBtn.innerHTML = '<i data-lucide="volume-2"></i> Dengarkan Suara Pisku';
+      voiceBtn.innerHTML = '<i data-lucide="volume-2"></i> <span>Dengarkan Suara</span>';
     }
     if (wavesEl) wavesEl.classList.remove('speaking');
 
     modal.classList.remove('hidden');
     if (window.lucide) window.lucide.createIcons();
-
-    // Auto-read voice greeting if desired or leave ready for user tap
-    // Note: modern browsers require user interaction for audio, so tap to play is most reliable.
   };
 
   /**
@@ -223,7 +235,7 @@
     currentUtterance.onstart = function () {
       isSpeaking = true;
       if (voiceBtn) {
-        voiceBtn.innerHTML = '<i data-lucide="square"></i> Hentikan Suara';
+        voiceBtn.innerHTML = '<i data-lucide="square"></i> <span>Hentikan</span>';
         if (window.lucide) window.lucide.createIcons();
       }
       if (wavesEl) wavesEl.classList.add('speaking');
@@ -250,7 +262,7 @@
     const voiceBtn = document.getElementById('briefingVoiceBtn');
     const wavesEl = document.getElementById('briefingWaves');
     if (voiceBtn) {
-      voiceBtn.innerHTML = '<i data-lucide="volume-2"></i> Dengarkan Suara Pisku';
+      voiceBtn.innerHTML = '<i data-lucide="volume-2"></i> <span>Dengarkan Suara</span>';
       if (window.lucide) window.lucide.createIcons();
     }
     if (wavesEl) wavesEl.classList.remove('speaking');
