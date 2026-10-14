@@ -54,7 +54,7 @@
   <link rel="stylesheet" href="css/auth.css?v=3.26" />
   <link rel="stylesheet" href="css/notifikasi.css?v=3.20" />
   <link rel="stylesheet" href="css/utilities.css?v=3.20" />
-  <link rel="stylesheet" href="css/features-fun.css?v=3.30" />
+  <link rel="stylesheet" href="css/features-fun.css?v=3.31" />
 </head>
 <body>
 
@@ -898,6 +898,10 @@
               <i data-lucide="user-circle"></i>
               <span>Profil &amp; Pengaturan</span>
             </button>
+            <button class="drawer-nav-item" onclick="openMorningBriefing(true); closeDrawer();">
+              <i data-lucide="calendar"></i>
+              <span>Ringkasan Hari Ini</span>
+            </button>
             <button class="drawer-nav-item" onclick="openPiskalyWrapped(); closeDrawer();">
               <i data-lucide="sparkles"></i>
               <span>Piskaly Wrapped</span>
@@ -1657,6 +1661,64 @@
 
   <!-- ===== FUN & ENGAGING MODALS ===== -->
 
+  <!-- Modal: Ringkasan Hari Ini (Langsung ke Inti & Tanpa Voice) -->
+  <div class="briefing-modal-overlay hidden" id="modalMorningBriefing">
+    <div class="briefing-card">
+      <div class="briefing-glow-accent"></div>
+      
+      <!-- Header hanya tombol tutup (tanpa judul teks redundan, langsung ke inti) -->
+      <div class="briefing-header">
+        <button class="briefing-close-btn" onclick="closeMorningBriefing()" aria-label="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Avatar & Salam Langsung -->
+      <div class="briefing-avatar-row">
+        <div class="briefing-avatar-box">
+          <i data-lucide="bot"></i>
+          <span class="briefing-online-status"></span>
+        </div>
+        <div class="briefing-title-col">
+          <h2 class="briefing-title" id="briefingGreeting">Selamat datang, Piska!</h2>
+          <p class="briefing-date-text" id="briefingDate">Kamis, 15 Oktober 2026</p>
+        </div>
+      </div>
+
+      <!-- Balon Pesan Inti -->
+      <div class="briefing-bubble">
+        <p class="briefing-speech-text" id="briefingSpeechText">
+          Memuat ringkasan harimu...
+        </p>
+      </div>
+
+      <!-- 3 Kartu Metrik Rapi -->
+      <div class="briefing-stats-grid">
+        <div class="briefing-stat-card">
+          <span class="briefing-stat-icon blue"><i data-lucide="graduation-cap"></i></span>
+          <span class="briefing-stat-title" id="briefingKuliahCount">0</span>
+          <span class="briefing-stat-sub">Kuliah</span>
+        </div>
+        <div class="briefing-stat-card">
+          <span class="briefing-stat-icon amber"><i data-lucide="calendar"></i></span>
+          <span class="briefing-stat-title" id="briefingAgendaCount">0</span>
+          <span class="briefing-stat-sub">Agenda</span>
+        </div>
+        <div class="briefing-stat-card">
+          <span class="briefing-stat-icon rose"><i data-lucide="check-circle-2"></i></span>
+          <span class="briefing-stat-title" id="briefingTugasCount">0</span>
+          <span class="briefing-stat-sub" id="briefingTugasLabel">Tugas</span>
+        </div>
+      </div>
+
+      <!-- Tombol Aksi Mulai -->
+      <button class="briefing-start-btn" onclick="closeMorningBriefing()">
+        <span>Mulai Hariku Sekarang</span>
+        <i data-lucide="arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- Modal: Weekly Recap Story (Flexing) -->
   <div class="recap-modal-overlay hidden" id="modalWeeklyRecap">
     <div class="recap-card">
@@ -1785,14 +1847,14 @@
   <script src="js/kalender.js?v=3.20"></script>
   <script src="js/notifikasi.js?v=3.20"></script>
   <script src="js/ai.js?v=3.27"></script>
-  <script src="js/features-fun.js?v=3.30"></script>
+  <script src="js/features-fun.js?v=3.31"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(key => {
-          if (key !== 'mylife-v3.30') {
+          if (key !== 'mylife-v3.31') {
             caches.delete(key);
           }
         });
@@ -1805,7 +1867,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.30').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.31').catch(() => {});
       });
     }
   </script>

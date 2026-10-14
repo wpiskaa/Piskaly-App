@@ -13,7 +13,141 @@
   let wrappedTimer = null;
 
   /* ===================================================
-     1. MOOD & ENERGY TRACKER HARIAN + WEEKLY RECAP
+     1. DAILY BRIEFING (LANGSUNG KE INTI & TANPA SUARA)
+     =================================================== */
+
+  window.checkDailyBriefing = function () {
+    try {
+      const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+      const lastDate = Store.getLastBriefingDate();
+      if (lastDate !== today) {
+        setTimeout(() => {
+          const user = Store.getCurrentUser ? Store.getCurrentUser() : null;
+          if (user || !localStorage.getItem('mylife_users')) {
+            openMorningBriefing(false);
+          }
+        }, 1200);
+      }
+    } catch (e) {
+      console.warn('checkDailyBriefing error:', e);
+    }
+  };
+
+  function generateBriefingSummary() {
+    const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    const profil = Store.getProfil() || {};
+    const userName = (profil.nama || 'Piska').split(' ')[0];
+
+    const dateObj = new Date();
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const dayName = dayNames[dateObj.getDay()];
+    const dateFormatted = `${dayName}, ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+
+    // 1. Jadwal Kuliah Hari Ini
+    const allJadwal = Store.getJadwal() || [];
+    const todayJadwal = allJadwal.filter(j => j.hari && j.hari.toLowerCase() === dayName.toLowerCase());
+
+    // 2. Agenda Hari Ini
+    const allEvents = Store.getEvents() || [];
+    const todayEvents = allEvents.filter(ev => ev.tanggal === today);
+
+    // 3. Tugas Pending & Urgent
+    const allTugas = Store.getTugas() || [];
+    const pendingTugas = allTugas.filter(t => t.status !== 'done');
+    const urgentTugas = pendingTugas.filter(t => {
+      if (!t.deadline) return false;
+      const diff = new Date(t.deadline) - dateObj;
+      return diff >= 0 && diff <= 3 * 24 * 60 * 60 * 1000;
+    });
+
+    const hour = dateObj.getHours();
+    let timeGreeting = 'Selamat pagi';
+    let greetingEmoji = '☀️';
+    if (hour >= 11 && hour < 15) {
+      timeGreeting = 'Selamat siang';
+      greetingEmoji = '🌤️';
+    } else if (hour >= 15 && hour < 18) {
+      timeGreeting = 'Selamat sore';
+      greetingEmoji = '🌇';
+    } else if (hour >= 18 || hour < 4) {
+      timeGreeting = 'Selamat malam';
+      greetingEmoji = '🌙';
+    }
+
+    // Direct concise summary text (langsung ke inti)
+    let directText = '';
+    if (todayJadwal.length > 0) {
+      directText += `Hari ini kamu ada ${todayJadwal.length} jadwal kuliah (${todayJadwal.map(j => j.matkul).slice(0, 2).join(', ')}). `;
+    } else {
+      directText += `Hari ini jadwal kuliahmu libur. `;
+    }
+
+    if (todayEvents.length > 0) {
+      directText += `Tercatat ${todayEvents.length} agenda kegiatan aktif. `;
+    }
+
+    if (urgentTugas.length > 0) {
+      directText += `Ada ${urgentTugas.length} tugas mendekati batas deadline. `;
+    } else if (pendingTugas.length > 0) {
+      directText += `Ada ${pendingTugas.length} tugas yang bisa kamu cicil. `;
+    } else {
+      directText += `Semua tugasmu sudah beres tercatat! `;
+    }
+    directText += `Semangat jalani harimu!`;
+
+    return {
+      userName,
+      timeGreeting,
+      greetingEmoji,
+      dateFormatted,
+      jadwalCount: todayJadwal.length,
+      eventCount: todayEvents.length,
+      urgentTugasCount: urgentTugas.length,
+      pendingTugasCount: pendingTugas.length,
+      directText
+    };
+  }
+
+  window.openMorningBriefing = function (force = true) {
+    const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    Store.setLastBriefingDate(today);
+
+    const summary = generateBriefingSummary();
+    const modal = document.getElementById('modalMorningBriefing');
+    if (!modal) return;
+
+    const greetingEl = document.getElementById('briefingGreeting');
+    const dateEl = document.getElementById('briefingDate');
+    const scriptEl = document.getElementById('briefingSpeechText');
+    const kuliahStatEl = document.getElementById('briefingKuliahCount');
+    const agendaStatEl = document.getElementById('briefingAgendaCount');
+    const tugasStatEl = document.getElementById('briefingTugasCount');
+    const tugasLabelEl = document.getElementById('briefingTugasLabel');
+
+    if (greetingEl) greetingEl.textContent = `${summary.timeGreeting}, ${summary.userName}! ${summary.greetingEmoji}`;
+    if (dateEl) dateEl.textContent = summary.dateFormatted;
+    if (scriptEl) scriptEl.textContent = `"${summary.directText}"`;
+    if (kuliahStatEl) kuliahStatEl.textContent = summary.jadwalCount;
+    if (agendaStatEl) agendaStatEl.textContent = summary.eventCount;
+    if (tugasStatEl) {
+      tugasStatEl.textContent = summary.urgentTugasCount > 0 ? summary.urgentTugasCount : summary.pendingTugasCount;
+    }
+    if (tugasLabelEl) {
+      tugasLabelEl.textContent = summary.urgentTugasCount > 0 ? 'Mendesak' : 'Tugas';
+    }
+
+    modal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  window.closeMorningBriefing = function () {
+    const modal = document.getElementById('modalMorningBriefing');
+    if (modal) modal.classList.add('hidden');
+  };
+
+  /* ===================================================
+     2. MOOD & ENERGY TRACKER HARIAN + WEEKLY RECAP
      =================================================== */
 
   const MOOD_OPTIONS = [
@@ -63,6 +197,10 @@
             <span>Mood & Energi Hari Ini</span>
           </div>
           <div style="display:flex; gap:6px;">
+            <button class="home-recap-pill-btn" onclick="openMorningBriefing(true)" title="Ringkasan Hari Ini">
+              <i data-lucide="sun" style="width:12px; height:12px;"></i>
+              <span>Hari Ini</span>
+            </button>
             <button class="home-recap-pill-btn" onclick="openWeeklyRecap()" title="Rangkuman 7 Hari Terakhir">
               <i data-lucide="bar-chart-2" style="width:12px; height:12px;"></i>
               <span>Recap</span>

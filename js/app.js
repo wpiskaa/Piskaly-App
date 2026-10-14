@@ -1030,6 +1030,11 @@ function initApp() {
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
+  // Daily Briefing check (langsung ke inti pada kunjungan pertama hari ini)
+  if (typeof checkDailyBriefing === 'function') {
+    checkDailyBriefing();
+  }
+
   // Init Lucide Icons
   lucide.createIcons();
 }
