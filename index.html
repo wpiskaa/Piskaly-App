@@ -54,7 +54,7 @@
   <link rel="stylesheet" href="css/auth.css?v=3.26" />
   <link rel="stylesheet" href="css/notifikasi.css?v=3.20" />
   <link rel="stylesheet" href="css/utilities.css?v=3.20" />
-  <link rel="stylesheet" href="css/features-fun.css?v=3.31" />
+  <link rel="stylesheet" href="css/features-fun.css?v=3.32" />
 </head>
 <body>
 
@@ -1847,14 +1847,14 @@
   <script src="js/kalender.js?v=3.20"></script>
   <script src="js/notifikasi.js?v=3.20"></script>
   <script src="js/ai.js?v=3.27"></script>
-  <script src="js/features-fun.js?v=3.31"></script>
+  <script src="js/features-fun.js?v=3.32"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(key => {
-          if (key !== 'mylife-v3.31') {
+          if (key !== 'mylife-v3.32') {
             caches.delete(key);
           }
         });
@@ -1867,7 +1867,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.31').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.32').catch(() => {});
       });
     }
   </script>

@@ -180,10 +180,9 @@
     }).join('');
 
     let feedbackText = todayMood 
-      ? `Tercatat: ${todayMood.emoji} ${todayMood.label} (${todayMood.energy}% Energi)`
-      : `Bagaimana suasana hati & energimu hari ini? Tentukan dalam 1 tap!`;
+      ? `${todayMood.label} (${todayMood.energy}% Energi)`
+      : ``;
 
-    // Find custom cheer if selected
     if (todayMood) {
       const matched = MOOD_OPTIONS.find(m => m.key === todayMood.mood);
       if (matched) feedbackText = matched.cheer;
@@ -193,20 +192,20 @@
       <div class="home-mood-card">
         <div class="home-mood-header">
           <div class="home-mood-title">
-            <i data-lucide="sparkles" style="color:#f59e0b; width:16px; height:16px;"></i>
-            <span>Mood & Energi Hari Ini</span>
+            <i data-lucide="sparkles" style="color:#f59e0b; width:13px; height:13px;"></i>
+            <span>Mood Hari Ini</span>
           </div>
-          <div style="display:flex; gap:6px;">
+          <div class="home-mood-actions">
             <button class="home-recap-pill-btn" onclick="openMorningBriefing(true)" title="Ringkasan Hari Ini">
-              <i data-lucide="sun" style="width:12px; height:12px;"></i>
+              <i data-lucide="sun"></i>
               <span>Hari Ini</span>
             </button>
-            <button class="home-recap-pill-btn" onclick="openWeeklyRecap()" title="Rangkuman 7 Hari Terakhir">
-              <i data-lucide="bar-chart-2" style="width:12px; height:12px;"></i>
+            <button class="home-recap-pill-btn" onclick="openWeeklyRecap()" title="Rangkuman Mingguan">
+              <i data-lucide="bar-chart-2"></i>
               <span>Recap</span>
             </button>
             <button class="home-recap-pill-btn" onclick="openPiskalyWrapped()" title="Buka Piskaly Wrapped">
-              <i data-lucide="sparkles" style="width:12px; height:12px;"></i>
+              <i data-lucide="sparkles"></i>
               <span>Wrapped</span>
             </button>
           </div>
@@ -214,7 +213,7 @@
         <div class="mood-selector-row">
           ${buttonsHtml}
         </div>
-        <div class="mood-feedback-toast" id="moodFeedbackMsg">${feedbackText}</div>
+        ${feedbackText ? `<div class="mood-feedback-toast" id="moodFeedbackMsg">${feedbackText}</div>` : ''}
       </div>
     `;
 
