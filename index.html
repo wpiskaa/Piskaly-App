@@ -1672,14 +1672,14 @@
   <script src="js/kalkulator.js?v=3.20"></script>
   <script src="js/kalender.js?v=3.20"></script>
   <script src="js/notifikasi.js?v=3.20"></script>
-  <script src="js/ai.js?v=3.20"></script>
+  <script src="js/ai.js?v=3.21"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(key => {
-          if (key !== 'mylife-v3.20') {
+          if (key !== 'mylife-v3.21') {
             caches.delete(key);
           }
         });
@@ -1692,7 +1692,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.20').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.21').catch(() => {});
       });
     }
   </script>

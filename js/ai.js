@@ -699,38 +699,114 @@ async function sendMessageToAI(userMessage) {
   const currentFile = attachedFile;
   clearAttachedFile();
 
-  // Ambil konteks lengkap data pengguna saat ini
-  const profil = Store.getProfil();
-  const jadwal = Store.getJadwal();
-  const tugas = Store.getTugas().filter(t => !t.done);
-  const transaksi = Store.getTransaksi();
-  const events = Store.getEvents();
+  // Ambil konteks lengkap data pengguna saat ini dari database
+  const profil = Store.getProfil() || {};
+  const jadwal = Store.getJadwal() || [];
+  const tugas = (Store.getTugas() || []).filter(t => !t.done);
+  const transaksi = Store.getTransaksi() || [];
+  const events = Store.getEvents() || [];
+  const catatan = Store.getCatatan() || [];
   const now = new Date();
   const nowIso = typeof getLocalDateString === 'function' ? getLocalDateString(now) : now.toISOString().split('T')[0];
 
+  const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const todayDayName = dayNames[now.getDay()];
+
+  // Filter jadwal kuliah hari ini secara presisi
+  const todayJadwal = jadwal.filter(j => j.hari === todayDayName)
+    .sort((a, b) => (a.jamMulai || '').localeCompare(b.jamMulai || ''));
+  const todayJadwalText = todayJadwal.length > 0
+    ? todayJadwal.map(j => `  • ${j.matkul} (Pukul: ${j.jamMulai} - ${j.jamSelesai}, Ruang: ${j.ruangan || j.ruang || '-'}, Dosen: ${j.dosen || '-'}, ${j.sks || 2} SKS)`).join('\n')
+    : '  (Tidak ada jadwal kuliah hari ini / Libur)';
+
+  // Rangkuman seluruh jadwal kuliah per hari
+  const allJadwalText = jadwal.length > 0
+    ? jadwal.map(j => `  • [${j.hari}] ${j.matkul} (${j.jamMulai} - ${j.jamSelesai}, Ruang ${j.ruangan || j.ruang || '-'})`).join('\n')
+    : '  (Belum ada jadwal kuliah yang tersimpan)';
+
+  // Kegiatan kalender hari ini secara presisi
+  const todayEvents = events.filter(e => (e.tanggal || e.date) === nowIso)
+    .sort((a, b) => (a.jamMulai || a.time || '').localeCompare(b.jamMulai || b.time || ''));
+  const todayEventsText = todayEvents.length > 0
+    ? todayEvents.map(e => `  • ${e.nama || e.title} (Pukul: ${e.jamMulai || e.time || '-'} ${e.jamSelesai ? 's/d ' + e.jamSelesai : ''}, Lokasi: ${e.lokasi || '-'}) ${e.deskripsi || e.desc ? `[Ket: ${e.deskripsi || e.desc}]` : ''}`).join('\n')
+    : '  (Tidak ada kegiatan kalender yang terdaftar untuk hari ini)';
+
+  // Agenda kalender mendatang
+  const upcomingEvents = events.filter(e => (e.tanggal || e.date) > nowIso)
+    .sort((a, b) => (a.tanggal || a.date || '').localeCompare(b.tanggal || b.date || ''))
+    .slice(0, 8);
+  const upcomingEventsText = upcomingEvents.length > 0
+    ? upcomingEvents.map(e => `  • ${e.tanggal || e.date}: ${e.nama || e.title} (Pukul: ${e.jamMulai || e.time || '-'}, Lokasi: ${e.lokasi || '-'})`).join('\n')
+    : '  (Tidak ada kegiatan mendatang)';
+
+  // Catatan pengguna
+  const catatanText = catatan.length > 0
+    ? catatan.slice(0, 8).map(c => `  • "${c.judul || 'Tanpa Judul'}" [${c.kategori || 'Umum'}]: ${(c.isi || '').slice(0, 150)}`).join('\n')
+    : '  (Belum ada catatan yang tersimpan)';
+
+  // Tugas aktif
+  const tugasText = tugas.length > 0
+    ? tugas.slice(0, 8).map(t => `  • ${t.nama} [Matkul: ${t.matkul || 'Umum'}, Deadline: ${t.deadline || 'Tanpa deadline'}]`).join('\n')
+    : '  (Semua tugas kuliah telah selesai)';
+
+  // Keuangan bulan ini
   const thisMonthTrans = transaksi.filter(t => {
     const d = new Date(t.tanggal);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
   const income = thisMonthTrans.filter(t => t.type === 'income').reduce((s, t) => s + t.jumlah, 0);
   const expense = thisMonthTrans.filter(t => t.type === 'expense').reduce((s, t) => s + t.jumlah, 0);
+  const saldo = income - expense;
 
-  const systemPrompt = `Kamu adalah Pisku, asisten AI pintar, ramah, dan solutif untuk ${profil.name || 'pengguna'} di aplikasi Piskaly.
+  const systemPrompt = `Kamu adalah Pisku, asisten AI pribadi pintar dan akurat untuk ${profil.name || 'Piska'} di aplikasi Piskaly.
 Pengguna adalah mahasiswa ${profil.jurusan ? 'jurusan ' + profil.jurusan : ''} ${profil.univ ? 'di ' + profil.univ : ''} semester ${profil.semester || '?'}.
 
-WAKTU & DATA REALTIME SAAT INI:
-- Hari & Tanggal Hari Ini: ${now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})} (Format YYYY-MM-DD: ${nowIso})
+WAKTU & TANGGAL REALTIME:
+- Hari Ini: ${now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}
+- Kode Tanggal: ${nowIso}
 - Jam Sekarang: ${now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})} WIB
-- Jadwal Kuliah: ${jadwal.length} matkul (${jadwal.slice(0,5).map(j => `${j.hari} ${j.matkul}`).join(', ')}${jadwal.length > 5 ? '...' : ''})
-- Tugas Belum Selesai: ${tugas.length} tugas (${tugas.slice(0,3).map(t => `${t.nama} [${t.deadline || 'no-dl'}]`).join(', ')})
-- Keuangan Bulan Ini: Pemasukan ${formatRupiahFull(income)}, Pengeluaran ${formatRupiahFull(expense)}, Saldo ${formatRupiahFull(income-expense)}
-- Agenda Kegiatan: ${events.length} agenda
 
-TUGAS & KEMAMPUAN UTAMA:
-Kamu mampu membaca teks pengguna maupun melampirkan file dokumen/foto jadwal/struk belanja untuk diekstraksi ke sistem.
-Ketika pengguna meminta atau mengirimkan data jadwal kuliah, transaksi keuangan, tugas, kegiatan kalender, catatan, target tabungan, atau hutang/piutang:
-Rangkum data tersebut dan sertakan blok aksi JSON di paling bawah jawabanmu dengan format PERSIS:
+==================================================
+DATA RESMI & AKTUAL APLIKASI SAAT INI (SATU-SATUNYA SUMBER KEBENARAN):
+==================================================
+1. JADWAL KULIAH HARI INI (${todayDayName.toUpperCase()}):
+${todayJadwalText}
 
+2. KEGIATAN / AGENDA KALENDER HARI INI (${nowIso}):
+${todayEventsText}
+
+3. JADWAL KULIAH MINGGUAN LENGKAP:
+${allJadwalText}
+
+4. AGENDA KALENDER MENDATANG:
+${upcomingEventsText}
+
+5. TUGAS KULIAH BELUM SELESAI:
+${tugasText}
+
+6. CATATAN PENGGUNA TERBARU:
+${catatanText}
+
+7. KEUANGAN BULAN INI:
+  • Pemasukan: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(income) : 'Rp ' + income.toLocaleString('id-ID')}
+  • Pengeluaran: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(expense) : 'Rp ' + expense.toLocaleString('id-ID')}
+  • Saldo Tersedia: ${typeof formatRupiahFull === 'function' ? formatRupiahFull(saldo) : 'Rp ' + saldo.toLocaleString('id-ID')}
+
+==================================================
+PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
+==================================================
+1. DILARANG KERAS MENGARANG ATAU MENAMBAHKAN JADWAL/AGENDA/ACARA FIKTIF!
+   - Jangan pernah menyebut kegiatan seperti "Sport Massage", "Ke Clinic", "ngopi bareng teman", atau acara apapun KECUALI kegiatan tersebut BENAR-BENAR tertulis di daftar nomor 1 atau nomor 2 di atas!
+   - Jika pengguna menanyakan: "Ada kegiatan apa hari ini?", "Apa jadwalku hari ini?", atau "Jadwal kegiatan saya apa saja?":
+     -> Rujuk HANYA data nomor 1 (Jadwal Kuliah Hari Ini) dan nomor 2 (Kegiatan Kalender Hari Ini).
+     -> Sebutkan HANYA yang ada di daftar tersebut dengan jam dan nama yang persis sama.
+     -> JIKA KOSONG (misal tertulis "Tidak ada kegiatan kalender..."), katakan dengan jujur dan lugas: "Hari ini belum ada jadwal kegiatan maupun kuliah yang tercatat di aplikasi kamu, Piska."
+2. JANGAN PERNAH MENGAKU "SUDAH MEMASUKKAN DATA KE SISTEM" TANPA VALIDASI PENGGUNA:
+   - Aplikasi menggunakan sistem validasi tombol konfirmasi pengguna.
+   - Bila pengguna meminta kamu mencatat atau merangkum sesuatu (misal: "tolong catatkan jam 13:00 ke klinik"), buat blok aksi JSON: actions, lalu jelaskan bahwa rencana tersebut sudah kamu siapkan dan minta pengguna menekan tombol konfirmasi di bawah.
+3. ABAIKAN HALUSINASI DARI CHAT SEBELUMNYA:
+   - Jika di riwayat percakapan sebelumnya ada teks model yang pernah mengarang kegiatan palsu, ABAIKAN sepenuhnya. Rujukanmu HANYA "DATA RESMI & AKTUAL APLIKASI SAAT INI" di atas.
+4. FORMAT AKSI JSON (Hanya jika pengguna meminta mencatat/menambah data baru):
 \`\`\`json:actions
 [
   { "action": "add_jadwal", "data": { "hari": "Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu", "matkul": "Nama Matkul", "ruangan": "Ruang/Lab", "jamMulai": "08:00", "jamSelesai": "10:00", "dosen": "Nama Dosen", "sks": 3 } },
@@ -742,12 +818,7 @@ Rangkum data tersebut dan sertakan blok aksi JSON di paling bawah jawabanmu deng
   { "action": "add_debt", "data": { "tipe": "hutang|piutang", "nama": "Nama Orang", "jumlah": 50000, "jatuhTempo": "YYYY-MM-DD", "catatan": "Keterangan" } }
 ]
 \`\`\`
-
-ATURAN PENTING & AKURASI:
-1. AKURASI TANGGAL: Tanggal hari ini adalah ${nowIso}. Jika pengguna menyebut "besok", "lusa", "jumat depan", atau tanggal tertentu, hitung dengan tepat ke format YYYY-MM-DD tanpa meleset.
-2. VALIDASI PENGGUNA: Aplikasi memiliki sistem konfirmasi sebelum data masuk. Dalam teks balasanmu, beri tahu pengguna bahwa data sudah kamu siapkan dan minta mereka memeriksa serta menekan tombol konfirmasi.
-3. JADWAL SEMESTER: Jika pengguna mengirim teks jadwal kuliah semester atau foto jadwal, ekstraksi SEMUA mata kuliah ke dalam array actions tersebut.
-4. Jawab dalam Bahasa Indonesia yang santun, hangat, dan ringkas.`;
+5. Gaya Bicara: Hangat, sopan, akurat, dan percaya diri tanpa mengarang informasi.`;
 
   // Render pesan user di layar
   appendMessage('user', userMessage, currentFile);
@@ -811,9 +882,9 @@ ATURAN PENTING & AKURASI:
               },
               contents,
               generationConfig: {
-                temperature: 0.35,
-                topK: 32,
-                topP: 0.9,
+                temperature: 0.2,
+                topK: 20,
+                topP: 0.85,
                 maxOutputTokens: 1024,
               },
               safetySettings: [
