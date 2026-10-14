@@ -2,7 +2,7 @@
 // SERVICE WORKER - sw.js
 // ===========================
 
-const CACHE_NAME = 'mylife-v3.27';
+const CACHE_NAME = 'mylife-v3.28';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -24,6 +24,7 @@ const STATIC_ASSETS = [
   './css/auth.css',
   './css/notifikasi.css',
   './css/utilities.css',
+  './css/features-fun.css',
   './icons/icon-piska.jpg',
   './icons/icon-72.png',
   './icons/icon-96.png',
@@ -51,6 +52,7 @@ const STATIC_ASSETS = [
   './js/kalkulator.js',
   './js/kalender.js',
   './js/ai.js',
+  './js/features-fun.js',
   './manifest.json',
 ];
 

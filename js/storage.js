@@ -163,6 +163,35 @@ const Store = {
   getAiLastTime() { return this.get(this._k('pisku_last_time'), 0); },
   setAiLastTime(d) { this.set(this._k('pisku_last_time'), d); },
 
+  // Mood & Energy Tracker Harian
+  getMoodHistory() { return this.get(this._k('mood_history'), []); },
+  setMoodHistory(d) { this.set(this._k('mood_history'), d); },
+  getTodayMood() {
+    const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    const list = this.getMoodHistory();
+    return list.find(m => m.date === today) || null;
+  },
+  setTodayMood(moodKey, label, emoji, energy) {
+    const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    let list = this.getMoodHistory();
+    list = list.filter(m => m.date !== today);
+    const entry = {
+      date: today,
+      mood: moodKey,
+      label: label || moodKey,
+      emoji: emoji || '😊',
+      energy: energy || 80,
+      timestamp: Date.now()
+    };
+    list.push(entry);
+    this.setMoodHistory(list);
+    return entry;
+  },
+
+  // Daily Morning Briefing
+  getLastBriefingDate() { return this.get(this._k('last_briefing_date'), ''); },
+  setLastBriefingDate(dateStr) { this.set(this._k('last_briefing_date'), dateStr); },
+
   getApiKey() {
     if (typeof getActiveGeminiKey === 'function') {
       return getActiveGeminiKey();

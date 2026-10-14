@@ -523,6 +523,9 @@ function updateGreeting() {
 // ---- Home Page ----
 function renderHome() {
   updateGreeting();
+  if (typeof renderHomeMoodTracker === 'function') {
+    renderHomeMoodTracker();
+  }
   renderOngoingProjects();
   renderHomeTodaySchedule();
   renderHomeUpcomingAgenda();
@@ -1026,6 +1029,11 @@ function initApp() {
     }
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
+
+  // Daily Morning Briefing check (Jarvis-style greeting)
+  if (typeof checkDailyBriefing === 'function') {
+    checkDailyBriefing();
+  }
 
   // Init Lucide Icons
   lucide.createIcons();

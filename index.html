@@ -54,6 +54,7 @@
   <link rel="stylesheet" href="css/auth.css?v=3.26" />
   <link rel="stylesheet" href="css/notifikasi.css?v=3.20" />
   <link rel="stylesheet" href="css/utilities.css?v=3.20" />
+  <link rel="stylesheet" href="css/features-fun.css?v=3.28" />
 </head>
 <body>
 
@@ -151,6 +152,9 @@
                 </svg>
               </div>
             </div>
+
+            <!-- Mood & Energy Tracker Harian Widget -->
+            <div id="homeMoodWidget"></div>
 
             <!-- 4. Section: Ongoing Projects (2x2 Grid from reference image) -->
             <div class="home-projects-sec">
@@ -893,6 +897,14 @@
             <button class="drawer-nav-item" onclick="navigateTo('profil'); closeDrawer();">
               <i data-lucide="user-circle"></i>
               <span>Profil &amp; Pengaturan</span>
+            </button>
+            <button class="drawer-nav-item" onclick="openMorningBriefing(true); closeDrawer();">
+              <i data-lucide="sun"></i>
+              <span>Pisku Morning Briefing</span>
+            </button>
+            <button class="drawer-nav-item" onclick="openPiskalyWrapped(); closeDrawer();">
+              <i data-lucide="sparkles"></i>
+              <span>Piskaly Wrapped</span>
             </button>
             <div class="drawer-nav-divider" style="height:1px;background:var(--border);margin:8px 6px;"></div>
             <button class="drawer-nav-item" id="drawerThemeBtn" aria-label="Ganti Tema">
@@ -1647,6 +1659,180 @@
     </div>
   </div>
 
+  <!-- ===== FUN & ENGAGING MODALS ===== -->
+
+  <!-- Modal: Pisku Morning Briefing & Voice Greeting -->
+  <div class="briefing-modal-overlay hidden" id="modalMorningBriefing">
+    <div class="briefing-card">
+      <div class="briefing-glow-accent"></div>
+      
+      <div class="briefing-header">
+        <div class="briefing-badge">
+          <i data-lucide="sparkles" style="width:13px; height:13px;"></i>
+          <span>PISKU MORNING BRIEFING</span>
+        </div>
+        <button class="briefing-close-btn" onclick="closeMorningBriefing()" aria-label="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="briefing-avatar-row">
+        <div class="briefing-avatar-wrapper">
+          <img src="icons/icon-piska.jpg?v=3.16" alt="Pisku" class="briefing-avatar-img" />
+          <span class="briefing-avatar-status"></span>
+        </div>
+        <div>
+          <h2 class="briefing-title" id="briefingGreeting">Selamat pagi, Piska! ☀️</h2>
+          <p class="briefing-date-text" id="briefingDate">Rabu, 14 Oktober 2026</p>
+        </div>
+      </div>
+
+      <div class="briefing-voice-container">
+        <button class="briefing-voice-play-btn" id="briefingVoiceBtn" onclick="toggleBriefingVoice()">
+          <i data-lucide="volume-2"></i> Dengarkan Suara Pisku
+        </button>
+        <div class="briefing-voice-waves" id="briefingWaves">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+      </div>
+
+      <div class="briefing-bubble">
+        <p class="briefing-speech-text" id="briefingSpeechText">
+          "Hari ini jadwal kuliahmu libur, namun ada beberapa agenda kegiatan menantimu. Tetap semangat dan jaga fokus!"
+        </p>
+      </div>
+
+      <div class="briefing-stats-grid">
+        <div class="briefing-stat-card">
+          <span class="briefing-stat-icon" style="color:#3b82f6;"><i data-lucide="calendar"></i></span>
+          <span class="briefing-stat-title" id="briefingKuliahCount">0 Kuliah</span>
+          <span class="briefing-stat-sub">Jadwal Hari Ini</span>
+        </div>
+        <div class="briefing-stat-card">
+          <span class="briefing-stat-icon" style="color:#f59e0b;"><i data-lucide="clock"></i></span>
+          <span class="briefing-stat-title" id="briefingAgendaCount">0 Agenda</span>
+          <span class="briefing-stat-sub">Kalender Acara</span>
+        </div>
+        <div class="briefing-stat-card">
+          <span class="briefing-stat-icon" style="color:#ec4899;"><i data-lucide="check-circle-2"></i></span>
+          <span class="briefing-stat-title" id="briefingTugasCount">0 Pending</span>
+          <span class="briefing-stat-sub">Status Tugas</span>
+        </div>
+      </div>
+
+      <button class="briefing-start-btn" onclick="closeMorningBriefing()">
+        <span>Mulai Hariku Sekarang</span>
+        <i data-lucide="arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Weekly Recap Story (Flexing) -->
+  <div class="briefing-modal-overlay hidden" id="modalWeeklyRecap">
+    <div class="recap-card">
+      <div class="recap-glow"></div>
+
+      <div class="briefing-header">
+        <div class="recap-top-badge">
+          <i data-lucide="flame" style="width:13px; height:13px; color:#f59e0b;"></i>
+          <span>WEEKLY RECAP &amp; FLEXING</span>
+        </div>
+        <button class="briefing-close-btn" style="background:rgba(255,255,255,0.1); color:white; border-color:rgba(255,255,255,0.2);" onclick="closeWeeklyRecap()" aria-label="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <h2 class="recap-headline" id="recapHeadline">Minggu Luar Biasa!</h2>
+      <p class="recap-subtitle">Perjalanan emosi &amp; produktivitas 7 hari terakhirmu</p>
+
+      <div class="recap-highlight-box">
+        <div class="recap-highlight-row">
+          <span class="recap-highlight-label">Mood Dominan</span>
+          <span class="recap-highlight-value" id="recapMoodBadge">🔥 Produktif</span>
+        </div>
+        <div class="recap-highlight-row" style="margin-bottom:0;">
+          <span class="recap-highlight-label">Rata-rata Energi Harian</span>
+          <span class="recap-highlight-value" id="recapEnergyVal">85% Tinggi</span>
+        </div>
+      </div>
+
+      <div class="recap-stats-list">
+        <div class="recap-stat-box">
+          <span class="recap-stat-num" style="color:#4ade80;" id="recapTugasDone">0</span>
+          <span class="recap-stat-lbl">Tugas Beres</span>
+        </div>
+        <div class="recap-stat-box">
+          <span class="recap-stat-num" style="color:#38bdf8;" id="recapAgendaDone">0</span>
+          <span class="recap-stat-lbl">Agenda Hadir</span>
+        </div>
+        <div class="recap-stat-box">
+          <span class="recap-stat-num" style="color:#f472b6;">100%</span>
+          <span class="recap-stat-lbl">Konsistensi</span>
+        </div>
+      </div>
+
+      <div class="recap-quote-bubble" id="recapQuoteText">
+        "Energi dan semangatmu minggu ini menyala tinggi! Kamu membabat target tanpa ragu."
+      </div>
+
+      <div class="recap-action-row">
+        <button class="recap-share-btn" onclick="shareWeeklyRecap()">
+          <i data-lucide="share-2"></i>
+          <span>Salin Teks Flexing</span>
+        </button>
+        <button class="recap-close-btn" onclick="closeWeeklyRecap()">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Piskaly Wrapped (Spotify-style Story) -->
+  <div class="wrapped-modal-overlay hidden" id="modalPiskalyWrapped">
+    <div class="wrapped-story-container">
+      
+      <!-- Top Story Progress Bars -->
+      <div class="wrapped-progress-bars">
+        <div class="wrapped-progress-bar"><div class="wrapped-progress-fill"></div></div>
+        <div class="wrapped-progress-bar"><div class="wrapped-progress-fill"></div></div>
+        <div class="wrapped-progress-bar"><div class="wrapped-progress-fill"></div></div>
+        <div class="wrapped-progress-bar"><div class="wrapped-progress-fill"></div></div>
+        <div class="wrapped-progress-bar"><div class="wrapped-progress-fill"></div></div>
+      </div>
+
+      <!-- Top Story Header -->
+      <div class="wrapped-top-nav">
+        <div class="wrapped-logo-badge">
+          <i data-lucide="sparkles" style="width:13px; height:13px; color:#fde047;"></i>
+          <span>PISKALY WRAPPED</span>
+        </div>
+        <button class="wrapped-exit-btn" onclick="closePiskalyWrapped()" aria-label="Keluar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Slide Dynamic Body -->
+      <div class="wrapped-slide-content" id="wrappedSlideBody">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Bottom Nav (Prev, Next) -->
+      <div class="wrapped-bottom-nav">
+        <button class="wrapped-nav-btn" onclick="prevWrappedSlide()">
+          <i data-lucide="chevron-left"></i> Kembali
+        </button>
+        <button class="wrapped-nav-btn primary" onclick="nextWrappedSlide()">
+          Lanjut <i data-lucide="chevron-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast hidden"></div>
 
@@ -1673,13 +1859,14 @@
   <script src="js/kalender.js?v=3.20"></script>
   <script src="js/notifikasi.js?v=3.20"></script>
   <script src="js/ai.js?v=3.27"></script>
+  <script src="js/features-fun.js?v=3.28"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>
     if ('caches' in window) {
       caches.keys().then(keys => {
         keys.forEach(key => {
-          if (key !== 'mylife-v3.23') {
+          if (key !== 'mylife-v3.28') {
             caches.delete(key);
           }
         });
@@ -1692,7 +1879,7 @@
         }
       });
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=3.23').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=3.28').catch(() => {});
       });
     }
   </script>
