@@ -475,7 +475,7 @@ function generateActionCardHTML(pendingId, actions, status = 'pending') {
       <div class="ai-action-head">
         <div class="ai-action-title-wrap">
           <span class="ai-action-spark">⚡</span>
-          <b>Rencana Input Pisku</b>
+          <b>Rencana Input Pisku (${previews.length} data)</b>
         </div>
         ${badgeHTML}
       </div>
@@ -1088,11 +1088,18 @@ ${todayEventsText}
 5. DILARANG MEMBUAT BLOK JSON:ACTIONS JIKA TIDAK ADA PERMINTAAN TAMBAH/UBAH/HAPUS DATA:
    - Jika pengguna HANYA bertanya (contoh: "ada kegiatan apa hari ini?", "apa jadwalku hari ini?", "tugas apa yang belum selesai?"), CUKUP jawab dengan teks penjelasan ramah berdasarkan DATA RESMI di atas.
    - JANGAN PERNAH menyertakan blok \`\`\`json:actions ... \`\`\` jika pengguna tidak meminta menambahkan/mengubah/menghapus data!
-6. KEMAMPUAN MEMINDAI GAMBAR / FOTO KALENDER & DOKUMEN (FITUR MULTIMODAL UNGGULAN):
-   - Pisku MEMILIKI KEMAMPUAN LENGKAP untuk membaca, memindai, dan mengekstrak isi gambar/foto kalender (kalender akademik, kalender dinding, screenshot agenda/kalender eksternal, poster acara, jadwal kuliah mingguan, struk belanja, dsb.) SECARA LANGSUNG SEKALIGUS ke dalam sistem Piskaly!
+6. KEMAMPUAN MEMINDAI GAMBAR / FOTO KALENDER & DOKUMEN (FITUR MULTIMODAL LENGKAP & MENYELURUH):
+   - Pisku MEMILIKI KEMAMPUAN PENUH untuk membaca, memindai (OCR), dan mengekstrak isi gambar/foto kalender (kalender akademik, kalender bulanan, kalender dinding, screenshot agenda/kalender eksternal, poster acara, jadwal kuliah mingguan, struk belanja, dsb.) SECARA LANGSUNG SEKALIGUS ke dalam sistem Piskaly!
    - DILARANG KERAS menolak atau berkata "Pisku belum memiliki fitur memindai gambar kalender secara langsung".
-   - Jika pengguna melampirkan gambar kalender/jadwal/dokumen, Pisku WAJIB langsung memindai setiap tanggal dan agenda penting yang ada di gambar tersebut, lalu menyusunnya sekaligus ke dalam satu blok \`\`\`json:actions ... \`\`\` (misal: serangkaian 'add_event', 'add_jadwal', atau 'add_tugas').
-   - Pengguna tinggal menekan 1 tombol konfirmasi di bawah pesanmu untuk memasukkan seluruh agenda dari gambar kalender tersebut ke aplikasi Piskaly secara otomatis!
+   - PEMINDAIAN LENGKAP TANPA ADA YANG TERLEWAT (EXHAUSTIVE EXTRACTION):
+     * Pindai SELURUH teks, tanggal, bulan, dan kegiatan dari bagian paling awal sampai bagian paling akhir gambar dokumen!
+     * JANGAN HANYA mengekstrak beberapa agenda awal! Jika di gambar ada 10, 15, atau 25 agenda/kegiatan, kamu WAJIB mengekstrak SEMUA agenda tersebut satu per satu ke dalam blok \`\`\`json:actions ... \`\`\` tanpa ada yang terpotong atau ditinggalkan.
+     * Untuk setiap agenda yang tertera di gambar kalender:
+       - Tentukan tanggal dengan format "YYYY-MM-DD" (gunakan tahun yang sesuai di gambar, atau tahun berjalan).
+       - Tentukan jam jika tertera, atau default "08:00" jika tidak ada jam spesifik.
+       - Tuliskan nama agenda dan keterangan lokasi/deskripsi jika ada.
+       - Masukkan ke action "add_event" (atau "add_jadwal" jika berupa jadwal kuliah mingguan, atau "add_tugas" jika berupa deadline tugas).
+   - Seluruh hasil pemindaian disusun sekaligus ke dalam satu blok \`\`\`json:actions ... \`\`\` agar pengguna bisa memasukkan SEMUA agenda dari gambar tersebut hanya dengan 1 kali klik tombol konfirmasi!
 7. Gaya Bicara: Hangat, sopan, akurat, dan jujur berdasarkan fakta database.`;
 
   // Render pesan user di layar
@@ -1114,7 +1121,13 @@ ${todayEventsText}
           }
         });
         userParts.push({
-          text: `[PENGGUNA MELAMPIRKAN FILE: ${currentFile.name}]. Tolong olah dan pahami isi dokumen ini dengan cermat.\n\nPesan pengguna: ${userMessage || 'Tolong olah dan masukkan data dari file ini ke aplikasi.'}`
+          text: `[PENGGUNA MELAMPIRKAN GAMBAR/DOKUMEN: ${currentFile.name}].
+PANDUAN PEMINDAIAN LENGKAP & MENYELURUH:
+Tolong teliti dan pindai SELURUH isi kalender/jadwal/agenda yang ada pada gambar/dokumen ini dari awal sampai akhir.
+Ekstrak SEMUA kegiatan, tanggal penting, dan jadwal yang tertera secara LENGKAP tanpa ada satu pun agenda yang terlewatkan (jika ada belasan kegiatan, ekstrak semuanya ke dalam daftar action).
+Susun seluruhnya sekaligus ke dalam satu blok \`\`\`json:actions ... \`\`\` agar pengguna dapat langsung mengonfirmasi dan memasukkan semua datanya.
+
+Pesan pengguna: ${userMessage || 'Tolong pindai dan masukkan seluruh data dari file ini ke aplikasi.'}`
         });
       } else if (currentFile.isText) {
         userParts.push({
@@ -1170,8 +1183,8 @@ ${todayEventsText}
               generationConfig: {
                 temperature: 0.2,
                 topK: 20,
-                topP: 0.85,
-                maxOutputTokens: 1024,
+                topP: 0.95,
+                maxOutputTokens: 8192,
               },
               safetySettings: [
                 { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
@@ -1205,25 +1218,70 @@ ${todayEventsText}
     }
     const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Maaf, Pisku tidak dapat memproses pesan itu saat ini.';
 
+    // Fungsi pembersihan dan parsing JSON actions tangguh & toleran
+    function parseRobustJsonActions(text) {
+      if (!text) return null;
+      // 1. Cari blok markdown (json:actions, actions, json, javascript, atau polos)
+      const blockRegex = /```(?:json:actions|actions|json|javascript)?\s*([\s\S]*?)\s*```/gi;
+      let match;
+      while ((match = blockRegex.exec(text)) !== null) {
+        const candidate = match[1].trim();
+        const parsed = tryParseArray(candidate);
+        if (parsed && parsed.length > 0) return parsed;
+      }
+
+      // 2. Fallback: Cari blok array JSON terluar [ ... {"action": ...} ... ]
+      const arrayMatch = text.match(/\[\s*\{[\s\S]*"action"[\s\S]*\}\s*\]/);
+      if (arrayMatch) {
+        const parsed = tryParseArray(arrayMatch[0]);
+        if (parsed && parsed.length > 0) return parsed;
+      }
+
+      return null;
+    }
+
+    function tryParseArray(str) {
+      if (!str) return null;
+      try {
+        const res = JSON.parse(str);
+        if (Array.isArray(res)) return res;
+      } catch (e) {}
+
+      // Coba perbaiki trailing commas, komentar //, dan unclosed array
+      try {
+        let cleaned = str
+          .replace(/\/\/[^\n\r]*/g, '')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/,\s*([\]}])/g, '$1')
+          .trim();
+
+        if (cleaned.startsWith('[') && !cleaned.endsWith(']')) {
+          const lastObjEnd = cleaned.lastIndexOf('}');
+          if (lastObjEnd !== -1) {
+            cleaned = cleaned.slice(0, lastObjEnd + 1) + ']';
+          }
+        }
+
+        const res = JSON.parse(cleaned);
+        if (Array.isArray(res)) return res;
+      } catch (e) {}
+
+      return null;
+    }
+
     // Deteksi aksi yang disarankan AI (TIDAK langsung input, butuh validasi user)
     let cleanText = rawAiText;
-    let proposedActions = null;
+    let proposedActions = parseRobustJsonActions(rawAiText);
     let pendingId = null;
-    const actionMatch = rawAiText.match(/```(?:json:actions|actions)\s*([\s\S]*?)\s*```/);
 
-    if (actionMatch && actionMatch[1]) {
-      try {
-        const parsed = JSON.parse(actionMatch[1]);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          proposedActions = parsed;
-          pendingId = 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-          window.pendingPiskuActions[pendingId] = proposedActions;
-          savePendingPiskuActionToStore(pendingId, proposedActions, 'pending');
-        }
-        cleanText = rawAiText.replace(/```(?:json:actions|actions)[\s\S]*?```/g, '').trim();
-      } catch (parseErr) {
-        console.warn('Gagal parsing JSON actions dari AI:', parseErr);
-      }
+    if (proposedActions && proposedActions.length > 0) {
+      pendingId = 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+      window.pendingPiskuActions[pendingId] = proposedActions;
+      savePendingPiskuActionToStore(pendingId, proposedActions, 'pending');
+      cleanText = rawAiText
+        .replace(/```(?:json:actions|actions|json|javascript)?\s*\[\s*\{[\s\S]*?\}\s*\]\s*```/gi, '')
+        .replace(/```(?:json:actions|actions)[\s\S]*?```/gi, '')
+        .trim();
     }
 
     const actionCardHTML = proposedActions ? generateActionCardHTML(pendingId, proposedActions, 'pending') : '';
