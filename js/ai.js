@@ -25,13 +25,22 @@ function checkApiKeyStatus() {
 function sanitizePiskuMessages() {
   try {
     const list = (Store.getAiMessages ? Store.getAiMessages() : JSON.parse(localStorage.getItem('mylife_pisku_messages') || '[]')) || [];
-    const cleaned = list.filter(m => !(m.text && (m.text.toLowerCase().includes('sport massage') || m.text.toLowerCase().includes('ke clinic'))));
+    const cleaned = list.filter(m => {
+      if (m.role === 'assistant' && m.text) {
+        const lower = m.text.toLowerCase();
+        // Bersihkan pesan asisten lama yang pernah memuat 3 agenda atau halusinasi jam 16:00 / klinik fiktif
+        if (lower.includes('16:00') || (lower.includes('clinic') && lower.includes('siang ini')) || (lower.includes('ke clinic') && lower.includes('sport massage'))) {
+          return false;
+        }
+      }
+      return true;
+    });
     if (cleaned.length !== list.length) {
       if (Store.setAiMessages) Store.setAiMessages(cleaned);
       else localStorage.setItem('mylife_pisku_messages', JSON.stringify(cleaned));
     }
   } catch (e) {
-    console.warn('Gagal membersihkan pesan:', e);
+    console.warn('Gagal membersihkan pesan halusinasi:', e);
   }
 }
 
@@ -809,17 +818,20 @@ ${catatanText}
 ==================================================
 PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
 ==================================================
-1. DILARANG KERAS MENGARANG ATAU MENAMBAHKAN JADWAL/AGENDA/ACARA FIKTIF!
-   - Jangan pernah menyebut kegiatan seperti "Sport Massage", "Ke Clinic", "ngopi bareng teman", atau acara apapun KECUALI kegiatan tersebut BENAR-BENAR tertulis di daftar nomor 1 atau nomor 2 di atas!
-   - Jika pengguna menanyakan: "Ada kegiatan apa hari ini?", "Apa jadwalku hari ini?", atau "Jadwal kegiatan saya apa saja?":
-     -> Rujuk HANYA data nomor 1 (Jadwal Kuliah Hari Ini) dan nomor 2 (Kegiatan Kalender Hari Ini).
-     -> Sebutkan HANYA yang ada di daftar tersebut dengan jam dan nama yang persis sama.
-     -> JIKA KOSONG (misal tertulis "Tidak ada kegiatan kalender..."), katakan dengan jujur dan lugas: "Hari ini belum ada jadwal kegiatan maupun kuliah yang tercatat di aplikasi kamu, Piska."
-2. JANGAN PERNAH MENGAKU "SUDAH MEMASUKKAN DATA KE SISTEM" TANPA VALIDASI PENGGUNA:
+1. SINKRONISASI DATA HARUS 100% SESUAI DATABASE:
+   - Agenda kegiatan hari ini (${nowIso}) di database aplikasi HANYA BERISI ${todayEvents.length} AGENDA:
+${todayEventsText}
+   - DILARANG KERAS mengarang ada 3 agenda atau memecah agenda tersebut.
+   - Jika pengguna bertanya tentang kegiatannya hari ini atau bertanya mengapa sempat ada 3 agenda:
+     * Jelaskan secara transparan dan sopan bahwa di DATABASE RESMI APLIKASI HANYA ADA ${todayEvents.length} AGENDA yang tersimpan.
+     * Sebutkan rincian agenda resmi tersebut (Nama, jam, lokasi, keterangan).
+     * Terangkan bahwa agenda fiktif lainnya ("Ke Clinic jam 13:00" dan "Sport Massage Recovery jam 16:00") adalah murni sisa percakapan lama AI sebelum database disinkronkan, TIDAK ADA di kalender aplikasi, dan sekarang sudah dibersihkan.
+2. DILARANG KERAS MENGARANG ATAU MENAMBAHKAN JADWAL/AGENDA/ACARA FIKTIF:
+   - Rujuk HANYA data nomor 1 (Jadwal Kuliah Hari Ini) dan nomor 2 (Kegiatan Kalender Hari Ini).
+   - Sebutkan HANYA yang ada di daftar tersebut dengan jam dan nama yang persis sama.
+3. JANGAN PERNAH MENGAKU "SUDAH MEMASUKKAN DATA KE SISTEM" TANPA VALIDASI PENGGUNA:
    - Aplikasi menggunakan sistem validasi tombol konfirmasi pengguna.
-   - Bila pengguna meminta kamu mencatat atau merangkum sesuatu (misal: "tolong catatkan jam 13:00 ke klinik"), buat blok aksi JSON: actions, lalu jelaskan bahwa rencana tersebut sudah kamu siapkan dan minta pengguna menekan tombol konfirmasi di bawah.
-3. ABAIKAN HALUSINASI DARI CHAT SEBELUMNYA:
-   - Jika di riwayat percakapan sebelumnya ada teks model yang pernah mengarang kegiatan palsu, ABAIKAN sepenuhnya. Rujukanmu HANYA "DATA RESMI & AKTUAL APLIKASI SAAT INI" di atas.
+   - Bila pengguna meminta kamu mencatat atau merangkum sesuatu, buat blok aksi JSON: actions, lalu jelaskan bahwa rencana tersebut sudah kamu siapkan dan minta pengguna menekan tombol konfirmasi di bawah.
 4. FORMAT AKSI JSON (Hanya jika pengguna meminta mencatat/menambah data baru):
 \`\`\`json:actions
 [
@@ -835,7 +847,7 @@ PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
 5. DILARANG MEMBUAT BLOK JSON:ACTIONS JIKA TIDAK ADA PERMINTAAN INPUT DATA BARU:
    - Jika pengguna HANYA bertanya (contoh: "ada kegiatan apa hari ini?", "apa jadwalku hari ini?", "tugas apa yang belum selesai?"), CUKUP jawab dengan teks penjelasan ramah berdasarkan DATA RESMI di atas.
    - JANGAN PERNAH menyertakan blok \`\`\`json:actions ... \`\`\` jika pengguna tidak secara eksplisit meminta kamu menambahkan/mencatat/menjadwalkan data baru!
-6. Gaya Bicara: Hangat, sopan, akurat, dan jujur berdasarkan fakta data.`;
+6. Gaya Bicara: Hangat, sopan, akurat, dan jujur berdasarkan fakta database.`;
 
   // Render pesan user di layar
   appendMessage('user', userMessage, currentFile);
@@ -867,12 +879,17 @@ PEDOMAN INTEGRITAS DATA & ANTI-HALUSINASI (WAJIB DIPATUHI 100%):
       userParts.push({ text: userMessage });
     }
 
-    // Bangun riwayat percakapan murni & aman (bersihkan jika ada sisa halusinasi lama)
+    // Bangun riwayat percakapan murni & aman (bersihkan pesan halusinasi asisten lama)
     const contents = [];
     const safeHistory = chatHistory
       .filter(msg => {
-        const txt = (msg.parts?.[0]?.text || '').toLowerCase();
-        return !txt.includes('sport massage') && !txt.includes('clinic');
+        if (msg.role === 'model') {
+          const txt = (msg.parts?.[0]?.text || '').toLowerCase();
+          if (txt.includes('16:00') || (txt.includes('clinic') && txt.includes('massage')) || txt.includes('recovery')) {
+            return false;
+          }
+        }
+        return true;
       })
       .slice(-6);
     safeHistory.forEach(msg => contents.push(msg));
