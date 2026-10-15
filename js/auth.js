@@ -34,6 +34,8 @@ const AuthService = {
     if (!user || !user.id) {
       // Belum ada user aktif -> Tampilkan modal auth
       this.openAuthModal();
+      if (typeof dismissInAppBanner === 'function') dismissInAppBanner();
+      if (typeof closeMorningBriefing === 'function') closeMorningBriefing();
     } else {
       // User aktif ditemukan -> Perbarui tampilan
       this.updateUserUI(user);
@@ -245,6 +247,13 @@ const AuthService = {
       if (typeof initApp === 'function') initApp();
       showToast(`👋 Selamat datang kembali, ${matchedAccount.name}!`, 'success', 2500);
 
+      // Trigger notifikasi pintar sekarang setelah user resmi login
+      setTimeout(() => {
+        if (typeof checkPeriodicEvents === 'function') {
+          checkPeriodicEvents();
+        }
+      }, 1000);
+
     } catch (err) {
       console.error('Login error:', err);
       this.showAlert('Terjadi kesalahan saat masuk: ' + err.message);
@@ -373,6 +382,13 @@ const AuthService = {
       if (typeof initApp === 'function') initApp();
       showToast(`🎉 Akun @${cleanId} berhasil dibuat! Selamat datang, ${cleanName}!`, 'success', 3000);
 
+      // Trigger notifikasi pintar sekarang setelah user resmi memiliki akun
+      setTimeout(() => {
+        if (typeof checkPeriodicEvents === 'function') {
+          checkPeriodicEvents();
+        }
+      }, 1200);
+
     } catch (err) {
       console.error('Register error:', err);
       this.showAlert('Gagal membuat akun: ' + err.message);
@@ -409,6 +425,13 @@ const AuthService = {
 
     // Hapus sesi aktif
     Store.clearCurrentUser();
+
+    // Pastikan seluruh notifikasi pintar / modal briefing tertutup
+    if (typeof dismissInAppBanner === 'function') dismissInAppBanner();
+    if (typeof closeMorningBriefing === 'function') closeMorningBriefing();
+    if (typeof closeMoodModal === 'function') closeMoodModal();
+    if (typeof closeWeeklyRecap === 'function') closeWeeklyRecap();
+    if (typeof closePiskalyWrapped === 'function') closePiskalyWrapped();
 
     // Reset input auth
     const loginIdInput = document.getElementById('authLoginId');

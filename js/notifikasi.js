@@ -16,6 +16,16 @@ function saveReadNotifIds(ids) {
 
 // Kompilasi notifikasi pintar berbasis data terkini (Tugas, Jadwal, Kalender, Cloud)
 function generateAllNotifications() {
+  // Hanya kompilasi notifikasi jika user sudah login / memiliki akun aktif
+  const user = typeof Store !== 'undefined' && Store.getCurrentUser ? Store.getCurrentUser() : null;
+  if (!user || !user.id) {
+    return [];
+  }
+  const modalAuth = document.getElementById('modalAuth');
+  if (modalAuth && !modalAuth.classList.contains('hidden')) {
+    return [];
+  }
+
   const notifications = [];
   const now = new Date();
   const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();

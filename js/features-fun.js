@@ -24,8 +24,25 @@
     return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
   }
 
+  function isUserLoggedIn() {
+    try {
+      const u = typeof Store !== 'undefined' && Store.getCurrentUser ? Store.getCurrentUser() : null;
+      if (!u || !u.id) return false;
+      const modalAuth = document.getElementById('modalAuth');
+      if (modalAuth && !modalAuth.classList.contains('hidden')) return false;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   window.checkPeriodicEvents = function () {
     try {
+      // Notifikasi pintar HANYA aktif jika pengguna sudah login / memiliki akun aktif
+      if (!isUserLoggedIn()) {
+        return;
+      }
+
       const now = new Date();
       const today = typeof getLocalDateString === 'function' ? getLocalDateString() : now.toISOString().split('T')[0];
       const lastDate = Store.getLastBriefingDate();
@@ -33,10 +50,8 @@
       // 1. Briefing Harian otomatis muncul di awal hari
       if (lastDate !== today) {
         setTimeout(() => {
-          const user = Store.getCurrentUser ? Store.getCurrentUser() : null;
-          if (user || !localStorage.getItem('mylife_users')) {
-            openMorningBriefing(false);
-          }
+          if (!isUserLoggedIn()) return;
+          openMorningBriefing(false);
         }, 1100);
         return;
       }
@@ -48,6 +63,7 @@
         const seenRecapWeek = Store.get('mylife_seen_recap_prompt');
         if (seenRecapWeek !== weekKey) {
           setTimeout(() => {
+            if (!isUserLoggedIn()) return;
             showInAppBanner({
               icon: 'flame',
               title: '📊 Rangkuman Mingguanmu Siap!',
@@ -69,6 +85,7 @@
         const seenWrappedMonth = Store.get('mylife_seen_wrapped_prompt');
         if (seenWrappedMonth !== monthKey) {
           setTimeout(() => {
+            if (!isUserLoggedIn()) return;
             showInAppBanner({
               icon: 'sparkles',
               title: '✨ Piskaly Wrapped Telah Tiba!',
@@ -89,6 +106,7 @@
         const seenMoodPrompt = Store.get('mylife_seen_mood_prompt');
         if (seenMoodPrompt !== today) {
           setTimeout(() => {
+            if (!isUserLoggedIn()) return;
             showInAppBanner({
               icon: 'sparkles',
               title: '☀️ Bagaimana Energimu Hari Ini?',
@@ -114,6 +132,9 @@
   // In-App Floating Notification Banner System
   let bannerTimeout = null;
   window.showInAppBanner = function ({ icon = 'bell', title, msg, actionText = 'Buka', onAction, autoDismissMs = 7000 }) {
+    // Jangan muncul jika user belum login atau modal auth sedang terbuka
+    if (!isUserLoggedIn()) return;
+
     const banner = document.getElementById('inAppEventBanner');
     if (!banner) return;
 
@@ -157,8 +178,10 @@
 
   function generateBriefingSummary() {
     const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    const activeUser = (typeof Store !== 'undefined' && Store.getCurrentUser) ? Store.getCurrentUser() : null;
     const profil = Store.getProfil() || {};
-    const userName = (profil.nama || 'Piska').split(' ')[0];
+    const rawName = activeUser?.name || profil?.name || profil?.nama || 'Piska';
+    const userName = rawName.split(' ')[0];
 
     const dateObj = new Date();
     const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -232,6 +255,9 @@
   }
 
   window.openMorningBriefing = function (force = true) {
+    if (!force && !isUserLoggedIn()) return;
+    if (!isUserLoggedIn()) return;
+
     const today = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
     Store.setLastBriefingDate(today);
 
@@ -315,6 +341,7 @@
 
   // Quick Standalone Mood Check-in Modal
   window.openMoodModal = function () {
+    if (!isUserLoggedIn()) return;
     const modal = document.getElementById('modalMoodCheck');
     if (!modal) return;
 
@@ -402,11 +429,14 @@
    * Open Weekly Story Recap Modal
    */
   window.openWeeklyRecap = function () {
+    if (!isUserLoggedIn()) return;
     const modal = document.getElementById('modalWeeklyRecap');
     if (!modal) return;
 
+    const activeUser = (typeof Store !== 'undefined' && Store.getCurrentUser) ? Store.getCurrentUser() : null;
     const profil = Store.getProfil() || {};
-    const userName = (profil.nama || 'Piska').split(' ')[0];
+    const rawName = activeUser?.name || profil?.name || profil?.nama || 'Piska';
+    const userName = rawName.split(' ')[0];
 
     // Compute weekly data (last 7 days)
     const history = Store.getMoodHistory() || [];
@@ -525,6 +555,7 @@
      =================================================== */
 
   window.openPiskalyWrapped = function () {
+    if (!isUserLoggedIn()) return;
     const modal = document.getElementById('modalPiskalyWrapped');
     if (!modal) return;
 
@@ -571,8 +602,10 @@
   }
 
   function renderWrappedSlide(index) {
+    const activeUser = (typeof Store !== 'undefined' && Store.getCurrentUser) ? Store.getCurrentUser() : null;
     const profil = Store.getProfil() || {};
-    const userName = (profil.nama || 'Piska').split(' ')[0];
+    const rawName = activeUser?.name || profil?.name || profil?.nama || 'Piska';
+    const userName = rawName.split(' ')[0];
 
     // Stats calculation
     const allTugas = Store.getTugas() || [];
