@@ -79,10 +79,17 @@ const Store = {
   setCatatan(d) { this.set(this._k('catatan'), d); },
 
   getTransaksi() {
-    const list = this.get(this._k('transaksi'), []);
-    if (Array.isArray(list) && list.some(t => t.keterangan === 'Uang Saku' || t.jumlah === 2000000 || t.jumlah === 150000)) {
-      this.set(this._k('transaksi'), []);
-      return [];
+    let list = this.get(this._k('transaksi'), []);
+    if (!Array.isArray(list)) list = [];
+    const cleaned = list.filter(t => {
+      const ket = (t.keterangan || '').trim().toLowerCase();
+      if (ket === 'uang saku' && (t.jumlah === 2000000 || t.nominal === 2000000 || t.jumlah === 150000)) return false;
+      if (ket.includes('langganan spotify') || ket.includes('spotify premium')) return false;
+      return true;
+    });
+    if (cleaned.length !== list.length) {
+      this.set(this._k('transaksi'), cleaned);
+      return cleaned;
     }
     return list;
   },
@@ -136,78 +143,24 @@ const Store = {
   setEvents(d) { this.set(this._k('events'), d); },
 
   getOlahraga() {
-    let list = this.get(this._k('olahraga'), null);
-    if (!list) {
-      list = [
-        {
-          id: 'sport-1',
-          nama: 'Jogging & Lari Santai',
-          hari: ['Selasa', 'Kamis', 'Sabtu'],
-          jam: '06:00',
-          durasi: '30 Menit',
-          target: '3 - 5 KM',
-          kategori: 'lari',
-          lokasi: 'Taman Kampus',
-          catatan: 'Pemanasan 5 menit sebelum lari.',
-          icon: 'footprints',
-          color: '#10b981',
-          history: {}
-        },
-        {
-          id: 'sport-2',
-          nama: 'Gym & Strength Training',
-          hari: ['Senin', 'Rabu', 'Jumat'],
-          jam: '16:30',
-          durasi: '60 Menit',
-          target: 'Upper / Lower Body',
-          kategori: 'gym',
-          lokasi: 'Fitness Center',
-          catatan: 'Fokus form dan progressive overload.',
-          icon: 'dumbbell',
-          color: '#2563eb',
-          history: {}
-        }
-      ];
-      this.set(this._k('olahraga'), list);
-    }
-    return Array.isArray(list) ? list : [];
+    let list = this.get(this._k('olahraga'), []);
+    if (!Array.isArray(list)) list = [];
+    return list;
   },
   setOlahraga(d) { this.set(this._k('olahraga'), d); },
 
   getSubscriptions() {
-    let list = this.get(this._k('subscriptions'), null);
-    if (!list) {
-      list = [
-        {
-          id: 'sub-1',
-          nama: 'Spotify Premium',
-          biaya: 54990,
-          siklus: 'bulanan',
-          kategori: 'musik',
-          metode: 'GoPay',
-          tanggalTagihan: '2026-10-25',
-          status: 'aktif',
-          catatan: 'Plan Individual bulanan',
-          color: '#1db954',
-          icon: 'music'
-        },
-        {
-          id: 'sub-2',
-          nama: 'Netflix Mobile',
-          biaya: 65000,
-          siklus: 'bulanan',
-          kategori: 'streaming',
-          metode: 'DANA',
-          tanggalTagihan: '2026-11-02',
-          status: 'aktif',
-          catatan: 'Paket streaming ponsel',
-          color: '#e50914',
-          icon: 'film'
-        }
-      ];
-      this.set(this._k('subscriptions'), list);
+    let list = this.get(this._k('subscriptions'), []);
+    if (!Array.isArray(list)) list = [];
+    const cleaned = list.filter(s => {
+      if (s.id === 'sub-1' && s.nama === 'Spotify Premium' && s.biaya === 54990) return false;
+      return true;
+    });
+    if (cleaned.length !== list.length) {
+      this.set(this._k('subscriptions'), cleaned);
+      return cleaned;
     }
-    return Array.isArray(list) ? list : [];
+    return list;
   },
   setSubscriptions(d) { this.set(this._k('subscriptions'), d); },
 

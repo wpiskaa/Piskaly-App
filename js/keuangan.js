@@ -254,7 +254,25 @@ function editTransaksi(id) {
   document.getElementById('transKategori').value = t.kategori;
   document.getElementById('transTanggal').value = t.tanggal;
   document.getElementById('modalTransaksiTitle').textContent = 'Edit Transaksi';
+  const delBtn = document.getElementById('deleteTransaksiBtn');
+  if (delBtn) delBtn.classList.remove('hidden');
   openModal('modalTransaksi');
+}
+
+function deleteCurrentTransaksi() {
+  if (!editingTransId) return;
+  if (!confirm('Hapus catatan transaksi ini?')) return;
+  let transaksi = Store.getTransaksi().filter(t => t.id !== editingTransId);
+  Store.setTransaksi(transaksi);
+  if (typeof FirebaseService !== 'undefined' && FirebaseService.isInitialized) {
+    FirebaseService.syncUploadAll(false);
+  }
+  closeModal('modalTransaksi');
+  resetTransaksiForm();
+  renderKeuangan();
+  if (currentPage === 'home') renderHomeFinance();
+  updateStats();
+  showToast('🗑️ Transaksi dihapus', 'info');
 }
 
 function setTransType(type) {
@@ -307,10 +325,14 @@ function resetTransaksiForm() {
   document.getElementById('transJumlah').value = '';
   document.getElementById('transKeterangan').value = '';
   document.getElementById('modalTransaksiTitle').textContent = 'Tambah Transaksi';
+  const delBtn = document.getElementById('deleteTransaksiBtn');
+  if (delBtn) delBtn.classList.add('hidden');
   setTransType('expense');
   document.getElementById('transTanggal').value = getLocalDateString();
   editingTransId = null;
 }
+
+window.deleteCurrentTransaksi = deleteCurrentTransaksi;
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('addTransaksiBtn').addEventListener('click', finFabAction);
