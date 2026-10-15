@@ -578,81 +578,34 @@ function updateWorkoutSummaryStats(workouts) {
     d.setDate(monday.getDate() + i);
     const dStr = formatYMD(d);
     const isToday = (dStr === todayYMD);
-    const isPast = (d < now && !isToday);
     const isCompleted = completedDates.has(dStr);
     const dayFullName = daysFull[i];
-    const isScheduled = workouts.some(w => Array.isArray(w.hari) && w.hari.includes(dayFullName));
 
-    if (isScheduled) scheduledDaysCount++;
     if (isCompleted) completedDaysCount++;
 
-    let statusClass = '';
-    let iconHtml = '';
-
-    if (isCompleted) {
-      statusClass = 'done';
-      iconHtml = `<i data-lucide="check"></i>`;
-    } else if (isToday) {
-      statusClass = isScheduled ? 'today scheduled' : 'today';
-      iconHtml = isScheduled ? `<i data-lucide="dumbbell"></i>` : `<span class="wsc-rest-dot">•</span>`;
-    } else if (isPast) {
-      statusClass = isScheduled ? 'missed' : 'rest';
-      iconHtml = isScheduled ? `<i data-lucide="x"></i>` : `<span class="wsc-rest-dash">-</span>`;
-    } else {
-      statusClass = isScheduled ? 'upcoming' : 'rest';
-      iconHtml = isScheduled ? `<i data-lucide="circle"></i>` : `<span class="wsc-rest-dash">-</span>`;
-    }
-
     gridHtml += `
-      <div class="wsc-day-col ${statusClass} ${isToday ? 'is-today' : ''}" title="${dayFullName}, ${d.getDate()}">
-        <span class="wsc-day-name">${daysShort[i]}</span>
-        <span class="wsc-day-num">${d.getDate()}</span>
-        <div class="wsc-day-icon">${iconHtml}</div>
+      <div class="wsm-day ${isCompleted ? 'done' : ''} ${isToday ? 'is-today' : ''}" title="${dayFullName}, ${d.getDate()}">
+        <span class="wsm-day-name">${daysShort[i]}</span>
+        <span class="wsm-day-dot">${isCompleted ? '✓' : (isToday ? '●' : '·')}</span>
       </div>
     `;
   }
 
   if (weekGridEl) {
     weekGridEl.innerHTML = gridHtml;
-    lucide.createIcons({ nodes: [weekGridEl] });
   }
 
-  // Update Teks & Badge
+  // Update Teks & Badge Minimalis
   if (streakValEl) {
     streakValEl.textContent = currentStreak > 0 ? `🔥 ${currentStreak} Hari Streak` : `🔥 0 Hari Streak`;
   }
 
   if (streakRecEl) {
-    streakRecEl.textContent = `Rekor: ${bestStreak} Hari • ${completedDaysCount} Selesai Minggu Ini`;
+    streakRecEl.textContent = `Rekor: ${bestStreak} Hari`;
   }
-
-  const targetCount = scheduledDaysCount > 0 ? scheduledDaysCount : 7;
-  const pct = Math.min(100, Math.round((completedDaysCount / targetCount) * 100));
 
   if (weeklyStatusEl) {
-    weeklyStatusEl.textContent = `${completedDaysCount}/${targetCount} Hari`;
-  }
-
-  if (progressFillEl) {
-    progressFillEl.style.width = `${pct}%`;
-  }
-
-  if (progressPctEl) {
-    progressPctEl.textContent = `${pct}%`;
-  }
-
-  if (motivationEl) {
-    if (hadWorkoutToday) {
-      motivationEl.textContent = '🔥 Sesi hari ini tuntas! Streak konsistensimu bertambah!';
-    } else if (pct >= 100) {
-      motivationEl.textContent = '🏆 Luar biasa! Target mingguan kamu sudah 100% tercapai!';
-    } else if (currentStreak >= 3) {
-      motivationEl.textContent = `⚡ Momentum hebat! Sudah konsisten ${currentStreak} hari berturut-turut.`;
-    } else if (workouts.some(w => Array.isArray(w.hari) && w.hari.includes(INDO_DAYS[now.getDay()]))) {
-      motivationEl.textContent = '💪 Hari ini ada jadwal olahraga! Luangkan waktu untuk bergerak.';
-    } else {
-      motivationEl.textContent = 'Ayo mulai latihan hari ini untuk bangun konsistensi!';
-    }
+    weeklyStatusEl.textContent = `${completedDaysCount} Selesai Minggu Ini`;
   }
 }
 

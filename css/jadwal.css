@@ -248,224 +248,111 @@
 }
 
 /* ==========================================
-   WORKOUT STREAKS & WEEKLY CONSISTENCY CARD
+   MINIMALIST WORKOUT STREAK & WEEK TRACKER
    ========================================== */
-.workout-streak-card {
+.workout-streak-mini {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 16px 18px;
-  margin-bottom: 16px;
+  border-radius: 16px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 13px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  gap: 8px;
 }
-.workout-streak-card:hover {
-  box-shadow: var(--shadow);
-}
-
-/* Header Row: Fire & Streak + Weekly Target Pill */
-.wsc-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.wsc-fire-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.wsc-fire-icon {
-  font-size: 26px;
-  line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.4));
-  flex-shrink: 0;
-  animation: pulseFire 2.2s infinite ease-in-out;
-}
-@keyframes pulseFire {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-.wsc-title-group {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.wsc-streak-val {
-  font-size: 15.5px;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.2px;
-  line-height: 1.25;
-}
-.wsc-streak-sub {
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 600;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.wsc-week-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  border-radius: 14px;
-  flex-shrink: 0;
-}
-.wsc-wb-count {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--primary-light);
-  line-height: 1.2;
-}
-.wsc-wb-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-/* 7-Day Consistency Grid (Senin - Minggu) */
-.wsc-week-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-.wsc-day-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 7px 2px 6px;
-  border-radius: 12px;
-  background: var(--bg-input);
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-}
-.wsc-day-name {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.wsc-day-num {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-.wsc-day-icon {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  margin-top: 2px;
-  font-size: 11px;
-}
-.wsc-day-icon svg {
-  width: 12px;
-  height: 12px;
-}
-.wsc-rest-dot {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1;
-}
-.wsc-rest-dash {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1;
-}
-
-/* Day states */
-.wsc-day-col.done {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.35);
-}
-.wsc-day-col.done .wsc-day-name,
-.wsc-day-col.done .wsc-day-num {
-  color: var(--success);
-}
-.wsc-day-col.done .wsc-day-icon {
-  background: var(--success);
-  color: #ffffff;
-}
-.wsc-day-col.done .wsc-day-icon svg {
-  stroke-width: 3px;
-}
-
-.wsc-day-col.is-today {
-  border-color: var(--primary-light);
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
-}
-.wsc-day-col.is-today .wsc-day-name {
-  color: var(--primary-light);
-  font-weight: 800;
-}
-.wsc-day-col.is-today.scheduled:not(.done) .wsc-day-icon {
-  background: rgba(37, 99, 235, 0.15);
-  color: var(--primary-light);
-}
-
-.wsc-day-col.missed {
-  opacity: 0.75;
-}
-.wsc-day-col.missed .wsc-day-icon {
-  color: var(--danger);
-}
-
-.wsc-day-col.upcoming .wsc-day-icon {
-  color: var(--text-muted);
-}
-
-/* Footer: Progress & Motivation */
-.wsc-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding-top: 4px;
-  border-top: 1px dashed var(--border);
-}
-.wsc-progress-bar-bg {
-  width: 100%;
-  height: 6px;
-  border-radius: 99px;
-  background: var(--bg-input);
-  overflow: hidden;
-}
-.wsc-progress-bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  background: linear-gradient(90deg, #2563eb, #10b981);
-  transition: width 0.4s var(--ease-soft);
-}
-.wsc-footer-row {
+.wsm-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-.wsc-motivation {
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  line-height: 1.4;
-  flex: 1;
+.wsm-streak-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
-.wsc-pct-text {
-  font-size: 11.5px;
+.wsm-streak-text {
+  font-size: 13.5px;
   font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.wsm-sep {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.wsm-record-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.wsm-week-text {
+  font-size: 11px;
+  font-weight: 700;
   color: var(--primary-light);
+  background: var(--bg-input);
+  padding: 3px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 7-Day Dots Grid */
+.wsm-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  background: var(--bg-input);
+  padding: 5px 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.wsm-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 1px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.wsm-day-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.wsm-day.is-today .wsm-day-name {
+  color: var(--primary-light);
+  font-weight: 800;
+}
+.wsm-day-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: transparent;
+  transition: all 0.2s ease;
+}
+.wsm-day.done .wsm-day-dot {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: var(--success);
+  font-weight: 800;
+}
+.wsm-day.is-today:not(.done) .wsm-day-dot {
+  border: 1.5px solid var(--primary-light);
+  color: var(--primary-light);
+  background: rgba(37, 99, 235, 0.1);
+  font-weight: 800;
 }
 
 /* Day Picker in Modal Olahraga */

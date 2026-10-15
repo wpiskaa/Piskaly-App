@@ -273,35 +273,17 @@
 
             <!-- PANE 3: JADWAL RUTIN OLAHRAGA (FITNESS & WORKOUT) -->
             <div class="jadwal-subpane hidden" id="jadwalPane-olahraga">
-              <!-- Consistency & Streaks / Week Tracker Card -->
-              <div class="workout-streak-card" id="workoutStreakCard">
-                <div class="wsc-header">
-                  <div class="wsc-fire-wrap">
-                    <span class="wsc-fire-icon">🔥</span>
-                    <div class="wsc-title-group">
-                      <div class="wsc-streak-val" id="workoutStreakCount">0 Hari Streak</div>
-                      <div class="wsc-streak-sub" id="workoutStreakRecord">Rekor: 0 Hari • Konsistensi Rutin</div>
-                    </div>
+              <!-- Minimalist Streak & Week Tracker -->
+              <div class="workout-streak-mini" id="workoutStreakCard">
+                <div class="wsm-top">
+                  <div class="wsm-streak-info">
+                    <span class="wsm-streak-text" id="workoutStreakCount">🔥 0 Hari Streak</span>
+                    <span class="wsm-sep">•</span>
+                    <span class="wsm-record-text" id="workoutStreakRecord">Rekor: 0 Hari</span>
                   </div>
-                  <div class="wsc-week-badge" id="workoutWeeklyBadge">
-                    <span class="wsc-wb-count" id="workoutWeeklyStatus">0/0 Hari</span>
-                    <span class="wsc-wb-label">Target Minggu Ini</span>
-                  </div>
+                  <span class="wsm-week-text" id="workoutWeeklyStatus">0 Selesai Minggu Ini</span>
                 </div>
-
-                <!-- 7-Day Consistency Grid (Senin - Minggu) -->
-                <div class="wsc-week-grid" id="workoutWeekGrid"></div>
-
-                <!-- Progress & Motivation Footer -->
-                <div class="wsc-footer">
-                  <div class="wsc-progress-bar-bg">
-                    <div class="wsc-progress-bar-fill" id="workoutProgressBar" style="width: 0%;"></div>
-                  </div>
-                  <div class="wsc-footer-row">
-                    <span class="wsc-motivation" id="workoutMotivation">Ayo mulai latihan hari ini untuk bangun konsistensi!</span>
-                    <span class="wsc-pct-text" id="workoutProgressPct">0%</span>
-                  </div>
-                </div>
+                <div class="wsm-days" id="workoutWeekGrid"></div>
               </div>
 
               <div class="day-tabs" id="workoutDayFilter">
