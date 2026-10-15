@@ -3,8 +3,9 @@
    =========================== */
 .day-tabs {
   display: flex; gap: 8px; margin-bottom: 16px;
-  overflow-x: auto; padding: 2px 2px 6px 2px; margin-left: -2px; margin-right: -2px;
+  overflow-x: auto; padding: 2px 20px 6px 2px; margin-left: -2px; margin-right: -2px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  scroll-padding-right: 20px;
 }
 .day-tabs::-webkit-scrollbar { display: none; }
 .day-tab {
@@ -24,7 +25,7 @@
   color: var(--chip-active-color); border-color: transparent;
   box-shadow: var(--chip-active-shadow);
 }
-.jadwal-list { display: flex; flex-direction: column; gap: 12px; padding: 0 0 110px 0; }
+.jadwal-list { display: flex; flex-direction: column; gap: 12px; padding: 0 0 160px 0; }
 
 /* Soft entrance used by every list card (jadwal, agenda, olahraga, finance) */
 @keyframes fadeSlideIn {
@@ -139,6 +140,20 @@
   background: var(--success-bg); color: var(--success); border-color: rgba(16, 185, 129, 0.35);
 }
 
+@media (max-width: 480px) {
+  .jadwal-actions {
+    gap: 6px;
+    padding: 8px 12px 10px;
+  }
+  .action-btn {
+    padding: 5px 10px;
+    font-size: 11.5px;
+  }
+  .action-btn.check {
+    padding: 5px 10px;
+  }
+}
+
 /* Empty State Full */
 .empty-state {
   text-align: center; padding: 48px 24px; color: var(--text-muted);
@@ -157,13 +172,16 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 4px;
-  gap: 5px;
+  gap: 4px;
   margin-bottom: 18px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .jadwal-subnav-btn {
-  flex: 1;
-  padding: 9px 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 6px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
@@ -179,10 +197,30 @@
   white-space: nowrap;
 }
 
+.jadwal-subnav-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 400px) {
+  .jadwal-subnav-btn {
+    font-size: 12px;
+    gap: 4px;
+    padding: 7px 3px;
+  }
+  .jadwal-subnav-btn i,
+  .jadwal-subnav-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
 .jadwal-subnav-btn i,
 .jadwal-subnav-btn svg {
   width: 15px;
   height: 15px;
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
@@ -260,17 +298,21 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
 }
 .wsm-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .wsm-streak-info {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
   min-width: 0;
 }
 .wsm-streak-text {
@@ -310,8 +352,10 @@
   padding: 5px 4px;
   border-radius: 12px;
   border: 1px solid var(--border);
+  box-sizing: border-box;
 }
 .wsm-day {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;

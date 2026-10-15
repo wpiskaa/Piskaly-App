@@ -605,7 +605,7 @@ function updateWorkoutSummaryStats(workouts) {
   }
 
   if (weeklyStatusEl) {
-    weeklyStatusEl.textContent = `${completedDaysCount} Selesai Minggu Ini`;
+    weeklyStatusEl.textContent = `${completedDaysCount} Selesai Pekan Ini`;
   }
 }
 

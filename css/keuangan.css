@@ -304,7 +304,7 @@
   border-color: transparent; box-shadow: var(--chip-active-shadow);
 }
 
-.transaction-list { display: flex; flex-direction: column; gap: 10px; }
+.transaction-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 160px; }
 .trans-item {
   display: flex; align-items: center; gap: 14px;
   background: var(--bg-card); border-radius: 18px; padding: 14px 16px;

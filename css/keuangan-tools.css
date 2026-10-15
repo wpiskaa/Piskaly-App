@@ -14,8 +14,8 @@
 
 /* -- Finance tabs -- */
 .fin-tabs {
-  display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 6px; margin: 4px 0 16px;
-  scrollbar-width: none;
+  display: flex; gap: 8px; overflow-x: auto; padding: 4px 20px 6px 2px; margin: 4px 0 16px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-padding-right: 20px;
 }
 .fin-tabs::-webkit-scrollbar { display: none; }
 .fin-tab {
@@ -59,7 +59,7 @@
 .fin-empty p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
 
 /* -- Goals -- */
-.goal-list { display: flex; flex-direction: column; gap: 14px; }
+.goal-list { display: flex; flex-direction: column; gap: 14px; padding-bottom: 160px; }
 .goal-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 16px; box-shadow: var(--shadow-sm); transition: var(--transition);
@@ -181,7 +181,7 @@
 .budget-bar-fill.ok { background: linear-gradient(90deg, #10b981, #34d399); }
 .budget-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .budget-bar-fill.over { background: linear-gradient(90deg, #ef4444, #f87171); }
-.budget-list { display: flex; flex-direction: column; gap: 12px; }
+.budget-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 160px; }
 .budget-item {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 14px 16px; box-shadow: var(--shadow-sm);
@@ -206,7 +206,7 @@
 .budget-item-actions svg { width: 14px; height: 14px; }
 
 /* -- Debts -- */
-.debt-list { display: flex; flex-direction: column; gap: 12px; }
+.debt-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 160px; }
 .debt-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 14px 16px; box-shadow: var(--shadow-sm);

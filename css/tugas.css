@@ -16,7 +16,7 @@
   color: white; border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 14px rgba(19, 43, 94, 0.28);
 }
-.tugas-list { display: flex; flex-direction: column; gap: 14px; padding: 0 0 100px 0; }
+.tugas-list { display: flex; flex-direction: column; gap: 14px; padding: 0 0 160px 0; }
 
 /* Tugas Card - 20px rounded card harmonized with Home design */
 .tugas-card {
