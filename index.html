@@ -406,6 +406,7 @@
               <button class="fin-tab" data-fintab="tabungan"><i data-lucide="piggy-bank"></i><span>Tabungan</span></button>
               <button class="fin-tab" data-fintab="anggaran"><i data-lucide="gauge"></i><span>Anggaran</span></button>
               <button class="fin-tab" data-fintab="hutang"><i data-lucide="handshake"></i><span>Hutang</span></button>
+              <button class="fin-tab" data-fintab="langganan"><i data-lucide="repeat"></i><span>Langganan</span></button>
               <button class="fin-tab" data-fintab="kalkulator"><i data-lucide="calculator"></i><span>Kalkulator</span></button>
             </div>
 
@@ -421,6 +422,21 @@
                 </select>
               </div>
               <canvas id="financeChart" height="180"></canvas>
+            </div>
+
+            <!-- Subscription Quick Widget in Ringkasan -->
+            <div class="sub-quick-widget" id="subQuickWidget" onclick="setFinTab('langganan')">
+              <div class="sub-qw-left">
+                <div class="sub-qw-icon"><i data-lucide="repeat"></i></div>
+                <div>
+                  <span class="sub-qw-label">Langganan Rutin Aktif</span>
+                  <b class="sub-qw-val" id="subQuickTotal">Rp 0 / bln</b>
+                </div>
+              </div>
+              <div class="sub-qw-right">
+                <span class="sub-qw-badge" id="subQuickCount">0 Layanan</span>
+                <i data-lucide="chevron-right"></i>
+              </div>
             </div>
 
             <!-- Category Breakdown Card -->
@@ -484,6 +500,45 @@
                 </div>
               </div>
               <div id="debtList" class="debt-list"></div>
+            </div>
+
+            <!-- TAB: LANGGANAN (SUBSCRIPTION TRACKER) -->
+            <div class="fin-pane" id="finPane-langganan">
+              <!-- Summary Card -->
+              <div class="sub-summary-card">
+                <div class="sub-card-glow"></div>
+                <div class="sub-summary-top">
+                  <div>
+                    <div class="sub-badge"><i data-lucide="repeat"></i> SUBSCRIPTION HUB</div>
+                    <div class="sub-sum-label">Beban Langganan Rutin</div>
+                    <div class="sub-sum-total" id="subMonthlyTotal">Rp 0 <small>/ bulan</small></div>
+                    <div class="sub-sum-yearly" id="subYearlyTotal">Estimasi Rp 0 / tahun</div>
+                  </div>
+                  <div class="sub-stat-box">
+                    <span class="sub-stat-count" id="subActiveCount">0</span>
+                    <span class="sub-stat-lbl">Aktif</span>
+                  </div>
+                </div>
+                <div class="sub-next-alert" id="subNextAlert">
+                  <i data-lucide="bell"></i>
+                  <span id="subNextAlertText">Memuat jadwal tagihan terdekat...</span>
+                </div>
+              </div>
+
+              <!-- Header Controls -->
+              <div class="section-header" style="margin-top:18px; margin-bottom:12px;">
+                <h3 class="section-title">Daftar Langganan</h3>
+                <button class="section-link" onclick="openSubModal()">+ Langganan Baru</button>
+              </div>
+
+              <div class="sub-filter-row">
+                <button class="sub-filter-btn active" data-subfilter="all" onclick="setSubFilter('all')">Semua</button>
+                <button class="sub-filter-btn" data-subfilter="active" onclick="setSubFilter('active')">Aktif</button>
+                <button class="sub-filter-btn" data-subfilter="soon" onclick="setSubFilter('soon')">Segera Jatuh Tempo</button>
+                <button class="sub-filter-btn" data-subfilter="paused" onclick="setSubFilter('paused')">Dijeda / Berhenti</button>
+              </div>
+
+              <div id="subList" class="sub-list"></div>
             </div>
 
             <!-- TAB: KALKULATOR -->
@@ -1504,6 +1559,124 @@
     </div>
   </div>
 
+  <!-- Modal: Tambah / Edit Langganan (Subscription) -->
+  <div class="modal hidden" id="modalLangganan">
+    <div class="modal-header">
+      <h3 id="modalLanggananTitle">Tambah Langganan</h3>
+      <button class="modal-close" data-modal="modalLangganan"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Preset Template Chips for 1-Tap quick fill -->
+      <div class="form-group">
+        <label>Pilih Cepat Layanan Populer</label>
+        <div class="sub-preset-chips" id="subPresetChips">
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('spotify')">🟢 Spotify</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('netflix')">🔴 Netflix</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('youtube')">🔴 YouTube</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('icloud')">☁️ iCloud</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('chatgpt')">🟣 ChatGPT</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('disney')">🟡 Disney+</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('canva')">🎨 Canva</button>
+          <button type="button" class="sub-preset-chip" onclick="applySubPreset('wifi')">🌐 Wifi</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Nama Layanan / Aplikasi *</label>
+        <input type="text" id="subNama" placeholder="Contoh: Spotify Premium, Netflix, iCloud..." />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Biaya Tagihan (Rp) *</label>
+          <input type="text" id="subBiaya" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+          <div class="quick-amounts" data-target="subBiaya">
+            <button type="button" data-amt="29000">+29rb</button>
+            <button type="button" data-amt="54990">+55rb</button>
+            <button type="button" data-amt="65000">+65rb</button>
+            <button type="button" data-amt="186000">+186rb</button>
+            <button type="button" class="clear-btn" data-amt="0">C</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Siklus Tagihan</label>
+          <select id="subSiklus">
+            <option value="bulanan" selected>Per Bulan</option>
+            <option value="tahunan">Per Tahun</option>
+            <option value="mingguan">Per Minggu</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="subKategori">
+            <option value="musik">🎵 Musik &amp; Audio</option>
+            <option value="streaming">🎬 Streaming Film / Video</option>
+            <option value="cloud">☁️ Cloud &amp; Penyimpanan</option>
+            <option value="ai">🤖 AI &amp; Software / Tool</option>
+            <option value="produktivitas">⚡ Produktivitas &amp; Kerja</option>
+            <option value="internet">🌐 Internet &amp; Provider</option>
+            <option value="gaming">🎮 Gaming</option>
+            <option value="lainnya">📦 Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jatuh Tempo Berikutnya *</label>
+          <input type="date" id="subTanggal" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Metode Pembayaran</label>
+          <select id="subMetode">
+            <option value="GoPay">GoPay</option>
+            <option value="DANA">DANA</option>
+            <option value="OVO">OVO</option>
+            <option value="ShopeePay">ShopeePay</option>
+            <option value="Kartu Kredit">Kartu Kredit</option>
+            <option value="Debit Card / Bank">Debit Card / Bank</option>
+            <option value="Apple Pay / App Store">Apple App Store</option>
+            <option value="Google Play">Google Play</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status Langganan</label>
+          <select id="subStatus">
+            <option value="aktif" selected>Aktif</option>
+            <option value="jeda">Dijeda Sementara</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Catatan / Paket Plan</label>
+        <input type="text" id="subCatatan" placeholder="Contoh: Paket Family ber-4, shared bill..." />
+      </div>
+
+      <div class="form-group">
+        <label>Warna Tema Kartu</label>
+        <div class="color-picker" id="subColorPicker">
+          <button type="button" class="color-opt active" data-color="#1db954" style="background:#1db954"></button>
+          <button type="button" class="color-opt" data-color="#e50914" style="background:#e50914"></button>
+          <button type="button" class="color-opt" data-color="#2563eb" style="background:#2563eb"></button>
+          <button type="button" class="color-opt" data-color="#8b5cf6" style="background:#8b5cf6"></button>
+          <button type="button" class="color-opt" data-color="#f59e0b" style="background:#f59e0b"></button>
+          <button type="button" class="color-opt" data-color="#ec4899" style="background:#ec4899"></button>
+        </div>
+      </div>
+
+      <input type="hidden" id="subEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalLangganan">Batal</button>
+      <button class="btn-primary" id="saveSubBtn" onclick="saveSubscription()">Simpan Langganan</button>
+    </div>
+  </div>
+
   <!-- Modal: Tambah / Edit Ongoing Project -->
   <div class="modal hidden" id="modalProject">
     <div class="modal-header">
@@ -1620,6 +1793,11 @@
           <div class="quick-act-icon amber-box"><i data-lucide="dumbbell"></i></div>
           <span class="quick-act-title">Rutin Olahraga</span>
           <span class="quick-act-sub">Jadwal gym &amp; workout</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openSubModal();">
+          <div class="quick-act-icon purple-box"><i data-lucide="repeat"></i></div>
+          <span class="quick-act-title">Langganan App</span>
+          <span class="quick-act-sub">Spotify, Netflix &amp; tools</span>
         </button>
       </div>
     </div>
@@ -2040,6 +2218,7 @@
   <script src="js/tabungan.js?v=3.35"></script>
   <script src="js/anggaran.js?v=3.35"></script>
   <script src="js/hutang.js?v=3.35"></script>
+  <script src="js/langganan.js?v=3.35"></script>
   <script src="js/kalkulator.js?v=3.35"></script>
   <script src="js/kalender.js?v=3.35"></script>
   <script src="js/notifikasi.js?v=3.35"></script>

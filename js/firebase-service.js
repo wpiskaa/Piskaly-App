@@ -138,6 +138,8 @@ const FirebaseService = {
 
       if (Array.isArray(data.goals)) Store.setGoals(data.goals);
       if (Array.isArray(data.events)) Store.setEvents(data.events);
+      if (Array.isArray(data.olahraga)) Store.setOlahraga(data.olahraga);
+      if (Array.isArray(data.subscriptions)) Store.setSubscriptions(data.subscriptions);
 
       let projs = Array.isArray(data.projects) ? data.projects : [];
       if (projs.some(p => p.id === 'p1' || p.title === 'Mobile App')) projs = [];
@@ -183,6 +185,8 @@ const FirebaseService = {
       budgets: Store.getBudgets(),
       debts: Store.getDebts(),
       events: Store.getEvents(),
+      olahraga: Store.getOlahraga(),
+      subscriptions: Store.getSubscriptions(),
       projects: Store.getProjects(),
       profil: Store.getProfil(),
       read_notifs: Store.getReadNotifs(),

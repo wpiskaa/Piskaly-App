@@ -32,9 +32,10 @@ function renderKeuangan() {
   if (typeof renderGoals === 'function') renderGoals();
   if (typeof renderBudgets === 'function') renderBudgets();
   if (typeof renderDebts === 'function') renderDebts();
+  if (typeof renderSubscriptions === 'function') renderSubscriptions();
 }
 
-// ---- Finance tabs (Ringkasan / Tabungan / Anggaran / Hutang / Kalkulator) ----
+// ---- Finance tabs (Ringkasan / Tabungan / Anggaran / Hutang / Langganan / Kalkulator) ----
 function setFinTab(tab) {
   activeFinTab = tab;
   document.querySelectorAll('.fin-tab').forEach(b => b.classList.toggle('active', b.dataset.fintab === tab));
@@ -42,6 +43,7 @@ function setFinTab(tab) {
   const fab = document.getElementById('addTransaksiBtn');
   if (fab) fab.style.display = tab === 'kalkulator' ? 'none' : '';
   if (tab === 'ringkasan') renderFinanceChart();
+  if (tab === 'langganan' && typeof renderSubscriptions === 'function') renderSubscriptions();
 }
 
 // Tombol + menyesuaikan tab yang sedang dibuka
@@ -49,6 +51,7 @@ function finFabAction() {
   if (activeFinTab === 'tabungan') return openGoalModal();
   if (activeFinTab === 'anggaran') return openBudgetModal();
   if (activeFinTab === 'hutang') return openDebtModal();
+  if (activeFinTab === 'langganan' && typeof openSubModal === 'function') return openSubModal();
   editingTransId = null;
   resetTransaksiForm();
   openModal('modalTransaksi');

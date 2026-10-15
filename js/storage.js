@@ -54,7 +54,7 @@ const Store = {
     const safeId = userId.toLowerCase().trim();
     const keys = [
       'jadwal', 'tugas', 'catatan', 'transaksi', 'goals', 'budgets',
-      'debts', 'events', 'olahraga', 'projects', 'profil', 'read_notifs',
+      'debts', 'events', 'olahraga', 'subscriptions', 'projects', 'profil', 'read_notifs',
       'pisku_messages', 'pisku_last_time'
     ];
     keys.forEach(k => {
@@ -173,6 +173,43 @@ const Store = {
     return Array.isArray(list) ? list : [];
   },
   setOlahraga(d) { this.set(this._k('olahraga'), d); },
+
+  getSubscriptions() {
+    let list = this.get(this._k('subscriptions'), null);
+    if (!list) {
+      list = [
+        {
+          id: 'sub-1',
+          nama: 'Spotify Premium',
+          biaya: 54990,
+          siklus: 'bulanan',
+          kategori: 'musik',
+          metode: 'GoPay',
+          tanggalTagihan: '2026-10-25',
+          status: 'aktif',
+          catatan: 'Plan Individual bulanan',
+          color: '#1db954',
+          icon: 'music'
+        },
+        {
+          id: 'sub-2',
+          nama: 'Netflix Mobile',
+          biaya: 65000,
+          siklus: 'bulanan',
+          kategori: 'streaming',
+          metode: 'DANA',
+          tanggalTagihan: '2026-11-02',
+          status: 'aktif',
+          catatan: 'Paket streaming ponsel',
+          color: '#e50914',
+          icon: 'film'
+        }
+      ];
+      this.set(this._k('subscriptions'), list);
+    }
+    return Array.isArray(list) ? list : [];
+  },
+  setSubscriptions(d) { this.set(this._k('subscriptions'), d); },
 
   getProjects() {
     const list = this.get(this._k('projects'), []);
