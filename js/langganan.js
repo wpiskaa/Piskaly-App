@@ -142,9 +142,9 @@ function renderSubscriptions() {
   const monthlyTotalEl = document.getElementById('subMonthlyTotal');
   const yearlyTotalEl = document.getElementById('subYearlyTotal');
   const activeCountEl = document.getElementById('subActiveCount');
-  if (monthlyTotalEl) monthlyTotalEl.innerHTML = `${formatRupiahFull(totalMonthly)} <small>/ bulan</small>`;
-  if (yearlyTotalEl) yearlyTotalEl.textContent = `Estimasi ${formatRupiahFull(totalYearly)} / tahun`;
-  if (activeCountEl) activeCountEl.textContent = activeCount;
+  if (monthlyTotalEl) monthlyTotalEl.textContent = formatRupiahFull(totalMonthly);
+  if (yearlyTotalEl) yearlyTotalEl.textContent = formatRupiahFull(totalYearly);
+  if (activeCountEl) activeCountEl.textContent = `${activeCount} Layanan`;
 
   // Update Quick Widget di Tab Ringkasan
   const quickTotalEl = document.getElementById('subQuickTotal');
@@ -222,58 +222,64 @@ function renderSubscriptions() {
     let diffDays = targetDate ? Math.round((targetDate - todayDate) / (1000 * 60 * 60 * 24)) : null;
 
     let dueBadgeHtml = '';
-    if (s.tanggalTagihan) {
+    if (s.tanggalTagihan && !isPaused) {
       if (diffDays === 0) {
-        dueBadgeHtml = `<span class="sub-due-badge urgent">Hari ini!</span>`;
+        dueBadgeHtml = `<span class="debt-due late">Hari ini!</span>`;
       } else if (diffDays === 1) {
-        dueBadgeHtml = `<span class="sub-due-badge warning">Besok</span>`;
+        dueBadgeHtml = `<span class="debt-due soon">Besok</span>`;
       } else if (diffDays > 1 && diffDays <= 3) {
-        dueBadgeHtml = `<span class="sub-due-badge warning">${diffDays} hari lagi</span>`;
+        dueBadgeHtml = `<span class="debt-due soon">${diffDays} hari lagi</span>`;
       } else if (diffDays > 3) {
-        dueBadgeHtml = `<span class="sub-due-badge normal">${diffDays} hari lagi</span>`;
+        dueBadgeHtml = `<span class="debt-due ok">${diffDays} hari lagi</span>`;
       } else {
-        dueBadgeHtml = `<span class="sub-due-badge passed">Lewat tempo</span>`;
+        dueBadgeHtml = `<span class="debt-due late">Terlewat</span>`;
       }
     }
 
     const cycleText = s.siklus === 'tahunan' ? '/ thn' : s.siklus === 'mingguan' ? '/ mgg' : '/ bln';
     const categoryLabel = SUB_CATEGORY_LABELS[s.kategori] || 'Layanan';
-    const cardColor = s.color || '#8b5cf6';
+    const cardColor = s.color || '#2563eb';
 
     html += `
-      <div class="sub-card ${isPaused ? 'is-paused' : ''}" style="border-left-color: ${cardColor}">
-        <div class="sub-card-top">
-          <div class="sub-icon-box" style="background: ${cardColor}">
+      <div class="debt-card ${isPaused ? 'paid' : ''}" style="border-left: 4px solid ${cardColor};">
+        <div class="debt-top">
+          <div class="debt-avatar" style="background: ${cardColor}; font-size: 16px;">
             <i data-lucide="${s.icon || 'repeat'}"></i>
           </div>
-          <div class="sub-title-group">
-            <div class="sub-title-row">
-              <h4 class="sub-name">${subEsc(s.nama)}</h4>
-              <div class="sub-price">${formatRupiahFull(s.biaya)} <small>${cycleText}</small></div>
+          <div class="debt-info">
+            <div class="debt-name">
+              <span>${subEsc(s.nama)}</span>
+              ${dueBadgeHtml}
+              ${isPaused ? '<span class="debt-due" style="background:var(--bg-input); color:var(--text-muted);">Dijeda</span>' : ''}
             </div>
-            <span class="sub-category-tag">${categoryLabel}</span>
+            <div class="debt-sub">
+              ${categoryLabel}${s.metode ? ' • ' + subEsc(s.metode) : ''}${s.catatan ? ' • "' + subEsc(s.catatan) + '"' : ''}
+            </div>
+          </div>
+          <div class="debt-amount" style="text-align: right;">
+            <div style="color: var(--text-primary); font-size: 14px; font-weight: 800;">${formatRupiahFull(s.biaya)}</div>
+            <div style="font-size: 10.5px; font-weight: 600; color: var(--text-secondary);">${cycleText}</div>
           </div>
         </div>
 
-        <div class="sub-meta-row">
-          ${s.metode ? `<span class="sub-meta-pill"><i data-lucide="credit-card"></i> ${subEsc(s.metode)}</span>` : ''}
-          ${s.tanggalTagihan ? `<span class="sub-meta-pill"><i data-lucide="calendar"></i> Tagihan: ${formatDate(s.tanggalTagihan)}</span>` : ''}
-          ${dueBadgeHtml}
-        </div>
-
-        ${s.catatan ? `<div class="sub-note-text">"${subEsc(s.catatan)}"</div>` : ''}
-
-        <div class="sub-footer-row">
-          <button type="button" class="sub-log-btn" onclick="logSubPayment('${s.id}')" title="Catat pembayaran ini ke pengeluaran bulanan">
-            <i data-lucide="check-circle-2"></i> Catat Bayar
-          </button>
-          <div class="sub-actions">
-            <button type="button" class="action-btn" onclick="toggleSubStatus('${s.id}')">
-              ${s.status === 'aktif' ? 'Jeda' : 'Aktifkan'}
+        <div class="debt-bottom" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+          <span class="debt-progress-text">
+            ${s.tanggalTagihan ? `<i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:-2px;margin-right:3px;"></i>Tagihan: ${formatDate(s.tanggalTagihan)}` : (isPaused ? 'Status: Dijeda' : 'Status: Aktif')}
+          </span>
+          <span class="debt-actions">
+            <button type="button" class="debt-btn" onclick="logSubPayment('${s.id}')" title="Catat pembayaran ini ke pengeluaran">
+              <i data-lucide="check-circle-2"></i> Bayar
             </button>
-            <button type="button" class="action-btn edit" onclick="editSub('${s.id}')">Edit</button>
-            <button type="button" class="action-btn delete" onclick="deleteSub('${s.id}', event)">Hapus</button>
-          </div>
+            <button type="button" class="debt-btn" style="background:var(--bg-input); color:var(--text-secondary);" onclick="toggleSubStatus('${s.id}')">
+              ${s.status === 'aktif' ? 'Jeda' : 'Aktif'}
+            </button>
+            <button type="button" class="debt-btn" style="background:var(--bg-input); color:var(--text-secondary);" onclick="editSub('${s.id}')" aria-label="Edit">
+              <i data-lucide="pencil"></i>
+            </button>
+            <button type="button" class="debt-btn danger" onclick="deleteSub('${s.id}', event)" aria-label="Hapus">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </span>
         </div>
       </div>
     `;
@@ -351,7 +357,7 @@ function toggleSubStatus(id) {
 
 function setSubFilter(filter) {
   currentSubFilter = filter;
-  document.querySelectorAll('.sub-filter-btn').forEach(btn => {
+  document.querySelectorAll('#finPane-langganan .debt-tab, .sub-filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.subfilter === filter);
   });
   renderSubscriptions();

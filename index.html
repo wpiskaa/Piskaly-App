@@ -253,24 +253,19 @@
 
             <!-- PANE 2: JADWAL AGENDA (KEGIATAN & KALENDER) -->
             <div class="jadwal-subpane hidden" id="jadwalPane-agenda">
-              <div class="agenda-hub-header">
-                <div class="agenda-search-row">
-                  <div class="agenda-search-box">
-                    <i data-lucide="search"></i>
-                    <input type="text" id="agendaSearchInput" placeholder="Cari nama agenda atau lokasi..." oninput="filterAgendaList()" />
-                  </div>
-                  <button class="agenda-add-btn" onclick="openAddEventFromJadwal()">
-                    <i data-lucide="plus"></i> Tambah
-                  </button>
-                </div>
-                <div class="agenda-filter-chips">
-                  <button class="agenda-chip active" data-filter="all" onclick="setAgendaFilter('all')">Semua</button>
-                  <button class="agenda-chip" data-filter="today" onclick="setAgendaFilter('today')">Hari Ini</button>
-                  <button class="agenda-chip" data-filter="upcoming" onclick="setAgendaFilter('upcoming')">Mendatang</button>
-                  <button class="agenda-chip" data-filter="past" onclick="setAgendaFilter('past')">Selesai/Lewat</button>
-                </div>
+              <div class="day-tabs" id="agendaTabs">
+                <button class="day-tab active" data-filter="all" onclick="setAgendaFilter('all')"><i data-lucide="layers"></i> Semua</button>
+                <button class="day-tab" data-filter="today" onclick="setAgendaFilter('today')">Hari Ini</button>
+                <button class="day-tab" data-filter="upcoming" onclick="setAgendaFilter('upcoming')">Mendatang</button>
+                <button class="day-tab" data-filter="past" onclick="setAgendaFilter('past')">Lewat</button>
               </div>
-              <div id="agendaList" class="agenda-hub-list"></div>
+
+              <div class="agenda-search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="agendaSearchInput" placeholder="Cari nama agenda atau lokasi..." oninput="filterAgendaList()" />
+              </div>
+
+              <div id="agendaList" class="jadwal-list"></div>
               <button class="fab" onclick="openAddEventFromJadwal()" aria-label="Tambah Agenda">
                 <i data-lucide="plus"></i>
               </button>
@@ -278,38 +273,26 @@
 
             <!-- PANE 3: JADWAL RUTIN OLAHRAGA (FITNESS & WORKOUT) -->
             <div class="jadwal-subpane hidden" id="jadwalPane-olahraga">
-              <!-- Summary & Motivation Card -->
-              <div class="workout-summary-card">
-                <div class="workout-card-glow"></div>
-                <div class="workout-stat-left">
-                  <div class="workout-badge"><i data-lucide="flame"></i> FITNESS &amp; ENERGY</div>
-                  <h3 class="workout-stat-title" id="workoutWeeklyStatus">0 Sesi Selesai Minggu Ini</h3>
-                  <p class="workout-stat-desc" id="workoutMotivation">Latihan teratur menjaga fisik bugar dan pikiran lebih fokus!</p>
-                </div>
-                <div class="workout-streak-box">
-                  <span class="workout-streak-val" id="workoutStreakCount">🔥 0</span>
-                  <span class="workout-streak-lbl">Hari Latihan</span>
+              <div class="workout-header-strip">
+                <div class="workout-streak-pill">
+                  <span id="workoutStreakCount">🔥 0 Hari Latihan</span>
+                  <span class="workout-sep-dot">•</span>
+                  <span id="workoutWeeklyStatus">0 Selesai Minggu Ini</span>
                 </div>
               </div>
 
-              <!-- Day filter for workouts -->
-              <div class="workout-header-row">
-                <div class="workout-day-filter" id="workoutDayFilter">
-                  <button class="workout-day-btn active" data-day="all" onclick="setWorkoutDayFilter('all')">Semua</button>
-                  <button class="workout-day-btn" data-day="Senin" onclick="setWorkoutDayFilter('Senin')">Sen</button>
-                  <button class="workout-day-btn" data-day="Selasa" onclick="setWorkoutDayFilter('Selasa')">Sel</button>
-                  <button class="workout-day-btn" data-day="Rabu" onclick="setWorkoutDayFilter('Rabu')">Rab</button>
-                  <button class="workout-day-btn" data-day="Kamis" onclick="setWorkoutDayFilter('Kamis')">Kam</button>
-                  <button class="workout-day-btn" data-day="Jumat" onclick="setWorkoutDayFilter('Jumat')">Jum</button>
-                  <button class="workout-day-btn" data-day="Sabtu" onclick="setWorkoutDayFilter('Sabtu')">Sab</button>
-                  <button class="workout-day-btn" data-day="Minggu" onclick="setWorkoutDayFilter('Minggu')">Min</button>
-                </div>
-                <button class="workout-add-header-btn" onclick="openAddOlahragaModal()">
-                  <i data-lucide="plus"></i> Tambah
-                </button>
+              <div class="day-tabs" id="workoutDayFilter">
+                <button class="day-tab active" data-day="all" onclick="setWorkoutDayFilter('all')"><i data-lucide="layers"></i> Semua</button>
+                <button class="day-tab" data-day="Senin" onclick="setWorkoutDayFilter('Senin')">Sen</button>
+                <button class="day-tab" data-day="Selasa" onclick="setWorkoutDayFilter('Selasa')">Sel</button>
+                <button class="day-tab" data-day="Rabu" onclick="setWorkoutDayFilter('Rabu')">Rab</button>
+                <button class="day-tab" data-day="Kamis" onclick="setWorkoutDayFilter('Kamis')">Kam</button>
+                <button class="day-tab" data-day="Jumat" onclick="setWorkoutDayFilter('Jumat')">Jum</button>
+                <button class="day-tab" data-day="Sabtu" onclick="setWorkoutDayFilter('Sabtu')">Sab</button>
+                <button class="day-tab" data-day="Minggu" onclick="setWorkoutDayFilter('Minggu')">Min</button>
               </div>
 
-              <div id="workoutList" class="workout-routine-list"></div>
+              <div id="workoutList" class="jadwal-list"></div>
               <button class="fab" onclick="openAddOlahragaModal()" aria-label="Tambah Jadwal Olahraga">
                 <i data-lucide="plus"></i>
               </button>
@@ -504,41 +487,30 @@
 
             <!-- TAB: LANGGANAN (SUBSCRIPTION TRACKER) -->
             <div class="fin-pane" id="finPane-langganan">
-              <!-- Summary Card -->
-              <div class="sub-summary-card">
-                <div class="sub-card-glow"></div>
-                <div class="sub-summary-top">
-                  <div>
-                    <div class="sub-badge"><i data-lucide="repeat"></i> SUBSCRIPTION HUB</div>
-                    <div class="sub-sum-label">Beban Langganan Rutin</div>
-                    <div class="sub-sum-total" id="subMonthlyTotal">Rp 0 <small>/ bulan</small></div>
-                    <div class="sub-sum-yearly" id="subYearlyTotal">Estimasi Rp 0 / tahun</div>
-                  </div>
-                  <div class="sub-stat-box">
-                    <span class="sub-stat-count" id="subActiveCount">0</span>
-                    <span class="sub-stat-lbl">Aktif</span>
-                  </div>
-                </div>
-                <div class="sub-next-alert" id="subNextAlert">
-                  <i data-lucide="bell"></i>
-                  <span id="subNextAlertText">Memuat jadwal tagihan terdekat...</span>
-                </div>
+              <div class="fin-stat-row">
+                <div class="fin-stat-box"><span>Beban Bulanan</span><b id="subMonthlyTotal">Rp 0</b></div>
+                <div class="fin-stat-box"><span>Estimasi / Tahun</span><b id="subYearlyTotal">Rp 0</b></div>
+                <div class="fin-stat-box"><span>Layanan Aktif</span><b id="subActiveCount">0</b></div>
+              </div>
+
+              <!-- Next renewal reminder strip (minimalist) -->
+              <div class="sub-alert-strip" id="subNextAlert">
+                <i data-lucide="bell"></i>
+                <span id="subNextAlertText">Memuat jadwal tagihan terdekat...</span>
               </div>
 
               <!-- Header Controls -->
-              <div class="section-header" style="margin-top:18px; margin-bottom:12px;">
+              <div class="section-header">
                 <h3 class="section-title">Daftar Langganan</h3>
-                <button class="section-link" onclick="openSubModal()">+ Langganan Baru</button>
+                <div class="trans-type-tabs">
+                  <button class="debt-tab active" data-subfilter="all" onclick="setSubFilter('all')">Semua</button>
+                  <button class="debt-tab" data-subfilter="active" onclick="setSubFilter('active')">Aktif</button>
+                  <button class="debt-tab" data-subfilter="soon" onclick="setSubFilter('soon')">Segera</button>
+                  <button class="debt-tab" data-subfilter="paused" onclick="setSubFilter('paused')">Jeda</button>
+                </div>
               </div>
 
-              <div class="sub-filter-row">
-                <button class="sub-filter-btn active" data-subfilter="all" onclick="setSubFilter('all')">Semua</button>
-                <button class="sub-filter-btn" data-subfilter="active" onclick="setSubFilter('active')">Aktif</button>
-                <button class="sub-filter-btn" data-subfilter="soon" onclick="setSubFilter('soon')">Segera Jatuh Tempo</button>
-                <button class="sub-filter-btn" data-subfilter="paused" onclick="setSubFilter('paused')">Dijeda / Berhenti</button>
-              </div>
-
-              <div id="subList" class="sub-list"></div>
+              <div id="subList" class="debt-list" style="padding-bottom: 90px;"></div>
             </div>
 
             <!-- TAB: KALKULATOR -->

@@ -2,7 +2,7 @@
 // SERVICE WORKER - sw.js
 // ===========================
 
-const CACHE_NAME = 'mylife-v3.34';
+const CACHE_NAME = 'mylife-v3.35';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -49,6 +49,7 @@ const STATIC_ASSETS = [
   './js/tabungan.js',
   './js/anggaran.js',
   './js/hutang.js',
+  './js/langganan.js',
   './js/kalkulator.js',
   './js/kalender.js',
   './js/ai.js',

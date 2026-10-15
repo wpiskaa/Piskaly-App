@@ -316,7 +316,7 @@ function getEventRelativeBadge(dateStr) {
   const todayStr = formatYMD(today);
 
   if (dateStr === todayStr) {
-    return `<span class="agenda-hub-badge today">Hari Ini</span>`;
+    return `<span class="jadwal-day-badge" style="background:rgba(16,185,129,0.12); color:#059669; border-color:rgba(16,185,129,0.25);">Hari Ini</span>`;
   }
 
   const todayDate = new Date(todayStr + 'T00:00:00');
@@ -325,13 +325,13 @@ function getEventRelativeBadge(dateStr) {
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays === 1) {
-    return `<span class="agenda-hub-badge upcoming">Besok</span>`;
+    return `<span class="jadwal-day-badge" style="background:rgba(59,130,246,0.12); color:#2563eb; border-color:rgba(59,130,246,0.25);">Besok</span>`;
   } else if (diffDays > 1) {
-    return `<span class="agenda-hub-badge upcoming">${diffDays} hari lagi</span>`;
+    return `<span class="jadwal-day-badge">${diffDays} hari lagi</span>`;
   } else if (diffDays === -1) {
-    return `<span class="agenda-hub-badge past">Kemarin</span>`;
+    return `<span class="jadwal-day-badge" style="opacity:0.75;">Kemarin</span>`;
   } else {
-    return `<span class="agenda-hub-badge past">Selesai/Lewat</span>`;
+    return `<span class="jadwal-day-badge" style="opacity:0.6;">Lewat</span>`;
   }
 }
 
@@ -344,7 +344,7 @@ function formatIndoDate(dateStr) {
 
 function setAgendaFilter(filter) {
   currentAgendaFilter = filter;
-  document.querySelectorAll('.agenda-chip').forEach(btn => {
+  document.querySelectorAll('#agendaTabs .day-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.filter === filter);
   });
   renderAgendaHub();
@@ -387,7 +387,7 @@ function renderAgendaHub() {
     return nama.includes(query) || lokasi.includes(query) || deskripsi.includes(query);
   });
 
-  // Filter by chip
+  // Filter by chip/tab
   if (currentAgendaFilter === 'today') {
     filtered = filtered.filter(e => e.tanggal === todayStr);
   } else if (currentAgendaFilter === 'upcoming') {
@@ -419,34 +419,29 @@ function renderAgendaHub() {
   filtered.forEach(e => {
     const badgeHtml = getEventRelativeBadge(e.tanggal);
     const dateFormatted = formatIndoDate(e.tanggal);
-    const timeFormatted = e.jamMulai ? (e.jamSelesai ? `${e.jamMulai} - ${e.jamSelesai}` : e.jamMulai) : null;
+    const timeStart = e.jamMulai || 'Agenda';
+    const timeEnd = e.jamSelesai || (e.jamMulai ? 'WIB' : 'Seharian');
 
     html += `
-      <div class="agenda-hub-card" id="agenda-card-${e.id}" style="border-left-color: ${e.color || '#2563eb'}">
-        <div class="agenda-hub-top">
-          <h4 class="agenda-hub-title">${escapeHtml(e.nama)}</h4>
-          ${badgeHtml}
-        </div>
-        <div class="agenda-hub-meta">
-          <div class="agenda-hub-meta-item">
-            <i data-lucide="calendar"></i>
-            <span>${dateFormatted}</span>
+      <div class="jadwal-card" id="agenda-card-${e.id}">
+        <div class="jadwal-card-inner" style="border-left-color: ${e.color || '#2563eb'}">
+          <div class="jadwal-time">
+            <div class="jt-start">${timeStart}</div>
+            <div class="jt-end">${timeEnd}</div>
           </div>
-          ${timeFormatted ? `
-            <div class="agenda-hub-meta-item">
-              <i data-lucide="clock"></i>
-              <span>${timeFormatted}</span>
+          <div class="jadwal-info">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              <div class="jadwal-matkul" style="margin-bottom:0;">${escapeHtml(e.nama)}</div>
+              ${badgeHtml}
             </div>
-          ` : ''}
-          ${e.lokasi ? `
-            <div class="agenda-hub-meta-item">
-              <i data-lucide="map-pin"></i>
-              <span>${escapeHtml(e.lokasi)}</span>
+            <div class="jadwal-meta">
+              <div class="jadwal-meta-item"><i data-lucide="calendar"></i>${dateFormatted}</div>
+              ${e.lokasi ? `<div class="jadwal-meta-item"><i data-lucide="map-pin"></i>${escapeHtml(e.lokasi)}</div>` : ''}
+              ${e.deskripsi ? `<div class="jadwal-meta-item"><i data-lucide="file-text"></i>${escapeHtml(e.deskripsi)}</div>` : ''}
             </div>
-          ` : ''}
+          </div>
         </div>
-        ${e.deskripsi ? `<p class="agenda-hub-desc">${escapeHtml(e.deskripsi)}</p>` : ''}
-        <div class="agenda-hub-actions">
+        <div class="jadwal-actions">
           <button type="button" class="action-btn edit" onclick="editEvent('${e.id}')">Edit</button>
           <button type="button" class="action-btn delete" onclick="deleteEvent('${e.id}')">Hapus</button>
         </div>
@@ -543,23 +538,25 @@ function updateWorkoutSummaryStats(workouts) {
     }
   }
 
-  weeklyEl.textContent = `${weeklyDoneCount} Sesi Selesai Minggu Ini`;
-  streakEl.innerHTML = `🔥 ${streak}`;
+  weeklyEl.textContent = `${weeklyDoneCount} Selesai Minggu Ini`;
+  streakEl.textContent = `🔥 ${streak} Hari Latihan`;
 
-  if (weeklyDoneCount >= 4) {
-    motivEl.textContent = 'Luar biasa! Konsistensi kamu tingkat atlet, pertahankan ritme ini! 💪';
-  } else if (weeklyDoneCount >= 2) {
-    motivEl.textContent = 'Mantap! Badan terasa lebih bugar dan energi lebih terjaga.';
-  } else if (weeklyDoneCount === 1) {
-    motivEl.textContent = 'Awal yang baik! Yuk tambah 1-2 sesi lagi minggu ini.';
-  } else {
-    motivEl.textContent = 'Yuk sempatkan 30 menit hari ini untuk keringatan & bakar kalori!';
+  if (motivEl) {
+    if (weeklyDoneCount >= 4) {
+      motivEl.textContent = 'Luar biasa! Konsistensi kamu tingkat atlet, pertahankan ritme ini! 💪';
+    } else if (weeklyDoneCount >= 2) {
+      motivEl.textContent = 'Mantap! Badan terasa lebih bugar dan energi lebih terjaga.';
+    } else if (weeklyDoneCount === 1) {
+      motivEl.textContent = 'Awal yang baik! Yuk tambah 1-2 sesi lagi minggu ini.';
+    } else {
+      motivEl.textContent = 'Yuk sempatkan 30 menit hari ini untuk keringatan & bakar kalori!';
+    }
   }
 }
 
 function setWorkoutDayFilter(day) {
   currentWorkoutDay = day;
-  document.querySelectorAll('#workoutDayFilter .workout-day-btn').forEach(btn => {
+  document.querySelectorAll('#workoutDayFilter .day-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.day === day);
   });
   renderWorkoutHub();
@@ -594,63 +591,42 @@ function renderWorkoutHub() {
     return;
   }
 
-  const allDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-  const shortDays = { Senin: 'Sen', Selasa: 'Sel', Rabu: 'Rab', Kamis: 'Kam', Jumat: 'Jum', Sabtu: 'Sab', Minggu: 'Min' };
-
   let html = '';
   filtered.forEach(w => {
     const isCompletedToday = Boolean(w.history && w.history[todayDateStr]);
     const isTodayActive = Array.isArray(w.hari) && w.hari.includes(todayDayName);
     const iconName = getSportIcon(w.kategori);
     const categoryLabel = getSportCategoryLabel(w.kategori);
-
-    let daysRowHtml = '';
-    allDays.forEach(day => {
-      const activeInRoutine = Array.isArray(w.hari) && w.hari.includes(day);
-      let cls = 'workout-day-tag';
-      if (activeInRoutine) {
-        cls += day === todayDayName ? ' today-active' : ' active';
-      }
-      daysRowHtml += `<span class="${cls}">${shortDays[day]}</span>`;
-    });
+    const hariText = Array.isArray(w.hari) && w.hari.length > 0 ? (w.hari.length === 7 ? 'Setiap Hari' : w.hari.join(', ')) : 'Rutin';
 
     html += `
-      <div class="workout-card ${isTodayActive ? 'is-today' : ''}" style="border-left-color: ${w.color || '#2563eb'}">
-        <div class="workout-card-top">
-          <div class="workout-icon-box" style="background: ${w.color || '#2563eb'}">
-            <i data-lucide="${iconName}"></i>
+      <div class="jadwal-card" id="workout-${w.id}">
+        <div class="jadwal-card-inner" style="border-left-color: ${w.color || '#2563eb'}">
+          <div class="jadwal-time">
+            <div class="jt-start">${w.jam || 'Rutin'}</div>
+            <div class="jt-end">${w.jam ? 'WIB' : 'Latihan'}</div>
           </div>
-          <div class="workout-title-group">
-            <h4 class="workout-title">${escapeHtml(w.nama)}</h4>
-            <div class="workout-sub-time">
-              <i data-lucide="clock"></i>
-              <span>${w.jam || '06:30'} WIB</span>
-              ${isTodayActive ? `<span style="color:#059669; font-weight:800; font-size:11px;">• Jadwal Hari Ini</span>` : ''}
+          <div class="jadwal-info">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+              <div class="jadwal-matkul" style="margin-bottom:0;">${escapeHtml(w.nama)}</div>
+              ${isTodayActive ? `<span class="jadwal-day-badge" style="background:rgba(16,185,129,0.12); color:#059669; border-color:rgba(16,185,129,0.25);">Hari Ini</span>` : ''}
+              ${isCompletedToday ? `<span class="jadwal-day-badge" style="background:rgba(37,99,235,0.12); color:#2563eb; border-color:rgba(37,99,235,0.25);">✓ Selesai</span>` : ''}
+            </div>
+            <div class="jadwal-meta">
+              <div class="jadwal-meta-item"><i data-lucide="${iconName}"></i>${categoryLabel}</div>
+              <div class="jadwal-meta-item"><i data-lucide="calendar"></i>${hariText}</div>
+              ${w.durasi ? `<div class="jadwal-meta-item"><i data-lucide="timer"></i>${escapeHtml(w.durasi)}</div>` : ''}
+              ${w.lokasi ? `<div class="jadwal-meta-item"><i data-lucide="map-pin"></i>${escapeHtml(w.lokasi)}</div>` : ''}
+              ${w.catatan ? `<div class="jadwal-meta-item"><i data-lucide="file-text"></i>${escapeHtml(w.catatan)}</div>` : ''}
             </div>
           </div>
         </div>
-
-        <div class="workout-meta-chips">
-          <span class="workout-meta-chip"><i data-lucide="activity"></i> ${categoryLabel}</span>
-          ${w.durasi ? `<span class="workout-meta-chip"><i data-lucide="target"></i> ${escapeHtml(w.durasi)}</span>` : ''}
-          ${w.lokasi ? `<span class="workout-meta-chip"><i data-lucide="map-pin"></i> ${escapeHtml(w.lokasi)}</span>` : ''}
-        </div>
-
-        <div class="workout-days-row">
-          ${daysRowHtml}
-        </div>
-
-        ${w.catatan ? `<div class="workout-notes">"${escapeHtml(w.catatan)}"</div>` : ''}
-
-        <div class="workout-footer-row">
-          <button class="workout-check-btn ${isCompletedToday ? 'completed' : 'uncompleted'}" onclick="toggleOlahragaToday('${w.id}')">
-            <i data-lucide="${isCompletedToday ? 'check-circle-2' : 'circle'}"></i>
-            <span>${isCompletedToday ? 'Selesai Hari Ini 🎉' : 'Tandai Sudah Latihan'}</span>
+        <div class="jadwal-actions">
+          <button type="button" class="action-btn" onclick="toggleOlahragaToday('${w.id}')" style="${isCompletedToday ? 'color:#059669; border-color:rgba(16,185,129,0.35); font-weight:700;' : 'color:var(--text-secondary);'}">
+            <i data-lucide="${isCompletedToday ? 'check-circle' : 'circle'}"></i> ${isCompletedToday ? 'Selesai' : 'Tandai Latihan'}
           </button>
-          <div class="workout-action-btns">
-            <button type="button" class="action-btn edit" onclick="editOlahraga('${w.id}')">Edit</button>
-            <button type="button" class="action-btn delete" onclick="deleteOlahraga('${w.id}', event)">Hapus</button>
-          </div>
+          <button type="button" class="action-btn edit" onclick="editOlahraga('${w.id}')">Edit</button>
+          <button type="button" class="action-btn delete" onclick="deleteOlahraga('${w.id}', event)">Hapus</button>
         </div>
       </div>
     `;
