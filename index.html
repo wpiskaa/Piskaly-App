@@ -1519,6 +1519,14 @@
         <textarea id="sportCatatan" rows="2" placeholder="Contoh: Fokus progressive overload, minum air 1 liter..."></textarea>
       </div>
       <div class="form-group">
+        <label>Menu / Rincian Program Latihan <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(Opsional)</span></label>
+        <textarea id="sportProgram" rows="4" placeholder="Tuliskan menu latihan, rincian set, interval, target pace, atau gerakan. Contoh:
+Warm-up: 10 menit easy jog di Zone 1–2 + dynamic drills
+Main Set: 6 x 800 meter di Zone 5 (5'23&quot; – 5'52&quot;/km)
+Recovery: 2 menit jalan cepat / jogging santai
+Cool-down: 10 menit jogging santai di Zone 1"></textarea>
+      </div>
+      <div class="form-group">
         <label>Warna Tema Kartu</label>
         <div class="color-picker" id="sportColorPicker">
           <button type="button" class="color-opt active" data-color="#2563eb" style="background:#2563eb"></button>
@@ -1534,6 +1542,51 @@
     <div class="modal-footer">
       <button class="btn-secondary" data-modal="modalOlahraga">Batal</button>
       <button class="btn-primary" id="saveSportBtn" onclick="saveOlahraga()">Simpan Jadwal</button>
+    </div>
+  </div>
+
+  <!-- Modal: Detail Rutin Olahraga & Menu Program -->
+  <div class="modal hidden" id="modalDetailOlahraga">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+        <div id="detailSportIconBadge" class="flow-icon-circle blue" style="width: 38px; height: 38px; border-radius: 12px; background: rgba(37, 99, 235, 0.12); color: #2563eb; flex-shrink: 0;">
+          <i data-lucide="dumbbell"></i>
+        </div>
+        <div style="min-width: 0;">
+          <h3 id="detailSportNama" style="margin: 0; font-size: 16px; font-weight: 800; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Detail Latihan</h3>
+          <span id="detailSportKategoriBadge" style="display: inline-block; font-size: 11px; font-weight: 700; color: var(--primary-light); background: var(--bg-input); padding: 2px 8px; border-radius: 99px; margin-top: 3px;">Kategori</span>
+        </div>
+      </div>
+      <button class="modal-close" data-modal="modalDetailOlahraga"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body" style="padding: 16px 20px 24px;">
+      <!-- Quick Info Grid -->
+      <div class="workout-detail-grid" id="detailSportMetaGrid"></div>
+
+      <!-- Status Check-In Hari Ini -->
+      <div id="detailSportStatusBox" class="workout-detail-status-box"></div>
+
+      <!-- Catatan / Fokus Otot -->
+      <div id="detailSportNoteBox" class="workout-detail-note-box hidden"></div>
+
+      <!-- Menu Program Latihan (The core requested feature!) -->
+      <div class="workout-program-card">
+        <div class="workout-program-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="clipboard-list" style="width: 17px; height: 17px; color: var(--primary-light);"></i>
+            <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: var(--text-primary);">Menu Program Latihan</h4>
+          </div>
+          <span class="workout-program-opt-tag" id="detailSportProgramTag">Program</span>
+        </div>
+        <div class="workout-program-body" id="detailSportProgramContent">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; align-items: center;">
+      <button type="button" class="btn-danger" id="detailSportDeleteBtn" style="flex: 0 0 46px; width: 46px; height: 46px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--danger-bg); color: var(--danger); border: 1px solid transparent; cursor: pointer;" title="Hapus Jadwal"><i data-lucide="trash-2"></i></button>
+      <button type="button" class="btn-secondary" data-modal="modalDetailOlahraga" style="flex: 1;">Tutup</button>
+      <button type="button" class="btn-primary" id="detailSportEditBtn" style="flex: 1.4;"><i data-lucide="edit-3"></i> Edit Jadwal</button>
     </div>
   </div>
 

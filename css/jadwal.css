@@ -126,6 +126,8 @@
 .action-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 .action-btn.edit { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
 .action-btn.edit:hover { color: var(--primary-light); border-color: var(--primary-light); }
+.action-btn.detail { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
+.action-btn.detail:hover { color: var(--primary-light); border-color: var(--primary-light); }
 .action-btn.delete { background: var(--danger-bg); color: var(--danger); border: 1px solid transparent; }
 .action-btn.delete:hover { background: rgba(239, 68, 68, 0.2); }
 .action-btn:active { transform: scale(0.94); }
@@ -428,5 +430,241 @@
   color: white;
   border-color: var(--primary);
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* ===================================================
+   WORKOUT DETAIL MODAL & PROGRAM MENU STYLES
+   =================================================== */
+.jadwal-card-inner.clickable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.jadwal-card-inner.clickable:hover {
+  background: var(--bg-card-2);
+}
+
+.jadwal-meta-item.workout-prog-pill {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary-light);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 99px;
+  padding: 1px 8px;
+  font-weight: 700;
+  font-size: 11px;
+}
+.jadwal-meta-item.workout-prog-pill svg {
+  color: var(--primary-light);
+}
+
+.workout-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.workout-detail-item {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.wdi-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-light);
+  flex-shrink: 0;
+}
+.wdi-icon svg { width: 16px; height: 16px; }
+.wdi-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.wdi-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.1;
+}
+.wdi-val {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.workout-detail-status-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.wdsb-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.wdsb-status-badge {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.wdsb-status-badge.done {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.wdsb-status-badge.pending {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.wdsb-status-badge.inactive {
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+.wdsb-toggle-btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 99px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.wdsb-toggle-btn.done {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.workout-detail-note-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3.5px solid var(--accent);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.workout-detail-note-box b {
+  color: var(--text-primary);
+}
+
+/* Menu Program Card */
+.workout-program-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.workout-program-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card-2);
+  border-bottom: 1px solid var(--border);
+}
+.workout-program-opt-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--primary-light);
+  background: rgba(37, 99, 235, 0.1);
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+.workout-program-body {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+.workout-program-line {
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.workout-program-line:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.workout-program-line:first-child {
+  padding-top: 0;
+}
+.wpl-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+.wpl-badge.warmup { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+.wpl-badge.main { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+.wpl-badge.recovery { background: rgba(6, 182, 212, 0.15); color: #0891b2; border: 1px solid rgba(6, 182, 212, 0.3); }
+.wpl-badge.cooldown { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+.wpl-badge.drill { background: rgba(139, 92, 246, 0.15); color: #7c3aed; border: 1px solid rgba(139, 92, 246, 0.3); }
+.wpl-badge.step { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+.wpl-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.detail-empty-program {
+  text-align: center;
+  padding: 22px 14px;
+  color: var(--text-muted);
+}
+.detail-empty-program svg {
+  width: 32px;
+  height: 32px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.detail-empty-program p {
+  font-size: 12.5px;
+  margin: 0;
+  color: var(--text-secondary);
 }
 

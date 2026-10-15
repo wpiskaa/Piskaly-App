@@ -2,7 +2,7 @@
 // SERVICE WORKER - sw.js
 // ===========================
 
-const CACHE_NAME = 'mylife-v3.41';
+const CACHE_NAME = 'mylife-v3.43';
 const STATIC_ASSETS = [
   './',
   './index.html',

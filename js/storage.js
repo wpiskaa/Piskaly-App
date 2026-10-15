@@ -145,6 +145,20 @@ const Store = {
   getOlahraga() {
     let list = this.get(this._k('olahraga'), []);
     if (!Array.isArray(list)) list = [];
+    let changed = false;
+    list = list.map(item => {
+      if (!item.program) {
+        if ((item.nama || '').toLowerCase().includes('tempo')) {
+          item.program = "Warm-up: 10 menit easy jog di Zone 1–2 (>7'30\"/km) + dynamic drills (A-skip, high knees)\nMain Set: 6 x 800 meter di Zone 5 (5'23\" – 5'52\"/km) (Target waktu: ~4m20s – 4m40s)\nRecovery antar set: 2 menit jogging sangat pelan / jalan cepat di Zone 1\nCool-down: 10 menit jogging santai di Zone 1";
+          changed = true;
+        } else if ((item.nama || '').toLowerCase().includes('long run')) {
+          item.program = "Warm-up: 10 menit jalan santai + dynamic stretching & mobility\nMain Set: 12 KM steady run di Zone 2 (Pace 6'30\" – 6'50\"/km) menjaga denyut nadi stabil\nCool-down: 10 menit stretching statis & rehidrasi elektrolit";
+          changed = true;
+        }
+      }
+      return item;
+    });
+    if (changed) this.setOlahraga(list);
     return list;
   },
   setOlahraga(d) { this.set(this._k('olahraga'), d); },

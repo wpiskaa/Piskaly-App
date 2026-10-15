@@ -629,10 +629,11 @@ function renderWorkoutCardHtml(w, showDayBadge = false, contextDay = null) {
   const categoryLabel = getSportCategoryLabel(w.kategori);
   const hariText = Array.isArray(w.hari) && w.hari.length > 0 ? (w.hari.length === 7 ? 'Setiap Hari' : w.hari.join(', ')) : 'Rutin';
   const cardDomId = contextDay ? `workout-${w.id}-${contextDay.toLowerCase()}` : `workout-${w.id}`;
+  const hasProgram = Boolean(w.program && w.program.trim().length > 0);
 
   return `
     <div class="jadwal-card" id="${cardDomId}">
-      <div class="jadwal-card-inner" style="border-left-color: ${w.color || '#2563eb'}">
+      <div class="jadwal-card-inner clickable" style="border-left-color: ${w.color || '#2563eb'}" onclick="showWorkoutDetail('${w.id}')" title="Klik untuk lihat detail & menu program">
         <div class="jadwal-time">
           <div class="jt-start">${w.jam || 'Rutin'}</div>
           <div class="jt-end">${w.jam ? 'WIB' : 'Latihan'}</div>
@@ -648,6 +649,7 @@ function renderWorkoutCardHtml(w, showDayBadge = false, contextDay = null) {
             ${showDayBadge ? `<div class="jadwal-meta-item"><i data-lucide="calendar"></i>${hariText}</div>` : ''}
             ${w.durasi ? `<div class="jadwal-meta-item"><i data-lucide="timer"></i>${escapeHtml(w.durasi)}</div>` : ''}
             ${w.lokasi ? `<div class="jadwal-meta-item"><i data-lucide="map-pin"></i>${escapeHtml(w.lokasi)}</div>` : ''}
+            ${hasProgram ? `<div class="jadwal-meta-item workout-prog-pill"><i data-lucide="clipboard-list"></i>Menu Program</div>` : ''}
             ${w.catatan ? `<div class="jadwal-meta-item note"><i data-lucide="file-text"></i><span>${escapeHtml(w.catatan)}</span></div>` : ''}
           </div>
         </div>
@@ -656,6 +658,7 @@ function renderWorkoutCardHtml(w, showDayBadge = false, contextDay = null) {
         <button type="button" class="action-btn check ${isCompletedToday ? 'done' : ''}" onclick="toggleOlahragaToday('${w.id}')" aria-pressed="${isCompletedToday}">
           <i data-lucide="${isCompletedToday ? 'check-circle-2' : 'circle'}"></i>${isCompletedToday ? 'Selesai' : 'Tandai Selesai'}
         </button>
+        <button type="button" class="action-btn detail" onclick="showWorkoutDetail('${w.id}')"><i data-lucide="eye"></i>Detail</button>
         <button type="button" class="action-btn edit" onclick="editOlahraga('${w.id}')">Edit</button>
         <button type="button" class="action-btn delete" onclick="deleteOlahraga('${w.id}', event)">Hapus</button>
       </div>
@@ -818,6 +821,8 @@ function openAddOlahragaModal() {
   document.getElementById('sportDurasi').value = '';
   document.getElementById('sportLokasi').value = '';
   document.getElementById('sportCatatan').value = '';
+  const progEl = document.getElementById('sportProgram');
+  if (progEl) progEl.value = '';
   document.getElementById('sportEditId').value = '';
 
   selectedSportColor = '#2563eb';
@@ -844,6 +849,8 @@ function editOlahraga(id) {
   document.getElementById('sportDurasi').value = item.durasi || '';
   document.getElementById('sportLokasi').value = item.lokasi || '';
   document.getElementById('sportCatatan').value = item.catatan || '';
+  const progEl = document.getElementById('sportProgram');
+  if (progEl) progEl.value = item.program || '';
   document.getElementById('sportEditId').value = id;
 
   selectedSportColor = item.color || '#2563eb';
@@ -898,6 +905,8 @@ function saveOlahraga() {
   const durasi = document.getElementById('sportDurasi').value.trim();
   const lokasi = document.getElementById('sportLokasi').value.trim();
   const catatan = document.getElementById('sportCatatan').value.trim();
+  const progEl = document.getElementById('sportProgram');
+  const program = progEl ? progEl.value.trim() : '';
 
   let list = Store.getOlahraga();
   if (editingSportId) {
@@ -912,6 +921,7 @@ function saveOlahraga() {
           durasi,
           lokasi,
           catatan,
+          program,
           color: selectedSportColor
         };
       }
@@ -927,6 +937,7 @@ function saveOlahraga() {
       durasi,
       lokasi,
       catatan,
+      program,
       color: selectedSportColor,
       history: {},
       createdAt: new Date().toISOString()
@@ -947,6 +958,196 @@ function saveOlahraga() {
   renderWorkoutHub();
 }
 
+// ---- Formatting Workout Program Menu Helper ----
+function formatWorkoutProgramHtml(raw) {
+  if (!raw || !raw.trim()) {
+    return `
+      <div class="detail-empty-program">
+        <i data-lucide="clipboard-pen-line"></i>
+        <p>Belum ada rincian menu program untuk latihan ini.<br>Klik tombol <b>Edit Jadwal</b> di bawah untuk menambahkan menu.</p>
+      </div>
+    `;
+  }
+
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) {
+    return `<div class="detail-empty-program"><p>Belum ada rincian program latihan.</p></div>`;
+  }
+
+  return lines.map((line, idx) => {
+    let badgeHtml = '';
+    let content = line;
+    const lower = line.toLowerCase();
+
+    if (lower.startsWith('warm-up:') || lower.startsWith('warm up:') || lower.startsWith('pemanasan:')) {
+      badgeHtml = `<span class="wpl-badge warmup">Warm-up</span>`;
+      content = line.replace(/^(warm-up|warm up|pemanasan):?\s*/i, '');
+    } else if (lower.startsWith('main set:') || lower.startsWith('main-set:') || lower.startsWith('inti:') || lower.startsWith('latihan inti:')) {
+      badgeHtml = `<span class="wpl-badge main">Main Set</span>`;
+      content = line.replace(/^(main set|main-set|inti|latihan inti):?\s*/i, '');
+    } else if (lower.startsWith('recovery:') || lower.startsWith('recovery antar set:') || lower.startsWith('istirahat:') || lower.startsWith('rest:')) {
+      badgeHtml = `<span class="wpl-badge recovery">Recovery</span>`;
+      content = line.replace(/^(recovery antar set|recovery|istirahat|rest):?\s*/i, '');
+    } else if (lower.startsWith('cool-down:') || lower.startsWith('cool down:') || lower.startsWith('pendinginan:')) {
+      badgeHtml = `<span class="wpl-badge cooldown">Cool-down</span>`;
+      content = line.replace(/^(cool-down|cool down|pendinginan):?\s*/i, '');
+    } else if (lower.startsWith('drill:') || lower.startsWith('drills:') || lower.startsWith('teknik:')) {
+      badgeHtml = `<span class="wpl-badge drill">Drills</span>`;
+      content = line.replace(/^(drills|drill|teknik):?\s*/i, '');
+    } else if (/^(set\s*\d+|ronde\s*\d+|round\s*\d+):/i.test(line)) {
+      const match = line.match(/^(set\s*\d+|ronde\s*\d+|round\s*\d+):/i);
+      badgeHtml = `<span class="wpl-badge step">${escapeHtml(match[1])}</span>`;
+      content = line.slice(match[0].length).trim();
+    } else if (/^(\d+\.|\•|\-|\*)/.test(line)) {
+      content = line.replace(/^(\d+\.|\•|\-|\*)\s*/, '');
+      badgeHtml = `<span class="wpl-badge step">#${idx + 1}</span>`;
+    } else {
+      badgeHtml = `<span class="wpl-badge step">Menu</span>`;
+    }
+
+    return `
+      <div class="workout-program-line">
+        ${badgeHtml}
+        <div class="wpl-text">${escapeHtml(content)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ---- Detail Rutin Olahraga View Modal ----
+function showWorkoutDetail(id) {
+  const list = Store.getOlahraga() || [];
+  const item = list.find(w => String(w.id) === String(id));
+  if (!item) return;
+
+  const now = new Date();
+  const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const todayDateStr = formatYMD(now);
+  const todayDayName = INDO_DAYS[now.getDay()];
+
+  const isCompletedToday = Boolean(item.history && item.history[todayDateStr]);
+  const isScheduledToday = Array.isArray(item.hari) && item.hari.includes(todayDayName);
+  const iconName = getSportIcon(item.kategori);
+  const categoryLabel = getSportCategoryLabel(item.kategori);
+  const hariText = Array.isArray(item.hari) && item.hari.length > 0 ? (item.hari.length === 7 ? 'Setiap Hari' : item.hari.join(', ')) : 'Rutin';
+
+  // Set Header
+  const titleEl = document.getElementById('detailSportNama');
+  const catBadgeEl = document.getElementById('detailSportKategoriBadge');
+  const iconBadgeEl = document.getElementById('detailSportIconBadge');
+  if (titleEl) titleEl.textContent = item.nama;
+  if (catBadgeEl) catBadgeEl.textContent = categoryLabel;
+  if (iconBadgeEl) {
+    iconBadgeEl.innerHTML = `<i data-lucide="${iconName}"></i>`;
+    iconBadgeEl.style.color = item.color || '#2563eb';
+    iconBadgeEl.style.background = `${item.color || '#2563eb'}18`;
+  }
+
+  // Meta Grid: Waktu, Hari, Target, Lokasi
+  const metaGridEl = document.getElementById('detailSportMetaGrid');
+  if (metaGridEl) {
+    metaGridEl.innerHTML = `
+      <div class="workout-detail-item">
+        <div class="wdi-icon"><i data-lucide="clock"></i></div>
+        <div class="wdi-info">
+          <span class="wdi-label">Jam Latihan</span>
+          <span class="wdi-val">${item.jam || 'Fleksibel'} WIB</span>
+        </div>
+      </div>
+      <div class="workout-detail-item">
+        <div class="wdi-icon"><i data-lucide="calendar"></i></div>
+        <div class="wdi-info">
+          <span class="wdi-label">Hari Rutin</span>
+          <span class="wdi-val" title="${hariText}">${hariText}</span>
+        </div>
+      </div>
+      <div class="workout-detail-item">
+        <div class="wdi-icon"><i data-lucide="timer"></i></div>
+        <div class="wdi-info">
+          <span class="wdi-label">Target / Porsi</span>
+          <span class="wdi-val">${escapeHtml(item.durasi || '-')}</span>
+        </div>
+      </div>
+      <div class="workout-detail-item">
+        <div class="wdi-icon"><i data-lucide="map-pin"></i></div>
+        <div class="wdi-info">
+          <span class="wdi-label">Lokasi / Tempat</span>
+          <span class="wdi-val">${escapeHtml(item.lokasi || '-')}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Status Box Hari Ini
+  const statusBoxEl = document.getElementById('detailSportStatusBox');
+  if (statusBoxEl) {
+    let statusBadge = '';
+    if (isCompletedToday) {
+      statusBadge = `<span class="wdsb-status-badge done"><i data-lucide="check-circle-2"></i> Sudah Selesai Hari Ini</span>`;
+    } else if (isScheduledToday) {
+      statusBadge = `<span class="wdsb-status-badge pending"><i data-lucide="clock"></i> Jadwal Hari Ini: Belum Selesai</span>`;
+    } else {
+      statusBadge = `<span class="wdsb-status-badge inactive"><i data-lucide="calendar-off"></i> Bukan Hari Latihan Ini</span>`;
+    }
+
+    statusBoxEl.innerHTML = `
+      <div class="wdsb-left">
+        ${statusBadge}
+      </div>
+      <button type="button" class="wdsb-toggle-btn ${isCompletedToday ? 'done' : ''}" onclick="toggleOlahragaFromDetail('${item.id}')">
+        <i data-lucide="${isCompletedToday ? 'rotate-ccw' : 'check'}"></i> ${isCompletedToday ? 'Batalkan' : 'Tandai Selesai'}
+      </button>
+    `;
+  }
+
+  // Catatan
+  const noteBoxEl = document.getElementById('detailSportNoteBox');
+  if (noteBoxEl) {
+    if (item.catatan && item.catatan.trim()) {
+      noteBoxEl.classList.remove('hidden');
+      noteBoxEl.innerHTML = `<b>Catatan:</b> ${escapeHtml(item.catatan)}`;
+    } else {
+      noteBoxEl.classList.add('hidden');
+      noteBoxEl.innerHTML = '';
+    }
+  }
+
+  // Menu Program Content
+  const programContentEl = document.getElementById('detailSportProgramContent');
+  const programTagEl = document.getElementById('detailSportProgramTag');
+  if (programContentEl) {
+    programContentEl.innerHTML = formatWorkoutProgramHtml(item.program);
+  }
+  if (programTagEl) {
+    programTagEl.textContent = (item.program && item.program.trim()) ? 'Aktif' : 'Kosong';
+  }
+
+  // Footer Buttons
+  const editBtn = document.getElementById('detailSportEditBtn');
+  if (editBtn) {
+    editBtn.onclick = () => {
+      closeModal('modalDetailOlahraga');
+      editOlahraga(item.id);
+    };
+  }
+
+  const deleteBtn = document.getElementById('detailSportDeleteBtn');
+  if (deleteBtn) {
+    deleteBtn.onclick = (e) => {
+      closeModal('modalDetailOlahraga');
+      deleteOlahraga(item.id, e);
+    };
+  }
+
+  openModal('modalDetailOlahraga');
+  lucide.createIcons({ nodes: [document.getElementById('modalDetailOlahraga')] });
+}
+
+function toggleOlahragaFromDetail(id) {
+  toggleOlahragaToday(id);
+  showWorkoutDetail(id);
+}
+
 // Window exposures
 window.setJadwalTab = setJadwalTab;
 window.setAgendaFilter = setAgendaFilter;
@@ -958,6 +1159,8 @@ window.editOlahraga = editOlahraga;
 window.deleteOlahraga = deleteOlahraga;
 window.saveOlahraga = saveOlahraga;
 window.toggleOlahragaToday = toggleOlahragaToday;
+window.showWorkoutDetail = showWorkoutDetail;
+window.toggleOlahragaFromDetail = toggleOlahragaFromDetail;
 window.renderAgendaHub = renderAgendaHub;
 window.renderWorkoutHub = renderWorkoutHub;
 
