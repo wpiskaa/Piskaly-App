@@ -1,22 +1,4 @@
 /* ===========================
-   TOAST
-   =========================== */
-#toast {
-  position: fixed; top: calc(var(--header-height) + var(--safe-top) + 10px);
-  left: 50%; transform: translateX(-50%);
-  background: var(--bg-card); color: var(--text-primary);
-  padding: 12px 20px; border-radius: 12px; font-size: 14px;
-  font-weight: 500; z-index: 500; white-space: nowrap;
-  border: 1px solid var(--border); box-shadow: var(--shadow);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  max-width: calc(100vw - 40px);
-}
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-#toast.hidden { opacity: 0; pointer-events: none; }
-#toast.success { border-color: var(--success); color: var(--success); }
-#toast.error { border-color: var(--danger); color: var(--danger); }
-
-/* ===========================
    UTILITIES
    =========================== */
 .text-income { color: var(--success); }
@@ -41,6 +23,16 @@
 /* ===========================
    RESPONSIVE DESIGN (IPAD & TABLET)
    =========================== */
+/* Centered modal keyframes (desktop / tablet) - keep translateX(-50%) while animating */
+@keyframes slideUpCenter {
+  from { transform: translate(-50%, 36px); opacity: 0; }
+  to   { transform: translate(-50%, 0);    opacity: 1; }
+}
+@keyframes slideDownCenter {
+  from { transform: translate(-50%, 0);    opacity: 1; }
+  to   { transform: translate(-50%, 36px); opacity: 0; }
+}
+
 /* iPad & Tablets (640px to 1024px) */
 @media (min-width: 640px) and (max-width: 1024px) {
   #main-app {
@@ -76,7 +68,9 @@
     left: 50%;
     transform: translateX(-50%);
     border-radius: 28px 28px 0 0;
+    animation-name: slideUpCenter;
   }
+  .modal.closing { animation-name: slideDownCenter; }
   .ongoing-projects-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
@@ -127,7 +121,9 @@
     left: 50%;
     transform: translateX(-50%);
     border-radius: 24px 24px 0 0;
+    animation-name: slideUpCenter;
   }
+  .modal.closing { animation-name: slideDownCenter; }
   body {
     background: #e2e8f0;
   }
@@ -137,65 +133,86 @@
 }
 
 /* ===========================
-   POP / NOTIFICATION SYSTEM
+   POP / NOTIFICATION SYSTEM (TOAST)
+   Soft glass pill: slides gently from the top, fades out smoothly.
    =========================== */
 .toast {
+  --toast-accent: var(--primary-light);
+  --toast-ring: rgba(30, 79, 216, 0.16);
+
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  top: calc(var(--safe-top) + var(--header-height) + 10px);
   left: 50%;
-  transform: translate(-50%, -45px) scale(0.88);
   z-index: 100005;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  max-width: 90vw;
-  min-width: 200px;
   width: max-content;
-  padding: 11px 22px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.92);
-  color: #ffffff;
-  font-size: 13.5px;
+  min-width: 160px;
+  max-width: min(92vw, 420px);
+  padding: 10px 18px 10px 14px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-hover);
+  box-shadow: 0 14px 34px -10px rgba(10, 34, 101, 0.32), 0 2px 8px rgba(10, 34, 101, 0.06);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: -0.2px;
-  text-align: center;
-  box-shadow: 0 12px 36px -6px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  line-height: 1.4;
+  letter-spacing: -0.1px;
+  text-align: left;
+
   opacity: 0;
-  pointer-events: none;
   visibility: hidden;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.28), opacity 0.25s ease, visibility 0.4s;
+  pointer-events: none;
+  transform: translate(-50%, -14px) scale(0.96);
+  will-change: transform, opacity;
+  /* hide: quick & soft fade; visibility waits until the fade has finished */
+  transition:
+    transform 0.35s var(--ease-in-soft),
+    opacity 0.28s ease,
+    visibility 0s linear 0.35s;
+}
+
+body.dark-mode .toast {
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Accent dot */
+.toast::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--toast-accent);
+  box-shadow: 0 0 0 4px var(--toast-ring);
 }
 
 .toast.show {
-  transform: translate(-50%, 0) scale(1);
   opacity: 1;
-  pointer-events: auto;
   visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+  /* show: slightly longer, silky ease-out */
+  transition:
+    transform 0.5s var(--ease-soft),
+    opacity 0.3s ease,
+    visibility 0s linear 0s;
 }
 
-.toast.success {
-  background: rgba(16, 185, 129, 0.94);
-  box-shadow: 0 14px 38px -6px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-}
+.toast.success { --toast-accent: var(--success); --toast-ring: rgba(16, 185, 129, 0.2); }
+.toast.error   { --toast-accent: var(--danger);  --toast-ring: rgba(239, 68, 68, 0.2); }
+.toast.warning { --toast-accent: var(--warning); --toast-ring: rgba(245, 158, 11, 0.22); }
+.toast.info    { --toast-accent: var(--primary-light); --toast-ring: rgba(30, 79, 216, 0.18); }
 
-.toast.error {
-  background: rgba(239, 68, 68, 0.94);
-  box-shadow: 0 14px 38px -6px rgba(239, 68, 68, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-}
-
-.toast.warning {
-  background: rgba(245, 158, 11, 0.95);
-  box-shadow: 0 14px 38px -6px rgba(245, 158, 11, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-}
-
-.toast.info {
-  background: rgba(37, 99, 235, 0.94);
-  box-shadow: 0 14px 38px -6px rgba(37, 99, 235, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.28);
-  color: #ffffff;
+/* ===========================
+   REDUCED MOTION
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -6,6 +6,9 @@ let currentSubFilter = 'all';
 let editingSubId = null;
 let selectedSubColor = '#1db954';
 
+// When true, the next list render skips the entrance animation (pay / pause updates)
+let _subSuppressAnim = false;
+
 const SUB_PRESETS = {
   spotify: {
     nama: 'Spotify Premium',
@@ -203,6 +206,9 @@ function renderSubscriptions() {
   // Sort: upcoming renewals first
   filtered.sort((a, b) => (a.tanggalTagihan || '').localeCompare(b.tanggalTagihan || ''));
 
+  listEl.classList.toggle('list-static', _subSuppressAnim);
+  _subSuppressAnim = false;
+
   if (filtered.length === 0) {
     listEl.innerHTML = `
       <div class="fin-empty">
@@ -241,42 +247,42 @@ function renderSubscriptions() {
     const cardColor = s.color || '#2563eb';
 
     html += `
-      <div class="debt-card ${isPaused ? 'paid' : ''}" style="border-left: 4px solid ${cardColor};">
+      <div class="debt-card sub ${isPaused ? 'paid' : ''}" style="--sub-color: ${subEsc(cardColor)}">
         <div class="debt-top">
-          <div class="debt-avatar" style="background: ${cardColor}; font-size: 16px;">
-            <i data-lucide="${s.icon || 'repeat'}"></i>
+          <div class="debt-avatar">
+            <i data-lucide="${subEsc(s.icon || 'repeat')}"></i>
           </div>
           <div class="debt-info">
             <div class="debt-name">
               <span>${subEsc(s.nama)}</span>
               ${dueBadgeHtml}
-              ${isPaused ? '<span class="debt-due" style="background:var(--bg-input); color:var(--text-muted);">Dijeda</span>' : ''}
+              ${isPaused ? '<span class="debt-due muted">Dijeda</span>' : ''}
             </div>
             <div class="debt-sub">
               ${categoryLabel}${s.metode ? ' • ' + subEsc(s.metode) : ''}${s.catatan ? ' • "' + subEsc(s.catatan) + '"' : ''}
             </div>
           </div>
-          <div class="debt-amount" style="text-align: right;">
-            <div style="color: var(--text-primary); font-size: 14px; font-weight: 800;">${formatRupiahFull(s.biaya)}</div>
-            <div style="font-size: 10.5px; font-weight: 600; color: var(--text-secondary);">${cycleText}</div>
+          <div class="debt-amount">
+            ${formatRupiahFull(s.biaya)}
+            <small>${cycleText}</small>
           </div>
         </div>
 
-        <div class="debt-bottom" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+        <div class="debt-bottom">
           <span class="debt-progress-text">
-            ${s.tanggalTagihan ? `<i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:-2px;margin-right:3px;"></i>Tagihan: ${formatDate(s.tanggalTagihan)}` : (isPaused ? 'Status: Dijeda' : 'Status: Aktif')}
+            ${s.tanggalTagihan ? `<i data-lucide="calendar"></i>Tagihan: ${formatDate(s.tanggalTagihan)}` : (isPaused ? 'Status: Dijeda' : 'Status: Aktif')}
           </span>
           <span class="debt-actions">
             <button type="button" class="debt-btn" onclick="logSubPayment('${s.id}')" title="Catat pembayaran ini ke pengeluaran">
-              <i data-lucide="check-circle-2"></i> Bayar
+              <i data-lucide="check-circle-2"></i>Bayar
             </button>
-            <button type="button" class="debt-btn" style="background:var(--bg-input); color:var(--text-secondary);" onclick="toggleSubStatus('${s.id}')">
-              ${s.status === 'aktif' ? 'Jeda' : 'Aktif'}
+            <button type="button" class="debt-btn ghost" onclick="toggleSubStatus('${s.id}')">
+              ${s.status === 'aktif' ? 'Jeda' : 'Aktifkan'}
             </button>
-            <button type="button" class="debt-btn" style="background:var(--bg-input); color:var(--text-secondary);" onclick="editSub('${s.id}')" aria-label="Edit">
+            <button type="button" class="debt-btn ghost icon" onclick="editSub('${s.id}')" aria-label="Edit">
               <i data-lucide="pencil"></i>
             </button>
-            <button type="button" class="debt-btn danger" onclick="deleteSub('${s.id}', event)" aria-label="Hapus">
+            <button type="button" class="debt-btn danger icon" onclick="deleteSub('${s.id}', event)" aria-label="Hapus">
               <i data-lucide="trash-2"></i>
             </button>
           </span>
@@ -334,6 +340,7 @@ function logSubPayment(id) {
     FirebaseService.syncUploadAll(false);
   }
 
+  _subSuppressAnim = true;
   renderSubscriptions();
   if (typeof renderKeuangan === 'function') renderKeuangan();
 }
@@ -352,6 +359,7 @@ function toggleSubStatus(id) {
     FirebaseService.syncUploadAll(false);
   }
 
+  _subSuppressAnim = true;
   renderSubscriptions();
 }
 

@@ -154,30 +154,71 @@ function getDeadlineBadge(deadline) {
   return { cls: 'ok', label: Math.ceil(diff) + ' hari' };
 }
 
+// ---- Smooth open / close helpers (pop in & pop out) ----
+const SOFT_CLOSE_MS = 260;
+const _closeTimers = new WeakMap();
+let _backdropTimer = null;
+
+function _softHide(el, ms = SOFT_CLOSE_MS) {
+  if (!el || el.classList.contains('hidden') || el.classList.contains('closing')) return;
+  el.classList.add('closing');
+  const timer = setTimeout(() => {
+    el.classList.add('hidden');
+    el.classList.remove('closing');
+    _closeTimers.delete(el);
+  }, ms);
+  _closeTimers.set(el, timer);
+}
+
+function _softShow(el) {
+  if (!el) return;
+  const timer = _closeTimers.get(el);
+  if (timer) { clearTimeout(timer); _closeTimers.delete(el); }
+  el.classList.remove('closing');
+  el.classList.remove('hidden');
+}
+
 function openModal(id) {
-  document.getElementById(id).classList.remove('hidden');
-  document.getElementById('modalBackdrop').classList.remove('hidden');
+  const modal = document.getElementById(id);
+  const backdrop = document.getElementById('modalBackdrop');
+  if (!modal) return;
+  if (_backdropTimer) { clearTimeout(_backdropTimer); _backdropTimer = null; }
+  if (backdrop) _softShow(backdrop);
+  _softShow(modal);
   document.body.style.overflow = 'hidden';
 }
+
 function closeModal(id) {
-  document.getElementById(id).classList.add('hidden');
-  document.getElementById('modalBackdrop').classList.add('hidden');
-  document.body.style.overflow = '';
+  const modal = document.getElementById(id);
+  const backdrop = document.getElementById('modalBackdrop');
+  if (modal) _softHide(modal);
+
+  // Hide the shared backdrop only if no other modal remains open
+  const stillOpen = document.querySelector('.modal:not(.hidden):not(.closing)');
+  if (!stillOpen && backdrop && !backdrop.classList.contains('hidden') && !backdrop.classList.contains('closing')) {
+    backdrop.classList.add('closing');
+    _backdropTimer = setTimeout(() => {
+      backdrop.classList.add('hidden');
+      backdrop.classList.remove('closing');
+      _backdropTimer = null;
+    }, SOFT_CLOSE_MS);
+    document.body.style.overflow = '';
+  }
 }
 
 // ---- Side Drawer ----
 function openDrawer() {
   const drawer = document.getElementById('sideDrawer');
   const backdrop = document.getElementById('drawerBackdrop');
-  if (drawer) drawer.classList.remove('hidden');
-  if (backdrop) backdrop.classList.remove('hidden');
+  _softShow(drawer);
+  _softShow(backdrop);
   document.body.style.overflow = 'hidden';
 }
 function closeDrawer() {
   const drawer = document.getElementById('sideDrawer');
   const backdrop = document.getElementById('drawerBackdrop');
-  if (drawer) drawer.classList.add('hidden');
-  if (backdrop) backdrop.classList.add('hidden');
+  _softHide(drawer);
+  _softHide(backdrop);
   document.body.style.overflow = '';
 }
 

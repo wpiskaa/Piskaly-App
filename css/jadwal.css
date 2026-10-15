@@ -2,25 +2,42 @@
    JADWAL PAGE
    =========================== */
 .day-tabs {
-  display: flex; gap: 10px; margin-bottom: 18px;
-  overflow-x: auto; padding: 0 0 4px 0;
+  display: flex; gap: 8px; margin-bottom: 16px;
+  overflow-x: auto; padding: 2px 2px 6px 2px; margin-left: -2px; margin-right: -2px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .day-tabs::-webkit-scrollbar { display: none; }
 .day-tab {
-  flex: 0 0 auto; padding: 8px 18px; border-radius: 99px;
-  font-size: 13px; font-weight: 700; color: var(--text-secondary);
+  flex: 0 0 auto; padding: 8px 16px; border-radius: 99px;
+  font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
   background: var(--bg-card); border: 1px solid var(--border);
-  transition: var(--transition); cursor: pointer;
+  transition: background 0.3s var(--ease-soft), color 0.25s ease, box-shadow 0.3s var(--ease-soft), transform 0.2s var(--ease-soft), border-color 0.25s ease;
+  cursor: pointer;
   box-shadow: var(--shadow-sm);
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
 }
 .day-tab svg { width: 14px; height: 14px; }
+.day-tab:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.day-tab:active { transform: scale(0.95); }
 .day-tab.active {
-  background: linear-gradient(135deg, #132b5e 0%, #173670 100%);
-  color: white; border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 14px rgba(19, 43, 94, 0.28);
+  background: var(--chip-active-bg);
+  color: var(--chip-active-color); border-color: transparent;
+  box-shadow: var(--chip-active-shadow);
 }
-.jadwal-list { display: flex; flex-direction: column; gap: 14px; padding: 0 0 100px 0; }
+.jadwal-list { display: flex; flex-direction: column; gap: 12px; padding: 0 0 110px 0; }
+
+/* Soft entrance used by every list card (jadwal, agenda, olahraga, finance) */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.jadwal-list > *:nth-child(1), .debt-list > *:nth-child(1) { animation-delay: 0ms; }
+.jadwal-list > *:nth-child(2), .debt-list > *:nth-child(2) { animation-delay: 45ms; }
+.jadwal-list > *:nth-child(3), .debt-list > *:nth-child(3) { animation-delay: 90ms; }
+.jadwal-list > *:nth-child(4), .debt-list > *:nth-child(4) { animation-delay: 135ms; }
+.jadwal-list > *:nth-child(n+5), .debt-list > *:nth-child(n+5) { animation-delay: 170ms; }
+/* In-place updates (search, check-in, delete) must not re-play the entrance animation */
+.list-static > * { animation: none !important; }
 
 /* Jadwal Day Group for All Day View */
 .jadwal-day-group { margin-bottom: 22px; }
@@ -49,17 +66,24 @@
   display: flex; flex-direction: column; gap: 12px;
 }
 .jadwal-day-badge {
-  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+  display: inline-flex; align-items: center; white-space: nowrap;
+  font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 99px;
   background: var(--bg-input); color: var(--text-secondary);
+  border: 1px solid transparent; line-height: 1.5;
 }
+.jadwal-day-badge.today { background: var(--success-bg); color: var(--success); border-color: rgba(16, 185, 129, 0.25); }
+.jadwal-day-badge.soon { background: var(--info-bg); color: var(--primary-light); border-color: rgba(30, 79, 216, 0.22); }
+.jadwal-day-badge.done { background: rgba(30, 79, 216, 0.1); color: var(--primary-light); border-color: rgba(30, 79, 216, 0.22); }
+.jadwal-day-badge.past { opacity: 0.7; }
 
 /* Jadwal Card - Harmonized with Home 20px rounded card style */
 .jadwal-card {
   background: var(--bg-card); border-radius: 20px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  overflow: hidden; transition: var(--transition);
-  animation: fadeSlideIn 0.3s ease forwards;
+  overflow: hidden;
+  transition: transform 0.35s var(--ease-soft), box-shadow 0.35s var(--ease-soft), border-color 0.25s ease, opacity 0.25s ease;
+  animation: fadeSlideIn 0.45s var(--ease-soft) backwards;
 }
 .jadwal-card:hover {
   transform: translateY(-2px);
@@ -77,23 +101,43 @@
 .jadwal-time .jt-start { font-size: 14.5px; font-weight: 800; color: var(--text-primary); }
 .jadwal-time .jt-end { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
 .jadwal-info { flex: 1; min-width: 0; }
-.jadwal-matkul { font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.2px; }
-.jadwal-meta { display: flex; flex-wrap: wrap; gap: 10px; }
-.jadwal-meta-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.jadwal-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.jadwal-matkul { font-size: 15.5px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.2px; overflow-wrap: anywhere; }
+.jadwal-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.jadwal-meta-item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); font-weight: 500; min-width: 0; }
+.jadwal-meta-item.note { flex: 1 1 100%; align-items: flex-start; }
+.jadwal-meta-item.note svg { margin-top: 2px; }
+.jadwal-meta-item.note span {
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  line-height: 1.45;
+}
 .jadwal-meta-item svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--text-muted); }
 .jadwal-actions {
-  display: flex; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 18px 14px; border-top: 1px solid var(--border);
   justify-content: flex-end;
 }
 .action-btn {
-  padding: 6px 14px; border-radius: 99px; font-size: 12px;
-  font-weight: 700; transition: var(--transition); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; line-height: 1.4;
+  font-weight: 700; cursor: pointer; white-space: nowrap;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s var(--ease-soft);
 }
+.action-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 .action-btn.edit { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
 .action-btn.edit:hover { color: var(--primary-light); border-color: var(--primary-light); }
 .action-btn.delete { background: var(--danger-bg); color: var(--danger); border: 1px solid transparent; }
 .action-btn.delete:hover { background: rgba(239, 68, 68, 0.2); }
-.action-btn:active { transform: scale(0.95); }
+.action-btn:active { transform: scale(0.94); }
+
+/* Check-in button (Rutin Olahraga) - pushed to the left of the action row */
+.action-btn.check {
+  margin-right: auto; background: transparent; color: var(--text-secondary);
+  border: 1px solid var(--border-hover);
+}
+.action-btn.check:hover { color: var(--success); border-color: var(--success); }
+.action-btn.check.done {
+  background: var(--success-bg); color: var(--success); border-color: rgba(16, 185, 129, 0.35);
+}
 
 /* Empty State Full */
 .empty-state {
@@ -148,21 +192,21 @@
 }
 
 .jadwal-subnav-btn.active {
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  background: var(--chip-active-bg);
+  color: var(--chip-active-color);
+  border-color: transparent;
+  box-shadow: var(--chip-active-shadow);
   font-weight: 800;
 }
 
 .jadwal-subnav-btn.active i,
 .jadwal-subnav-btn.active svg {
-  transform: scale(1.1);
+  transform: scale(1.08);
   color: #ffffff;
 }
 
 .jadwal-subpane {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeSlideIn 0.4s var(--ease-soft) backwards;
 }
 
 .jadwal-subpane.hidden {
@@ -251,40 +295,6 @@
   border-color: var(--primary);
   color: var(--text-primary);
 }
-.sport-day-opt.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-}
-
-/* Day Picker in Modal Olahraga */
-.sport-day-picker {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 4px 0;
-}
-
-.sport-day-opt {
-  flex: 1;
-  padding: 8px 4px;
-  border-radius: 10px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-align: center;
-}
-
-.sport-day-opt:hover {
-  border-color: var(--primary);
-  color: var(--text-primary);
-}
-
 .sport-day-opt.active {
   background: var(--primary);
   color: white;

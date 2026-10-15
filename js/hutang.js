@@ -68,7 +68,7 @@ function renderDebts() {
           <span class="debt-progress-text">${finRp(paid)} dari ${finRp(d.jumlah)} ${isOwe ? 'dibayar' : 'diterima'}</span>
           <span class="debt-actions">
             ${lunas ? '' : `<button class="debt-btn" onclick="openDebtPay('${d.id}')">${isOwe ? 'Bayar' : 'Terima'}</button>`}
-            <button class="debt-btn danger" onclick="deleteDebt('${d.id}')" aria-label="Hapus"><i data-lucide="trash-2"></i></button>
+            <button class="debt-btn danger icon" onclick="deleteDebt('${d.id}')" aria-label="Hapus"><i data-lucide="trash-2"></i></button>
           </span>
         </div>
       </div>`;

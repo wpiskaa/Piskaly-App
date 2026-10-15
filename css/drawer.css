@@ -3,11 +3,12 @@
    =========================== */
 .drawer-backdrop {
   position: fixed; inset: 0; z-index: 210;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: fadeIn 0.2s ease;
+  background: rgba(4, 10, 28, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.3s ease backwards;
 }
+.drawer-backdrop.closing { animation: fadeOut 0.24s ease forwards; pointer-events: none; }
 .drawer-backdrop.hidden { display: none !important; }
 
 .side-drawer {
@@ -15,15 +16,20 @@
   width: 300px; max-width: 82vw;
   background: var(--bg-modal);
   border-right: 1px solid var(--border);
-  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 10px 0 40px rgba(4, 10, 28, 0.3);
   display: flex; flex-direction: column;
-  animation: slideDrawer 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideDrawer 0.4s var(--ease-soft) backwards;
   overflow-y: auto;
 }
+.side-drawer.closing { animation: slideDrawerOut 0.26s var(--ease-in-soft) forwards; pointer-events: none; }
 .side-drawer.hidden { display: none !important; }
 @keyframes slideDrawer {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+  from { transform: translateX(-40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideDrawerOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-40px); opacity: 0; }
 }
 
 .drawer-header {

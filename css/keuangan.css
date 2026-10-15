@@ -200,6 +200,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 12px;
   margin-bottom: 16px;
 }
 .section-title {
@@ -286,15 +288,21 @@
   margin-bottom: 28px;
   padding-bottom: 90px;
 }
-.trans-type-tabs { display: flex; gap: 6px; }
-.trans-tab {
+.trans-type-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.trans-tab, .debt-tab {
   padding: 6px 14px; border-radius: 99px; font-size: 12px;
   font-weight: 700; color: var(--text-secondary);
   background: var(--bg-card); border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  transition: var(--transition); cursor: pointer;
+  transition: background 0.3s var(--ease-soft), color 0.25s ease, box-shadow 0.3s var(--ease-soft), transform 0.2s var(--ease-soft), border-color 0.25s ease;
+  cursor: pointer; white-space: nowrap;
 }
-.trans-tab.active { background: linear-gradient(135deg, #132b5e 0%, #173670 100%); color: white; border-color: rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(19, 43, 94, 0.25); }
+.trans-tab:hover, .debt-tab:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.trans-tab:active, .debt-tab:active { transform: scale(0.95); }
+.trans-tab.active, .debt-tab.active {
+  background: var(--chip-active-bg); color: var(--chip-active-color);
+  border-color: transparent; box-shadow: var(--chip-active-shadow);
+}
 
 .transaction-list { display: flex; flex-direction: column; gap: 10px; }
 .trans-item {
