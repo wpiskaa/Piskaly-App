@@ -243,7 +243,7 @@ function renderSubscriptions() {
     }
 
     const cycleText = s.siklus === 'tahunan' ? '/ thn' : s.siklus === 'mingguan' ? '/ mgg' : '/ bln';
-    const categoryLabel = SUB_CATEGORY_LABELS[s.kategori] || 'Layanan';
+    const categoryLabel = (s.kategori && SUB_CATEGORY_LABELS[s.kategori]) ? SUB_CATEGORY_LABELS[s.kategori] : '';
     const cardColor = s.color || '#2563eb';
 
     html += `
@@ -259,7 +259,7 @@ function renderSubscriptions() {
               ${isPaused ? '<span class="debt-due muted">Dijeda</span>' : ''}
             </div>
             <div class="debt-sub">
-              ${categoryLabel}${s.metode ? ' • ' + subEsc(s.metode) : ''}${s.catatan ? ' • "' + subEsc(s.catatan) + '"' : ''}
+              ${categoryLabel ? categoryLabel + ' • ' : ''}${s.metode ? subEsc(s.metode) : 'Langganan'}${s.catatan ? ' • "' + subEsc(s.catatan) + '"' : ''}
             </div>
           </div>
           <div class="debt-amount">
@@ -375,20 +375,26 @@ function applySubPreset(key) {
   const preset = SUB_PRESETS[key];
   if (!preset) return;
 
-  document.getElementById('subNama').value = preset.nama;
+  const namaEl = document.getElementById('subNama');
+  if (namaEl) namaEl.value = preset.nama;
   const biayaInput = document.getElementById('subBiaya');
   if (biayaInput) {
     biayaInput.value = formatRupiahDisplay(preset.biaya);
   }
-  document.getElementById('subSiklus').value = preset.siklus || 'bulanan';
-  document.getElementById('subKategori').value = preset.kategori || 'lainnya';
-  document.getElementById('subMetode').value = preset.metode || 'GoPay';
-  document.getElementById('subCatatan').value = preset.catatan || '';
+  const siklusEl = document.getElementById('subSiklus');
+  if (siklusEl) siklusEl.value = preset.siklus || 'bulanan';
+  const katEl = document.getElementById('subKategori');
+  if (katEl) katEl.value = preset.kategori || 'lainnya';
+  const metodeEl = document.getElementById('subMetode');
+  if (metodeEl) metodeEl.value = preset.metode || 'GoPay';
+  const catatanEl = document.getElementById('subCatatan');
+  if (catatanEl) catatanEl.value = preset.catatan || '';
 
   // Default tanggal tagihan 1 bulan dari sekarang
   const nextMonth = new Date();
   nextMonth.setMonth(nextMonth.getMonth() + 1);
-  document.getElementById('subTanggal').value = subFormatYMD(nextMonth);
+  const tglEl = document.getElementById('subTanggal');
+  if (tglEl) tglEl.value = subFormatYMD(nextMonth);
 
   selectedSubColor = preset.color || '#1db954';
   updateColorPicker('subColorPicker', selectedSubColor);
@@ -398,19 +404,37 @@ function applySubPreset(key) {
 
 function openSubModal() {
   editingSubId = null;
-  document.getElementById('modalLanggananTitle').textContent = 'Tambah Langganan';
-  document.getElementById('subNama').value = '';
-  document.getElementById('subBiaya').value = '';
-  document.getElementById('subSiklus').value = 'bulanan';
-  document.getElementById('subKategori').value = 'musik';
-  document.getElementById('subMetode').value = 'GoPay';
-  document.getElementById('subStatus').value = 'aktif';
-  document.getElementById('subCatatan').value = '';
-  document.getElementById('subEditId').value = '';
+  const titleEl = document.getElementById('modalLanggananTitle');
+  if (titleEl) titleEl.textContent = 'Tambah Langganan';
+
+  const namaEl = document.getElementById('subNama');
+  if (namaEl) namaEl.value = '';
+
+  const biayaEl = document.getElementById('subBiaya');
+  if (biayaEl) biayaEl.value = '';
+
+  const siklusEl = document.getElementById('subSiklus');
+  if (siklusEl) siklusEl.value = 'bulanan';
+
+  const katEl = document.getElementById('subKategori');
+  if (katEl) katEl.value = 'musik';
+
+  const metodeEl = document.getElementById('subMetode');
+  if (metodeEl) metodeEl.value = 'GoPay';
+
+  const statusEl = document.getElementById('subStatus');
+  if (statusEl) statusEl.value = 'aktif';
+
+  const catatanEl = document.getElementById('subCatatan');
+  if (catatanEl) catatanEl.value = '';
+
+  const editIdEl = document.getElementById('subEditId');
+  if (editIdEl) editIdEl.value = '';
 
   const nextMonth = new Date();
   nextMonth.setMonth(nextMonth.getMonth() + 1);
-  document.getElementById('subTanggal').value = subFormatYMD(nextMonth);
+  const tglEl = document.getElementById('subTanggal');
+  if (tglEl) tglEl.value = subFormatYMD(nextMonth);
 
   selectedSubColor = '#1db954';
   updateColorPicker('subColorPicker', selectedSubColor);
@@ -424,16 +448,35 @@ function editSub(id) {
   if (!sub) return;
 
   editingSubId = id;
-  document.getElementById('modalLanggananTitle').textContent = 'Edit Langganan';
-  document.getElementById('subNama').value = sub.nama || '';
-  document.getElementById('subBiaya').value = formatRupiahDisplay(sub.biaya || 0);
-  document.getElementById('subSiklus').value = sub.siklus || 'bulanan';
-  document.getElementById('subKategori').value = sub.kategori || 'musik';
-  document.getElementById('subMetode').value = sub.metode || 'GoPay';
-  document.getElementById('subStatus').value = sub.status || 'aktif';
-  document.getElementById('subTanggal').value = sub.tanggalTagihan || '';
-  document.getElementById('subCatatan').value = sub.catatan || '';
-  document.getElementById('subEditId').value = id;
+  const titleEl = document.getElementById('modalLanggananTitle');
+  if (titleEl) titleEl.textContent = 'Edit Langganan';
+
+  const namaEl = document.getElementById('subNama');
+  if (namaEl) namaEl.value = sub.nama || '';
+
+  const biayaEl = document.getElementById('subBiaya');
+  if (biayaEl) biayaEl.value = formatRupiahDisplay(sub.biaya || 0);
+
+  const siklusEl = document.getElementById('subSiklus');
+  if (siklusEl) siklusEl.value = sub.siklus || 'bulanan';
+
+  const katEl = document.getElementById('subKategori');
+  if (katEl) katEl.value = sub.kategori || 'musik';
+
+  const metodeEl = document.getElementById('subMetode');
+  if (metodeEl) metodeEl.value = sub.metode || 'GoPay';
+
+  const statusEl = document.getElementById('subStatus');
+  if (statusEl) statusEl.value = sub.status || 'aktif';
+
+  const tglEl = document.getElementById('subTanggal');
+  if (tglEl) tglEl.value = sub.tanggalTagihan || '';
+
+  const catatanEl = document.getElementById('subCatatan');
+  if (catatanEl) catatanEl.value = sub.catatan || '';
+
+  const editIdEl = document.getElementById('subEditId');
+  if (editIdEl) editIdEl.value = id;
 
   selectedSubColor = sub.color || '#1db954';
   updateColorPicker('subColorPicker', selectedSubColor);
@@ -460,33 +503,49 @@ function deleteSub(id, e) {
   renderSubscriptions();
 }
 
+function inferSubIcon(nama) {
+  const n = (nama || '').toLowerCase();
+  if (n.includes('spotify') || n.includes('music') || n.includes('lagu') || n.includes('apple music') || n.includes('resso') || n.includes('joox')) return 'music';
+  if (n.includes('netflix') || n.includes('disney') || n.includes('youtube') || n.includes('vidio') || n.includes('hbo') || n.includes('prime') || n.includes('film') || n.includes('movie') || n.includes('cinema') || n.includes('wetv') || n.includes('iqiyi')) return 'film';
+  if (n.includes('cloud') || n.includes('drive') || n.includes('icloud') || n.includes('dropbox') || n.includes('one drive')) return 'cloud';
+  if (n.includes('gpt') || n.includes('chatgpt') || n.includes('ai') || n.includes('claude') || n.includes('copilot') || n.includes('midjourney') || n.includes('gemini')) return 'bot';
+  if (n.includes('canva') || n.includes('figma') || n.includes('adobe') || n.includes('notion') || n.includes('office') || n.includes('microsoft 365')) return 'palette';
+  if (n.includes('wifi') || n.includes('internet') || n.includes('indihome') || n.includes('biznet') || n.includes('first media') || n.includes('myrepublic') || n.includes('iconnet') || n.includes('telkomsel') || n.includes('indosat') || n.includes('xl')) return 'wifi';
+  if (n.includes('game') || n.includes('steam') || n.includes('playstation') || n.includes('xbox') || n.includes('nintendo') || n.includes('genshin') || n.includes('roblox')) return 'gamepad-2';
+  return 'repeat';
+}
+
 function saveSubscription() {
-  const nama = document.getElementById('subNama').value.trim();
-  const biaya = parseRupiahInput(document.getElementById('subBiaya').value);
-  const tanggalTagihan = document.getElementById('subTanggal').value;
+  const namaEl = document.getElementById('subNama');
+  const nama = namaEl ? namaEl.value.trim() : '';
+
+  const biayaEl = document.getElementById('subBiaya');
+  const biaya = biayaEl ? parseRupiahInput(biayaEl.value) : 0;
+
+  const tglEl = document.getElementById('subTanggal');
+  const tanggalTagihan = tglEl ? tglEl.value : '';
 
   if (!nama || !biaya) {
     showToast('Nama layanan dan biaya tagihan wajib diisi!', 'error');
     return;
   }
 
-  const siklus = document.getElementById('subSiklus').value;
-  const kategori = document.getElementById('subKategori').value;
-  const metode = document.getElementById('subMetode').value;
-  const status = document.getElementById('subStatus').value;
-  const catatan = document.getElementById('subCatatan').value.trim();
-
-  // Tentukan icon berdasarkan kategori
-  let icon = 'repeat';
-  if (kategori === 'musik') icon = 'music';
-  else if (kategori === 'streaming') icon = 'film';
-  else if (kategori === 'cloud') icon = 'cloud';
-  else if (kategori === 'ai') icon = 'bot';
-  else if (kategori === 'produktivitas') icon = 'palette';
-  else if (kategori === 'internet') icon = 'wifi';
-  else if (kategori === 'gaming') icon = 'gamepad-2';
+  const siklus = document.getElementById('subSiklus') ? document.getElementById('subSiklus').value : 'bulanan';
+  const metode = document.getElementById('subMetode') ? document.getElementById('subMetode').value : 'GoPay';
+  const status = document.getElementById('subStatus') ? document.getElementById('subStatus').value : 'aktif';
+  const catatan = document.getElementById('subCatatan') ? document.getElementById('subCatatan').value.trim() : '';
 
   let subs = Store.getSubscriptions();
+  const existingSub = editingSubId ? subs.find(s => String(s.id) === String(editingSubId)) : null;
+
+  let icon = inferSubIcon(nama);
+  if (icon === 'repeat' && existingSub && existingSub.icon) {
+    icon = existingSub.icon;
+  }
+
+  const katEl = document.getElementById('subKategori');
+  const kategori = katEl ? katEl.value : (existingSub && existingSub.kategori ? existingSub.kategori : '');
+
   if (editingSubId) {
     subs = subs.map(s => {
       if (String(s.id) === String(editingSubId)) {

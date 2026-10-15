@@ -1538,21 +1538,6 @@
       <button class="modal-close" data-modal="modalLangganan"><i data-lucide="x"></i></button>
     </div>
     <div class="modal-body">
-      <!-- Preset Template Chips for 1-Tap quick fill -->
-      <div class="form-group">
-        <label>Pilih Cepat Layanan Populer</label>
-        <div class="sub-preset-chips" id="subPresetChips">
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('spotify')">🟢 Spotify</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('netflix')">🔴 Netflix</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('youtube')">🔴 YouTube</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('icloud')">☁️ iCloud</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('chatgpt')">🟣 ChatGPT</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('disney')">🟡 Disney+</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('canva')">🎨 Canva</button>
-          <button type="button" class="sub-preset-chip" onclick="applySubPreset('wifi')">🌐 Wifi</button>
-        </div>
-      </div>
-
       <div class="form-group">
         <label>Nama Layanan / Aplikasi *</label>
         <input type="text" id="subNama" placeholder="Contoh: Spotify Premium, Netflix, iCloud..." />
@@ -1562,13 +1547,6 @@
         <div class="form-group">
           <label>Biaya Tagihan (Rp) *</label>
           <input type="text" id="subBiaya" class="money-input" placeholder="Rp 0" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
-          <div class="quick-amounts" data-target="subBiaya">
-            <button type="button" data-amt="29000">+29rb</button>
-            <button type="button" data-amt="54990">+55rb</button>
-            <button type="button" data-amt="65000">+65rb</button>
-            <button type="button" data-amt="186000">+186rb</button>
-            <button type="button" class="clear-btn" data-amt="0">C</button>
-          </div>
         </div>
         <div class="form-group">
           <label>Siklus Tagihan</label>
@@ -1582,25 +1560,9 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Kategori</label>
-          <select id="subKategori">
-            <option value="musik">🎵 Musik &amp; Audio</option>
-            <option value="streaming">🎬 Streaming Film / Video</option>
-            <option value="cloud">☁️ Cloud &amp; Penyimpanan</option>
-            <option value="ai">🤖 AI &amp; Software / Tool</option>
-            <option value="produktivitas">⚡ Produktivitas &amp; Kerja</option>
-            <option value="internet">🌐 Internet &amp; Provider</option>
-            <option value="gaming">🎮 Gaming</option>
-            <option value="lainnya">📦 Lainnya</option>
-          </select>
-        </div>
-        <div class="form-group">
           <label>Jatuh Tempo Berikutnya *</label>
           <input type="date" id="subTanggal" />
         </div>
-      </div>
-
-      <div class="form-row">
         <div class="form-group">
           <label>Metode Pembayaran</label>
           <select id="subMetode">
@@ -1615,6 +1577,9 @@
             <option value="Lainnya">Lainnya</option>
           </select>
         </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label>Status Langganan</label>
           <select id="subStatus">
@@ -1622,11 +1587,10 @@
             <option value="jeda">Dijeda Sementara</option>
           </select>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label>Catatan / Paket Plan</label>
-        <input type="text" id="subCatatan" placeholder="Contoh: Paket Family ber-4, shared bill..." />
+        <div class="form-group">
+          <label>Catatan / Paket Plan</label>
+          <input type="text" id="subCatatan" placeholder="Contoh: Paket Family, shared bill..." />
+        </div>
       </div>
 
       <div class="form-group">
