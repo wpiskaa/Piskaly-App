@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="css/drawer.css?v=3.20" />
   <link rel="stylesheet" href="css/components.css?v=3.20" />
   <link rel="stylesheet" href="css/home.css?v=3.20" />
-  <link rel="stylesheet" href="css/jadwal.css?v=3.20" />
+  <link rel="stylesheet" href="css/jadwal.css?v=3.35" />
   <link rel="stylesheet" href="css/tugas.css?v=3.20" />
   <link rel="stylesheet" href="css/catatan.css?v=3.20" />
   <link rel="stylesheet" href="css/keuangan.css?v=3.20" />
@@ -213,23 +213,108 @@
           </div>
         </section>
 
-        <!-- ===== PAGE: JADWAL KULIAH ===== -->
+        <!-- ===== PAGE: JADWAL (KULIAH, AGENDA, OLAHRAGA) ===== -->
         <section id="page-jadwal" class="page hidden">
           <div class="page-content">
-            <div class="day-tabs" id="dayTabs">
-              <button class="day-tab" data-day="All"><i data-lucide="layers"></i> All Day</button>
-              <button class="day-tab active" data-day="Senin">Sen</button>
-              <button class="day-tab" data-day="Selasa">Sel</button>
-              <button class="day-tab" data-day="Rabu">Rab</button>
-              <button class="day-tab" data-day="Kamis">Kam</button>
-              <button class="day-tab" data-day="Jumat">Jum</button>
-              <button class="day-tab" data-day="Sabtu">Sab</button>
-              <button class="day-tab" data-day="Minggu">Min</button>
+            
+            <!-- 3 Main Schedule Navigation Tabs -->
+            <div class="jadwal-subnav-tabs" id="jadwalSubnavTabs">
+              <button class="jadwal-subnav-btn active" data-tab="kuliah" onclick="setJadwalTab('kuliah')">
+                <i data-lucide="graduation-cap"></i>
+                <span>Jadwal Kuliah</span>
+              </button>
+              <button class="jadwal-subnav-btn" data-tab="agenda" onclick="setJadwalTab('agenda')">
+                <i data-lucide="calendar"></i>
+                <span>Jadwal Agenda</span>
+              </button>
+              <button class="jadwal-subnav-btn" data-tab="olahraga" onclick="setJadwalTab('olahraga')">
+                <i data-lucide="dumbbell"></i>
+                <span>Rutin Olahraga</span>
+              </button>
             </div>
-            <div id="jadwalList" class="jadwal-list"></div>
-            <button class="fab" id="addJadwalBtn" aria-label="Tambah Jadwal">
-              <i data-lucide="plus"></i>
-            </button>
+
+            <!-- PANE 1: JADWAL KULIAH -->
+            <div class="jadwal-subpane active" id="jadwalPane-kuliah">
+              <div class="day-tabs" id="dayTabs">
+                <button class="day-tab" data-day="All"><i data-lucide="layers"></i> All Day</button>
+                <button class="day-tab active" data-day="Senin">Sen</button>
+                <button class="day-tab" data-day="Selasa">Sel</button>
+                <button class="day-tab" data-day="Rabu">Rab</button>
+                <button class="day-tab" data-day="Kamis">Kam</button>
+                <button class="day-tab" data-day="Jumat">Jum</button>
+                <button class="day-tab" data-day="Sabtu">Sab</button>
+                <button class="day-tab" data-day="Minggu">Min</button>
+              </div>
+              <div id="jadwalList" class="jadwal-list"></div>
+              <button class="fab" id="addJadwalBtn" aria-label="Tambah Jadwal Kuliah">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+
+            <!-- PANE 2: JADWAL AGENDA (KEGIATAN & KALENDER) -->
+            <div class="jadwal-subpane hidden" id="jadwalPane-agenda">
+              <div class="agenda-hub-header">
+                <div class="agenda-search-row">
+                  <div class="agenda-search-box">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="agendaSearchInput" placeholder="Cari nama agenda atau lokasi..." oninput="filterAgendaList()" />
+                  </div>
+                  <button class="agenda-add-btn" onclick="openAddEventFromJadwal()">
+                    <i data-lucide="plus"></i> Tambah
+                  </button>
+                </div>
+                <div class="agenda-filter-chips">
+                  <button class="agenda-chip active" data-filter="all" onclick="setAgendaFilter('all')">Semua</button>
+                  <button class="agenda-chip" data-filter="today" onclick="setAgendaFilter('today')">Hari Ini</button>
+                  <button class="agenda-chip" data-filter="upcoming" onclick="setAgendaFilter('upcoming')">Mendatang</button>
+                  <button class="agenda-chip" data-filter="past" onclick="setAgendaFilter('past')">Selesai/Lewat</button>
+                </div>
+              </div>
+              <div id="agendaList" class="agenda-hub-list"></div>
+              <button class="fab" onclick="openAddEventFromJadwal()" aria-label="Tambah Agenda">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+
+            <!-- PANE 3: JADWAL RUTIN OLAHRAGA (FITNESS & WORKOUT) -->
+            <div class="jadwal-subpane hidden" id="jadwalPane-olahraga">
+              <!-- Summary & Motivation Card -->
+              <div class="workout-summary-card">
+                <div class="workout-card-glow"></div>
+                <div class="workout-stat-left">
+                  <div class="workout-badge"><i data-lucide="flame"></i> FITNESS &amp; ENERGY</div>
+                  <h3 class="workout-stat-title" id="workoutWeeklyStatus">0 Sesi Selesai Minggu Ini</h3>
+                  <p class="workout-stat-desc" id="workoutMotivation">Latihan teratur menjaga fisik bugar dan pikiran lebih fokus!</p>
+                </div>
+                <div class="workout-streak-box">
+                  <span class="workout-streak-val" id="workoutStreakCount">🔥 0</span>
+                  <span class="workout-streak-lbl">Hari Latihan</span>
+                </div>
+              </div>
+
+              <!-- Day filter for workouts -->
+              <div class="workout-header-row">
+                <div class="workout-day-filter" id="workoutDayFilter">
+                  <button class="workout-day-btn active" data-day="all" onclick="setWorkoutDayFilter('all')">Semua</button>
+                  <button class="workout-day-btn" data-day="Senin" onclick="setWorkoutDayFilter('Senin')">Sen</button>
+                  <button class="workout-day-btn" data-day="Selasa" onclick="setWorkoutDayFilter('Selasa')">Sel</button>
+                  <button class="workout-day-btn" data-day="Rabu" onclick="setWorkoutDayFilter('Rabu')">Rab</button>
+                  <button class="workout-day-btn" data-day="Kamis" onclick="setWorkoutDayFilter('Kamis')">Kam</button>
+                  <button class="workout-day-btn" data-day="Jumat" onclick="setWorkoutDayFilter('Jumat')">Jum</button>
+                  <button class="workout-day-btn" data-day="Sabtu" onclick="setWorkoutDayFilter('Sabtu')">Sab</button>
+                  <button class="workout-day-btn" data-day="Minggu" onclick="setWorkoutDayFilter('Minggu')">Min</button>
+                </div>
+                <button class="workout-add-header-btn" onclick="openAddOlahragaModal()">
+                  <i data-lucide="plus"></i> Tambah
+                </button>
+              </div>
+
+              <div id="workoutList" class="workout-routine-list"></div>
+              <button class="fab" onclick="openAddOlahragaModal()" aria-label="Tambah Jadwal Olahraga">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+
           </div>
         </section>
 
@@ -765,11 +850,11 @@
 
       <!-- ===== BOTTOM NAVIGATION (5 ITEMS - MATCHING USER REFERENCE IMAGE) ===== -->
       <nav id="bottom-nav">
-        <button class="nav-item active" data-page="home" aria-label="Home">
+        <button class="nav-item active" data-page="home" onclick="navigateTo('home')" aria-label="Home">
           <i data-lucide="home"></i>
           <span>Home</span>
         </button>
-        <button class="nav-item" data-page="jadwal" aria-label="Jadwal">
+        <button class="nav-item" data-page="jadwal" onclick="navigateTo('jadwal')" aria-label="Jadwal">
           <i data-lucide="calendar"></i>
           <span>Jadwal</span>
         </button>
@@ -778,11 +863,11 @@
             <i data-lucide="plus"></i>
           </button>
         </div>
-        <button class="nav-item" data-page="tugas" aria-label="Tugas">
+        <button class="nav-item" data-page="tugas" onclick="navigateTo('tugas')" aria-label="Tugas">
           <i data-lucide="book-check"></i>
           <span>Tugas</span>
         </button>
-        <button class="nav-item" data-page="keuangan" aria-label="Cards">
+        <button class="nav-item" data-page="keuangan" onclick="navigateTo('keuangan')" aria-label="Cards">
           <i data-lucide="credit-card"></i>
           <span>Cards</span>
         </button>
@@ -1343,6 +1428,82 @@
     </div>
   </div>
 
+  <!-- Modal: Tambah / Edit Jadwal Rutin Olahraga -->
+  <div class="modal hidden" id="modalOlahraga">
+    <div class="modal-header">
+      <h3 id="modalOlahragaTitle">Tambah Rutin Olahraga</h3>
+      <button class="modal-close" data-modal="modalOlahraga"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nama Olahraga / Latihan *</label>
+        <input type="text" id="sportNama" placeholder="Contoh: Gym Chest &amp; Tri, Lari Pagi 5K, Badminton..." />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori Olahraga</label>
+          <select id="sportKategori">
+            <option value="gym">🏋️‍♂️ Gym / Fitness</option>
+            <option value="lari">🏃‍♂️ Lari / Jogging</option>
+            <option value="sepeda">🚴‍♂️ Bersepeda</option>
+            <option value="renang">🏊‍♂️ Berenang</option>
+            <option value="badminton">🏸 Badminton</option>
+            <option value="futsal">⚽ Futsal / Bola</option>
+            <option value="workout">🤸‍♂️ Workout Rumahan</option>
+            <option value="yoga">🧘‍♀️ Yoga / Stretching</option>
+            <option value="lainnya">⚡ Olahraga Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jam Latihan</label>
+          <input type="time" id="sportJam" value="06:30" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hari Rutin * <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(Pilih hari pelaksanaan)</span></label>
+        <div class="sport-day-picker" id="sportDayPicker">
+          <button type="button" class="sport-day-opt" data-day="Senin">Sen</button>
+          <button type="button" class="sport-day-opt" data-day="Selasa">Sel</button>
+          <button type="button" class="sport-day-opt" data-day="Rabu">Rab</button>
+          <button type="button" class="sport-day-opt" data-day="Kamis">Kam</button>
+          <button type="button" class="sport-day-opt" data-day="Jumat">Jum</button>
+          <button type="button" class="sport-day-opt" data-day="Sabtu">Sab</button>
+          <button type="button" class="sport-day-opt" data-day="Minggu">Min</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Target / Porsi</label>
+          <input type="text" id="sportDurasi" placeholder="Contoh: 45 Menit, 5 KM, 3 Set" />
+        </div>
+        <div class="form-group">
+          <label>Lokasi / Tempat</label>
+          <input type="text" id="sportLokasi" placeholder="Contoh: Mega Gym, Stadion, Rumah" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Catatan / Fokus Otot / Motivasi</label>
+        <textarea id="sportCatatan" rows="2" placeholder="Contoh: Fokus progressive overload, minum air 1 liter..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Warna Tema Kartu</label>
+        <div class="color-picker" id="sportColorPicker">
+          <button type="button" class="color-opt active" data-color="#2563eb" style="background:#2563eb"></button>
+          <button type="button" class="color-opt" data-color="#10b981" style="background:#10b981"></button>
+          <button type="button" class="color-opt" data-color="#f59e0b" style="background:#f59e0b"></button>
+          <button type="button" class="color-opt" data-color="#ef4444" style="background:#ef4444"></button>
+          <button type="button" class="color-opt" data-color="#8b5cf6" style="background:#8b5cf6"></button>
+          <button type="button" class="color-opt" data-color="#ec4899" style="background:#ec4899"></button>
+        </div>
+      </div>
+      <input type="hidden" id="sportEditId" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" data-modal="modalOlahraga">Batal</button>
+      <button class="btn-primary" id="saveSportBtn" onclick="saveOlahraga()">Simpan Jadwal</button>
+    </div>
+  </div>
+
   <!-- Modal: Tambah / Edit Ongoing Project -->
   <div class="modal hidden" id="modalProject">
     <div class="modal-header">
@@ -1454,6 +1615,11 @@
           <div class="quick-act-icon cyan-box"><i data-lucide="calendar-plus"></i></div>
           <span class="quick-act-title">Agenda Kalender</span>
           <span class="quick-act-sub">Pengingat kegiatan</span>
+        </button>
+        <button class="quick-act-card" onclick="closeModal('modalQuickAction'); openAddOlahragaModal();">
+          <div class="quick-act-icon amber-box"><i data-lucide="dumbbell"></i></div>
+          <span class="quick-act-title">Rutin Olahraga</span>
+          <span class="quick-act-sub">Jadwal gym &amp; workout</span>
         </button>
       </div>
     </div>
@@ -1864,21 +2030,21 @@
   <script src="js/firebase-service.js?v=3.34"></script>
 
   <!-- Scripts with Cache Busting -->
-  <script src="js/storage.js?v=3.34"></script>
-  <script src="js/auth.js?v=3.34"></script>
-  <script src="js/app.js?v=3.34"></script>
-  <script src="js/jadwal.js?v=3.34"></script>
-  <script src="js/tugas.js?v=3.34"></script>
-  <script src="js/catatan.js?v=3.34"></script>
-  <script src="js/keuangan.js?v=3.34"></script>
-  <script src="js/tabungan.js?v=3.34"></script>
-  <script src="js/anggaran.js?v=3.34"></script>
-  <script src="js/hutang.js?v=3.34"></script>
-  <script src="js/kalkulator.js?v=3.34"></script>
-  <script src="js/kalender.js?v=3.34"></script>
-  <script src="js/notifikasi.js?v=3.34"></script>
-  <script src="js/ai.js?v=3.34"></script>
-  <script src="js/features-fun.js?v=3.34"></script>
+  <script src="js/storage.js?v=3.35"></script>
+  <script src="js/auth.js?v=3.35"></script>
+  <script src="js/app.js?v=3.35"></script>
+  <script src="js/jadwal.js?v=3.35"></script>
+  <script src="js/tugas.js?v=3.35"></script>
+  <script src="js/catatan.js?v=3.35"></script>
+  <script src="js/keuangan.js?v=3.35"></script>
+  <script src="js/tabungan.js?v=3.35"></script>
+  <script src="js/anggaran.js?v=3.35"></script>
+  <script src="js/hutang.js?v=3.35"></script>
+  <script src="js/kalkulator.js?v=3.35"></script>
+  <script src="js/kalender.js?v=3.35"></script>
+  <script src="js/notifikasi.js?v=3.35"></script>
+  <script src="js/ai.js?v=3.35"></script>
+  <script src="js/features-fun.js?v=3.35"></script>
 
   <!-- Register Service Worker & Invalidate Old Caches -->
   <script>

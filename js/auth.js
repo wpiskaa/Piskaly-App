@@ -347,6 +347,7 @@ const AuthService = {
         budgets: Store.getBudgets(),
         debts: Store.getDebts(),
         events: Store.getEvents(),
+        olahraga: Store.getOlahraga(),
         projects: Store.getProjects(),
         profil: Store.getProfil(),
         read_notifs: Store.getReadNotifs(),

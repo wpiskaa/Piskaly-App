@@ -54,7 +54,7 @@ const Store = {
     const safeId = userId.toLowerCase().trim();
     const keys = [
       'jadwal', 'tugas', 'catatan', 'transaksi', 'goals', 'budgets',
-      'debts', 'events', 'projects', 'profil', 'read_notifs',
+      'debts', 'events', 'olahraga', 'projects', 'profil', 'read_notifs',
       'pisku_messages', 'pisku_last_time'
     ];
     keys.forEach(k => {
@@ -134,6 +134,45 @@ const Store = {
     return list;
   },
   setEvents(d) { this.set(this._k('events'), d); },
+
+  getOlahraga() {
+    let list = this.get(this._k('olahraga'), null);
+    if (!list) {
+      list = [
+        {
+          id: 'sport-1',
+          nama: 'Jogging & Lari Santai',
+          hari: ['Selasa', 'Kamis', 'Sabtu'],
+          jam: '06:00',
+          durasi: '30 Menit',
+          target: '3 - 5 KM',
+          kategori: 'lari',
+          lokasi: 'Taman Kampus',
+          catatan: 'Pemanasan 5 menit sebelum lari.',
+          icon: 'footprints',
+          color: '#10b981',
+          history: {}
+        },
+        {
+          id: 'sport-2',
+          nama: 'Gym & Strength Training',
+          hari: ['Senin', 'Rabu', 'Jumat'],
+          jam: '16:30',
+          durasi: '60 Menit',
+          target: 'Upper / Lower Body',
+          kategori: 'gym',
+          lokasi: 'Fitness Center',
+          catatan: 'Fokus form dan progressive overload.',
+          icon: 'dumbbell',
+          color: '#2563eb',
+          history: {}
+        }
+      ];
+      this.set(this._k('olahraga'), list);
+    }
+    return Array.isArray(list) ? list : [];
+  },
+  setOlahraga(d) { this.set(this._k('olahraga'), d); },
 
   getProjects() {
     const list = this.get(this._k('projects'), []);

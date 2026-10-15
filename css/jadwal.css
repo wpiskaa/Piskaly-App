@@ -104,3 +104,668 @@
 .empty-state h4 { font-size: 16px; font-weight: 600; color: var(--text-secondary); }
 .empty-state p { font-size: 14px; }
 
+/* ===================================================
+   JADWAL SUBNAV TABS (KULIAH, AGENDA, OLAHRAGA)
+   =================================================== */
+.jadwal-subnav-tabs {
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px;
+  gap: 5px;
+  margin-bottom: 18px;
+}
+
+.jadwal-subnav-btn {
+  flex: 1;
+  padding: 9px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.jadwal-subnav-btn i,
+.jadwal-subnav-btn svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.2s ease;
+}
+
+.jadwal-subnav-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.jadwal-subnav-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  font-weight: 800;
+}
+
+.jadwal-subnav-btn.active i,
+.jadwal-subnav-btn.active svg {
+  transform: scale(1.1);
+  color: #ffffff;
+}
+
+.jadwal-subpane {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.jadwal-subpane.hidden {
+  display: none !important;
+}
+
+/* ===================================================
+   AGENDA HUB (KEGIATAN & KALENDER DALAM JADWAL)
+   =================================================== */
+.agenda-hub-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.agenda-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agenda-search-box {
+  flex: 1;
+  height: 42px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.15s ease;
+}
+
+.agenda-search-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.agenda-search-box i,
+.agenda-search-box svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.agenda-search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.agenda-add-btn {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.agenda-add-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.agenda-add-btn i,
+.agenda-add-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.agenda-filter-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.agenda-filter-chips::-webkit-scrollbar { display: none; }
+
+.agenda-chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.agenda-chip:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+}
+
+.agenda-chip.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+}
+
+.agenda-hub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 90px;
+}
+
+.agenda-hub-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  border-left: 5px solid var(--primary);
+  position: relative;
+}
+
+.agenda-hub-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--border-hover);
+}
+
+.agenda-hub-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.agenda-hub-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.agenda-hub-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.agenda-hub-badge.today {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.agenda-hub-badge.upcoming {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+
+.agenda-hub-badge.past {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.agenda-hub-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.agenda-hub-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.agenda-hub-meta-item i,
+.agenda-hub-meta-item svg {
+  width: 13px;
+  height: 13px;
+  color: var(--text-muted);
+}
+
+.agenda-hub-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 6px 0 10px;
+}
+
+.agenda-hub-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===================================================
+   WORKOUT HUB (JADWAL RUTIN OLAHRAGA)
+   =================================================== */
+.workout-summary-card {
+  background: linear-gradient(135deg, #091322 0%, #0d2347 50%, #064e3b 100%);
+  color: white;
+  border-radius: 22px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 25px -5px rgba(6, 78, 59, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workout-card-glow {
+  position: absolute;
+  top: -40px;
+  right: -30px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.35), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.workout-stat-left {
+  position: relative;
+  z-index: 2;
+  max-width: 65%;
+}
+
+.workout-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 3px 9px;
+  border-radius: 99px;
+  margin-bottom: 6px;
+  color: #34d399;
+}
+
+.workout-badge i,
+.workout-badge svg {
+  width: 11px;
+  height: 11px;
+}
+
+.workout-stat-title {
+  font-size: 16.5px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.workout-stat-desc {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.workout-streak-box {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 8px 14px;
+  flex-shrink: 0;
+}
+
+.workout-streak-val {
+  font-size: 18px;
+  font-weight: 800;
+  display: block;
+  color: #fde047;
+}
+
+.workout-streak-lbl {
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.workout-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.workout-day-filter {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.workout-day-filter::-webkit-scrollbar { display: none; }
+
+.workout-day-btn {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.workout-day-btn:hover {
+  border-color: #059669;
+  color: var(--text-primary);
+}
+
+.workout-day-btn.active {
+  background: #059669;
+  color: white;
+  border-color: #059669;
+  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.28);
+}
+
+.workout-add-header-btn {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.workout-add-header-btn:hover {
+  opacity: 0.92;
+}
+
+.workout-add-header-btn i,
+.workout-add-header-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.workout-routine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 90px;
+}
+
+.workout-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  border-left: 5px solid #2563eb;
+  position: relative;
+}
+
+.workout-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--border-hover);
+}
+
+.workout-card.is-today {
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.1);
+}
+
+.workout-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.workout-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.workout-icon-box i,
+.workout-icon-box svg {
+  width: 22px;
+  height: 22px;
+}
+
+.workout-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.workout-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.workout-sub-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.workout-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.workout-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.workout-meta-chip i,
+.workout-meta-chip svg {
+  width: 12px;
+  height: 12px;
+  color: var(--text-muted);
+}
+
+.workout-days-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 8px 0 12px;
+}
+
+.workout-day-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.workout-day-tag.active {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.workout-day-tag.today-active {
+  background: #10b981;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.workout-notes {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.workout-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.workout-check-btn {
+  flex: 1;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.workout-check-btn.completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border-color: #10b981;
+}
+
+.workout-check-btn.uncompleted {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.workout-check-btn.uncompleted:hover {
+  background: var(--bg-hover);
+  border-color: #10b981;
+  color: #059669;
+}
+
+.workout-action-btns {
+  display: flex;
+  gap: 6px;
+}
+
+/* Day Picker in Modal Olahraga */
+.sport-day-picker {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.sport-day-opt {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.sport-day-opt:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+}
+
+.sport-day-opt.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+

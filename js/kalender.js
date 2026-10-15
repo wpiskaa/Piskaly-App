@@ -138,7 +138,11 @@ function deleteEvent(id) {
   if (!confirm('Hapus event ini?')) return;
   Store.setEvents(Store.getEvents().filter(e => e.id !== id));
   renderCalendarGrid();
+  if (typeof renderAgendaHub === 'function') renderAgendaHub();
   if (typeof renderHome === 'function') renderHome();
+  if (typeof FirebaseService !== 'undefined' && FirebaseService.isInitialized) {
+    FirebaseService.syncUploadAll(false);
+  }
   showToast('🗑️ Event dihapus', 'error');
 }
 
@@ -175,7 +179,11 @@ function saveEvent() {
   resetEventForm();
   renderCalendarGrid();
   selectCalDay(tanggal);
+  if (typeof renderAgendaHub === 'function') renderAgendaHub();
   if (typeof renderHome === 'function') renderHome();
+  if (typeof FirebaseService !== 'undefined' && FirebaseService.isInitialized) {
+    FirebaseService.syncUploadAll(false);
+  }
   showToast(editingEventId ? '✅ Event diperbarui!' : '✅ Event ditambahkan!', 'success');
   editingEventId = null;
 }

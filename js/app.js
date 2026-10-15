@@ -213,8 +213,16 @@ function navigateTo(page) {
   });
 
   // Update title
+  const getJadwalTitle = () => {
+    if (typeof activeJadwalTab !== 'undefined') {
+      if (activeJadwalTab === 'agenda') return 'Jadwal Agenda';
+      if (activeJadwalTab === 'olahraga') return 'Rutin Olahraga';
+    }
+    return 'Jadwal Kuliah';
+  };
+
   const titles = {
-    home: 'Home', jadwal: 'Jadwal Kuliah', tugas: 'Tugas & Deadline',
+    home: 'Home', jadwal: getJadwalTitle(), tugas: 'Tugas & Deadline',
     catatan: 'Catatan', keuangan: 'Manajemen Uang', kalender: 'Kalender',
     ai: 'Pisku AI', profil: 'Profil', notifikasi: 'Pemberitahuan'
   };
