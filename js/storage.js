@@ -145,20 +145,69 @@ const Store = {
   getOlahraga() {
     let list = this.get(this._k('olahraga'), []);
     if (!Array.isArray(list)) list = [];
+
+    // Master Program Lari & Strength Training Mingguan Piska (Threshold Pace: 6'00"/km)
+    const piskaPrograms = {
+      senin: "Easy Run 40 menit di Zone 2 (7'01\" - 8'23\"/km)\nStrides 4 x 100m di Zone 6 (<5'23\"/km) (jeda jalan 60 detik)\nCore Singkat (10 menit): Forearm Plank 3x45 detik & Deadbug 3x12 repetisi",
+      selasa: "Istirahat lari penuh\nMalam (10 menit): Static stretching ringan sebelum tidur",
+      rabu: "Warm-up: 10 menit easy jog Zone 1-2 (>7'30\"/km) + dynamic drills\nMain Set: 6 x 800m di Zone 5 (5'23\" - 5'52\"/km) (Target: 4m 18d - 4m 40d per 800m)\nRecovery antar set: 2 menit jog pelan / jalan di Zone 1 (>8'23\"/km)\nCool-down: 10 menit jog santai Zone 1",
+      kamis_run: "Opsi A (Lari Pagi - 45 Menit): 25-30 menit Recovery Run Zone 1 (>8'23\"/km) + 15 menit Strength Training (2 set)\nOpsi B (Anti Mager di Kamar - 25 Menit Full Strength):\n1. Bulgarian Split Squat: 3 set x 10-12 rep/kaki\n2. Single-Leg Glute Bridge: 3 set x 12 rep/kaki\n3. Eccentric Calf Raises: 3 set x 15 rep (turun 3 detik)\n4. Reverse Lunge to Knee Drive: 3 set x 10 rep/kaki\n5. Forearm Plank & Side Plank: 3 set x 45 detik",
+      kamis_strength: "Opsi B (Anti Mager di Kamar - 25 Menit Full Strength):\n1. Bulgarian Split Squat: 3 set x 10-12 rep/kaki\n2. Single-Leg Glute Bridge: 3 set x 12 rep/kaki\n3. Eccentric Calf Raises: 3 set x 15 rep (turun 3 detik)\n4. Reverse Lunge to Knee Drive: 3 set x 10 rep/kaki\n5. Forearm Plank & Side Plank: 3 set x 45 detik\nOpsi A (Lari Pagi - 45 Menit): 25-30 menit Recovery Run Zone 1 (>8'23\"/km) + 15 menit Strength Training (2 set)",
+      jumat: "Istirahat lari total\nMalam (10-15 menit): Foam rolling / pijat ringan area betis & paha",
+      sabtu: "Warm-up: 10 menit easy jog Zone 2 (7'15\" - 7'45\"/km)\nMain Set: 25-30 menit Tempo Run di Zone 4 (5'53\" - 6'27\"/km), kunci di Threshold Pace 6'00\"/km\nCool-down: 10 menit easy jog Zone 1 (>8'23\"/km)",
+      minggu: "Long Run 60-90 menit di Zone 2 (7'01\" - 8'23\"/km), sweet spot di 7'15\" - 7'45\"/km\nOpsi Fast-Finish: 15 menit terakhir naik ke Zone 3 (6'28\" - 7'00\"/km) jika kondisi prima"
+    };
+
+    const syncKey = this._k('olahraga_piska_program_v1');
+    const isSynced = localStorage.getItem(syncKey);
+
     let changed = false;
     list = list.map(item => {
-      if (!item.program) {
-        if ((item.nama || '').toLowerCase().includes('tempo')) {
-          item.program = "Warm-up: 10 menit easy jog di Zone 1–2 (>7'30\"/km) + dynamic drills (A-skip, high knees)\nMain Set: 6 x 800 meter di Zone 5 (5'23\" – 5'52\"/km) (Target waktu: ~4m20s – 4m40s)\nRecovery antar set: 2 menit jogging sangat pelan / jalan cepat di Zone 1\nCool-down: 10 menit jogging santai di Zone 1";
+      const days = Array.isArray(item.hari) ? item.hari.map(d => String(d).trim().toLowerCase()) : [];
+      const nama = (item.nama || '').toLowerCase();
+
+      // Sinkronkan program pengguna jika belum tersinkron atau item belum memiliki program
+      if (!isSynced || !item.program) {
+        if (days.includes('senin')) {
+          item.program = piskaPrograms.senin;
           changed = true;
-        } else if ((item.nama || '').toLowerCase().includes('long run')) {
-          item.program = "Warm-up: 10 menit jalan santai + dynamic stretching & mobility\nMain Set: 12 KM steady run di Zone 2 (Pace 6'30\" – 6'50\"/km) menjaga denyut nadi stabil\nCool-down: 10 menit stretching statis & rehidrasi elektrolit";
+        } else if (days.includes('selasa')) {
+          item.program = piskaPrograms.selasa;
+          changed = true;
+        } else if (days.includes('rabu')) {
+          item.program = piskaPrograms.rabu;
+          changed = true;
+        } else if (days.includes('kamis')) {
+          if (nama.includes('strength') || nama.includes('beban')) {
+            item.program = piskaPrograms.kamis_strength;
+          } else {
+            item.program = piskaPrograms.kamis_run;
+          }
+          changed = true;
+        } else if (days.includes('jumat')) {
+          item.program = piskaPrograms.jumat;
+          changed = true;
+        } else if (days.includes('sabtu')) {
+          item.program = piskaPrograms.sabtu;
+          changed = true;
+        } else if (days.includes('minggu')) {
+          item.program = piskaPrograms.minggu;
           changed = true;
         }
       }
       return item;
     });
-    if (changed) this.setOlahraga(list);
+
+    if (!isSynced) {
+      localStorage.setItem(syncKey, 'true');
+    }
+
+    if (changed) {
+      this.setOlahraga(list);
+      if (typeof FirebaseSync !== 'undefined' && FirebaseSync.isLoggedIn && FirebaseSync.isLoggedIn()) {
+        try { FirebaseSync.saveUserData(); } catch (err) {}
+      }
+    }
     return list;
   },
   setOlahraga(d) { this.set(this._k('olahraga'), d); },

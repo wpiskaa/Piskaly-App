@@ -974,8 +974,9 @@ function formatWorkoutProgramHtml(raw) {
     return `<div class="detail-empty-program"><p>Belum ada rincian program latihan.</p></div>`;
   }
 
-  return lines.map((line, idx) => {
+  return lines.map((rawLine, idx) => {
     let badgeHtml = '';
+    let line = rawLine.replace(/^[-•*]\s*/, '').trim();
     let content = line;
     const lower = line.toLowerCase();
 
@@ -985,24 +986,56 @@ function formatWorkoutProgramHtml(raw) {
     } else if (lower.startsWith('main set:') || lower.startsWith('main-set:') || lower.startsWith('inti:') || lower.startsWith('latihan inti:')) {
       badgeHtml = `<span class="wpl-badge main">Main Set</span>`;
       content = line.replace(/^(main set|main-set|inti|latihan inti):?\s*/i, '');
-    } else if (lower.startsWith('recovery:') || lower.startsWith('recovery antar set:') || lower.startsWith('istirahat:') || lower.startsWith('rest:')) {
+    } else if (lower.startsWith('easy run')) {
+      badgeHtml = `<span class="wpl-badge main">Easy Run</span>`;
+      content = line.replace(/^easy run:?\s*/i, '');
+    } else if (lower.startsWith('tempo run')) {
+      badgeHtml = `<span class="wpl-badge main">Tempo Run</span>`;
+      content = line.replace(/^tempo run:?\s*/i, '');
+    } else if (lower.startsWith('long run')) {
+      badgeHtml = `<span class="wpl-badge main">Long Run</span>`;
+      content = line.replace(/^long run:?\s*/i, '');
+    } else if (lower.startsWith('recovery run')) {
+      badgeHtml = `<span class="wpl-badge recovery">Recovery Run</span>`;
+      content = line.replace(/^recovery run:?\s*/i, '');
+    } else if (lower.startsWith('istirahat') || lower.startsWith('rest')) {
+      badgeHtml = `<span class="wpl-badge recovery">Rest</span>`;
+      content = line.replace(/^(istirahat|rest):?\s*/i, '');
+    } else if (lower.startsWith('malam')) {
+      badgeHtml = `<span class="wpl-badge night">Malam</span>`;
+      content = line.replace(/^malam:?\s*/i, '');
+    } else if (lower.startsWith('recovery antar set:') || lower.startsWith('recovery:') || lower.startsWith('istirahat antar set:')) {
       badgeHtml = `<span class="wpl-badge recovery">Recovery</span>`;
-      content = line.replace(/^(recovery antar set|recovery|istirahat|rest):?\s*/i, '');
+      content = line.replace(/^(recovery antar set|recovery|istirahat antar set):?\s*/i, '');
     } else if (lower.startsWith('cool-down:') || lower.startsWith('cool down:') || lower.startsWith('pendinginan:')) {
       badgeHtml = `<span class="wpl-badge cooldown">Cool-down</span>`;
       content = line.replace(/^(cool-down|cool down|pendinginan):?\s*/i, '');
+    } else if (lower.startsWith('strides:') || lower.startsWith('strides ') || lower.startsWith('stride:')) {
+      badgeHtml = `<span class="wpl-badge drill">Strides</span>`;
+      content = line.replace(/^(strides|stride):?\s*/i, '');
     } else if (lower.startsWith('drill:') || lower.startsWith('drills:') || lower.startsWith('teknik:')) {
       badgeHtml = `<span class="wpl-badge drill">Drills</span>`;
       content = line.replace(/^(drills|drill|teknik):?\s*/i, '');
+    } else if (lower.startsWith('core:') || lower.startsWith('core singkat:') || lower.startsWith('core ')) {
+      badgeHtml = `<span class="wpl-badge core">Core</span>`;
+      content = line.replace(/^(core singkat|core):?\s*/i, '');
+    } else if (/^opsi\s+fast-finish/i.test(line)) {
+      badgeHtml = `<span class="wpl-badge opt">Fast-Finish</span>`;
+      content = line.replace(/^opsi\s+fast-finish:?\s*/i, '');
+    } else if (/^opsi\s+[a-z]/i.test(line)) {
+      const match = line.match(/^opsi\s+([a-z])/i);
+      badgeHtml = `<span class="wpl-badge opt">Opsi ${match[1].toUpperCase()}</span>`;
+      content = line.replace(/^opsi\s+[a-z][:—\s-]*/i, '');
     } else if (/^(set\s*\d+|ronde\s*\d+|round\s*\d+):/i.test(line)) {
       const match = line.match(/^(set\s*\d+|ronde\s*\d+|round\s*\d+):/i);
       badgeHtml = `<span class="wpl-badge step">${escapeHtml(match[1])}</span>`;
       content = line.slice(match[0].length).trim();
-    } else if (/^(\d+\.|\•|\-|\*)/.test(line)) {
-      content = line.replace(/^(\d+\.|\•|\-|\*)\s*/, '');
-      badgeHtml = `<span class="wpl-badge step">#${idx + 1}</span>`;
+    } else if (/^\d+\./.test(line)) {
+      const match = line.match(/^(\d+)\./);
+      badgeHtml = `<span class="wpl-badge step">#${match[1]}</span>`;
+      content = line.replace(/^\d+\.\s*/, '');
     } else {
-      badgeHtml = `<span class="wpl-badge step">Menu</span>`;
+      badgeHtml = `<span class="wpl-badge step">#${idx + 1}</span>`;
     }
 
     return `
