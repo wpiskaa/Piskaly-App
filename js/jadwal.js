@@ -494,69 +494,164 @@ function getSportCategoryLabel(kategori) {
 }
 
 function updateWorkoutSummaryStats(workouts) {
-  const weeklyEl = document.getElementById('workoutWeeklyStatus');
-  const motivEl = document.getElementById('workoutMotivation');
-  const streakEl = document.getElementById('workoutStreakCount');
-  if (!weeklyEl || !streakEl) return;
+  const streakValEl = document.getElementById('workoutStreakCount');
+  const streakRecEl = document.getElementById('workoutStreakRecord');
+  const weeklyStatusEl = document.getElementById('workoutWeeklyStatus');
+  const weekGridEl = document.getElementById('workoutWeekGrid');
+  const progressFillEl = document.getElementById('workoutProgressBar');
+  const progressPctEl = document.getElementById('workoutProgressPct');
+  const motivationEl = document.getElementById('workoutMotivation');
+
+  if (!streakValEl) return;
 
   const now = new Date();
-  const todayDay = now.getDay();
-  const mondayOffset = (todayDay === 0 ? -6 : 1) - todayDay;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + mondayOffset);
-  monday.setHours(0, 0, 0, 0);
-
   const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  const thisWeekDates = new Set();
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    thisWeekDates.add(formatYMD(d));
-  }
+  const todayYMD = formatYMD(now);
 
-  let weeklyDoneCount = 0;
+  // Set tanggal semua latihan yang pernah diselesaikan
+  const completedDates = new Set();
   workouts.forEach(w => {
     if (w.history) {
       Object.keys(w.history).forEach(dateStr => {
-        if (w.history[dateStr] && thisWeekDates.has(dateStr)) {
-          weeklyDoneCount++;
-        }
+        if (w.history[dateStr]) completedDates.add(dateStr);
       });
     }
   });
 
-  // Calculate streak of consecutive days with workouts
-  let streak = 0;
+  // Hitung Streak Harian (Consecutive Days)
+  let currentStreak = 0;
+  const hadWorkoutToday = completedDates.has(todayYMD);
   let checkDate = new Date(now);
-  const checkYMD = formatYMD(checkDate);
-  const hadWorkoutToday = workouts.some(w => w.history && w.history[checkYMD]);
   if (!hadWorkoutToday) {
     checkDate.setDate(checkDate.getDate() - 1);
   }
 
   for (let i = 0; i < 365; i++) {
     const dStr = formatYMD(checkDate);
-    const completed = workouts.some(w => w.history && w.history[dStr]);
-    if (completed) {
-      streak++;
+    if (completedDates.has(dStr)) {
+      currentStreak++;
       checkDate.setDate(checkDate.getDate() - 1);
     } else {
       break;
     }
   }
 
-  weeklyEl.textContent = `${weeklyDoneCount} Selesai Minggu Ini`;
-  streakEl.textContent = `🔥 ${streak} Hari Latihan`;
+  // Hitung Rekor Streak Terpanjang
+  const sortedDates = Array.from(completedDates).sort();
+  let bestStreak = 0;
+  let tempStreak = 0;
+  let prevDate = null;
 
-  if (motivEl) {
-    if (weeklyDoneCount >= 4) {
-      motivEl.textContent = 'Luar biasa! Konsistensi kamu tingkat atlet, pertahankan ritme ini! 💪';
-    } else if (weeklyDoneCount >= 2) {
-      motivEl.textContent = 'Mantap! Badan terasa lebih bugar dan energi lebih terjaga.';
-    } else if (weeklyDoneCount === 1) {
-      motivEl.textContent = 'Awal yang baik! Yuk tambah 1-2 sesi lagi minggu ini.';
+  sortedDates.forEach(dStr => {
+    const curDate = new Date(dStr + 'T00:00:00');
+    if (prevDate) {
+      const diffDays = Math.round((curDate - prevDate) / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) {
+        tempStreak++;
+      } else if (diffDays > 1) {
+        tempStreak = 1;
+      }
     } else {
-      motivEl.textContent = 'Yuk sempatkan 30 menit hari ini untuk keringatan & bakar kalori!';
+      tempStreak = 1;
+    }
+    if (tempStreak > bestStreak) bestStreak = tempStreak;
+    prevDate = curDate;
+  });
+  if (currentStreak > bestStreak) bestStreak = currentStreak;
+
+  // Hitung Kalender Minggu Ini (Senin s/d Minggu)
+  const todayDay = now.getDay(); // 0: Minggu, 1: Senin, ..., 6: Sabtu
+  const mondayOffset = (todayDay === 0 ? -6 : 1) - todayDay;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
+  monday.setHours(0, 0, 0, 0);
+
+  const daysShort = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  const daysFull = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+  let scheduledDaysCount = 0;
+  let completedDaysCount = 0;
+  let gridHtml = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dStr = formatYMD(d);
+    const isToday = (dStr === todayYMD);
+    const isPast = (d < now && !isToday);
+    const isCompleted = completedDates.has(dStr);
+    const dayFullName = daysFull[i];
+    const isScheduled = workouts.some(w => Array.isArray(w.hari) && w.hari.includes(dayFullName));
+
+    if (isScheduled) scheduledDaysCount++;
+    if (isCompleted) completedDaysCount++;
+
+    let statusClass = '';
+    let iconHtml = '';
+
+    if (isCompleted) {
+      statusClass = 'done';
+      iconHtml = `<i data-lucide="check"></i>`;
+    } else if (isToday) {
+      statusClass = isScheduled ? 'today scheduled' : 'today';
+      iconHtml = isScheduled ? `<i data-lucide="dumbbell"></i>` : `<span class="wsc-rest-dot">•</span>`;
+    } else if (isPast) {
+      statusClass = isScheduled ? 'missed' : 'rest';
+      iconHtml = isScheduled ? `<i data-lucide="x"></i>` : `<span class="wsc-rest-dash">-</span>`;
+    } else {
+      statusClass = isScheduled ? 'upcoming' : 'rest';
+      iconHtml = isScheduled ? `<i data-lucide="circle"></i>` : `<span class="wsc-rest-dash">-</span>`;
+    }
+
+    gridHtml += `
+      <div class="wsc-day-col ${statusClass} ${isToday ? 'is-today' : ''}" title="${dayFullName}, ${d.getDate()}">
+        <span class="wsc-day-name">${daysShort[i]}</span>
+        <span class="wsc-day-num">${d.getDate()}</span>
+        <div class="wsc-day-icon">${iconHtml}</div>
+      </div>
+    `;
+  }
+
+  if (weekGridEl) {
+    weekGridEl.innerHTML = gridHtml;
+    lucide.createIcons({ nodes: [weekGridEl] });
+  }
+
+  // Update Teks & Badge
+  if (streakValEl) {
+    streakValEl.textContent = currentStreak > 0 ? `🔥 ${currentStreak} Hari Streak` : `🔥 0 Hari Streak`;
+  }
+
+  if (streakRecEl) {
+    streakRecEl.textContent = `Rekor: ${bestStreak} Hari • ${completedDaysCount} Selesai Minggu Ini`;
+  }
+
+  const targetCount = scheduledDaysCount > 0 ? scheduledDaysCount : 7;
+  const pct = Math.min(100, Math.round((completedDaysCount / targetCount) * 100));
+
+  if (weeklyStatusEl) {
+    weeklyStatusEl.textContent = `${completedDaysCount}/${targetCount} Hari`;
+  }
+
+  if (progressFillEl) {
+    progressFillEl.style.width = `${pct}%`;
+  }
+
+  if (progressPctEl) {
+    progressPctEl.textContent = `${pct}%`;
+  }
+
+  if (motivationEl) {
+    if (hadWorkoutToday) {
+      motivationEl.textContent = '🔥 Sesi hari ini tuntas! Streak konsistensimu bertambah!';
+    } else if (pct >= 100) {
+      motivationEl.textContent = '🏆 Luar biasa! Target mingguan kamu sudah 100% tercapai!';
+    } else if (currentStreak >= 3) {
+      motivationEl.textContent = `⚡ Momentum hebat! Sudah konsisten ${currentStreak} hari berturut-turut.`;
+    } else if (workouts.some(w => Array.isArray(w.hari) && w.hari.includes(INDO_DAYS[now.getDay()]))) {
+      motivationEl.textContent = '💪 Hari ini ada jadwal olahraga! Luangkan waktu untuk bergerak.';
+    } else {
+      motivationEl.textContent = 'Ayo mulai latihan hari ini untuk bangun konsistensi!';
     }
   }
 }
@@ -569,6 +664,52 @@ function setWorkoutDayFilter(day) {
   renderWorkoutHub();
 }
 
+function renderWorkoutCardHtml(w, showDayBadge = false, contextDay = null) {
+  const now = new Date();
+  const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const todayDateStr = formatYMD(now);
+  const todayDayName = INDO_DAYS[now.getDay()];
+
+  const isCompletedToday = Boolean(w.history && w.history[todayDateStr]);
+  const isTodayActive = contextDay ? (contextDay === todayDayName) : (Array.isArray(w.hari) && w.hari.includes(todayDayName));
+  const iconName = getSportIcon(w.kategori);
+  const categoryLabel = getSportCategoryLabel(w.kategori);
+  const hariText = Array.isArray(w.hari) && w.hari.length > 0 ? (w.hari.length === 7 ? 'Setiap Hari' : w.hari.join(', ')) : 'Rutin';
+  const cardDomId = contextDay ? `workout-${w.id}-${contextDay.toLowerCase()}` : `workout-${w.id}`;
+
+  return `
+    <div class="jadwal-card" id="${cardDomId}">
+      <div class="jadwal-card-inner" style="border-left-color: ${w.color || '#2563eb'}">
+        <div class="jadwal-time">
+          <div class="jt-start">${w.jam || 'Rutin'}</div>
+          <div class="jt-end">${w.jam ? 'WIB' : 'Latihan'}</div>
+        </div>
+        <div class="jadwal-info">
+          <div class="jadwal-title-row">
+            <div class="jadwal-matkul">${escapeHtml(w.nama)}</div>
+            ${isTodayActive ? `<span class="jadwal-day-badge today">Hari Ini</span>` : ''}
+            ${isCompletedToday ? `<span class="jadwal-day-badge done">✓ Selesai</span>` : ''}
+          </div>
+          <div class="jadwal-meta">
+            <div class="jadwal-meta-item"><i data-lucide="${iconName}"></i>${categoryLabel}</div>
+            ${showDayBadge ? `<div class="jadwal-meta-item"><i data-lucide="calendar"></i>${hariText}</div>` : ''}
+            ${w.durasi ? `<div class="jadwal-meta-item"><i data-lucide="timer"></i>${escapeHtml(w.durasi)}</div>` : ''}
+            ${w.lokasi ? `<div class="jadwal-meta-item"><i data-lucide="map-pin"></i>${escapeHtml(w.lokasi)}</div>` : ''}
+            ${w.catatan ? `<div class="jadwal-meta-item note"><i data-lucide="file-text"></i><span>${escapeHtml(w.catatan)}</span></div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="jadwal-actions">
+        <button type="button" class="action-btn check ${isCompletedToday ? 'done' : ''}" onclick="toggleOlahragaToday('${w.id}')" aria-pressed="${isCompletedToday}">
+          <i data-lucide="${isCompletedToday ? 'check-circle-2' : 'circle'}"></i>${isCompletedToday ? 'Selesai' : 'Tandai Selesai'}
+        </button>
+        <button type="button" class="action-btn edit" onclick="editOlahraga('${w.id}')">Edit</button>
+        <button type="button" class="action-btn delete" onclick="deleteOlahraga('${w.id}', event)">Hapus</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderWorkoutHub() {
   const container = document.getElementById('workoutList');
   if (!container) return;
@@ -576,71 +717,111 @@ function renderWorkoutHub() {
   const workouts = Store.getOlahraga() || [];
   updateWorkoutSummaryStats(workouts);
 
-  const now = new Date();
-  const formatYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  const todayDateStr = formatYMD(now);
-  const todayDayName = INDO_DAYS[now.getDay()];
-
-  let filtered = workouts;
-  if (currentWorkoutDay !== 'all') {
-    filtered = filtered.filter(w => Array.isArray(w.hari) && w.hari.includes(currentWorkoutDay));
-  }
-
   container.classList.toggle('list-static', _suppressListAnim);
   _suppressListAnim = false;
 
-  if (filtered.length === 0) {
+  if (workouts.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
         <i data-lucide="dumbbell"></i>
         <h4>Belum Ada Rutin Olahraga</h4>
-        <p>${currentWorkoutDay !== 'all' ? `Belum ada jadwal olahraga untuk hari ${currentWorkoutDay}.` : 'Mulai catat jadwal latihan, gym, lari, atau workout kamu di sini!'}<br>Klik tombol + Tambah untuk memulai.</p>
+        <p>Mulai catat jadwal latihan, gym, lari, atau workout kamu di sini!<br>Klik tombol + Tambah untuk memulai.</p>
       </div>
     `;
     lucide.createIcons({ nodes: [container] });
     return;
   }
 
+  const daysOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
   let html = '';
-  filtered.forEach(w => {
-    const isCompletedToday = Boolean(w.history && w.history[todayDateStr]);
-    const isTodayActive = Array.isArray(w.hari) && w.hari.includes(todayDayName);
-    const iconName = getSportIcon(w.kategori);
-    const categoryLabel = getSportCategoryLabel(w.kategori);
-    const hariText = Array.isArray(w.hari) && w.hari.length > 0 ? (w.hari.length === 7 ? 'Setiap Hari' : w.hari.join(', ')) : 'Rutin';
 
-    html += `
-      <div class="jadwal-card" id="workout-${w.id}">
-        <div class="jadwal-card-inner" style="border-left-color: ${w.color || '#2563eb'}">
-          <div class="jadwal-time">
-            <div class="jt-start">${w.jam || 'Rutin'}</div>
-            <div class="jt-end">${w.jam ? 'WIB' : 'Latihan'}</div>
+  if (currentWorkoutDay === 'all') {
+    let renderedCount = 0;
+    daysOrder.forEach(day => {
+      const dayWorkouts = workouts
+        .filter(w => Array.isArray(w.hari) && w.hari.includes(day))
+        .sort((a, b) => (a.jam || '').localeCompare(b.jam || ''));
+
+      if (dayWorkouts.length > 0) {
+        renderedCount += dayWorkouts.length;
+        html += `
+          <div class="jadwal-day-group">
+            <div class="jadwal-day-header">
+              <div class="jadwal-day-title-wrap">
+                <span class="jadwal-day-dot"></span>
+                <span class="jadwal-day-name">${day}</span>
+              </div>
+              <span class="jadwal-day-count-badge">${dayWorkouts.length} Latihan</span>
+            </div>
+            <div class="jadwal-day-items">
+              ${dayWorkouts.map(w => renderWorkoutCardHtml(w, false, day)).join('')}
+            </div>
           </div>
-          <div class="jadwal-info">
-            <div class="jadwal-title-row">
-              <div class="jadwal-matkul">${escapeHtml(w.nama)}</div>
-              ${isTodayActive ? `<span class="jadwal-day-badge today">Hari Ini</span>` : ''}
-              ${isCompletedToday ? `<span class="jadwal-day-badge done">✓ Selesai</span>` : ''}
+        `;
+      }
+    });
+
+    const unassigned = workouts.filter(w => !Array.isArray(w.hari) || w.hari.length === 0);
+    if (unassigned.length > 0) {
+      renderedCount += unassigned.length;
+      html += `
+        <div class="jadwal-day-group">
+          <div class="jadwal-day-header">
+            <div class="jadwal-day-title-wrap">
+              <span class="jadwal-day-dot" style="background:var(--text-muted)"></span>
+              <span class="jadwal-day-name">Fleksibel / Rutin</span>
             </div>
-            <div class="jadwal-meta">
-              <div class="jadwal-meta-item"><i data-lucide="${iconName}"></i>${categoryLabel}</div>
-              <div class="jadwal-meta-item"><i data-lucide="calendar"></i>${hariText}</div>
-              ${w.durasi ? `<div class="jadwal-meta-item"><i data-lucide="timer"></i>${escapeHtml(w.durasi)}</div>` : ''}
-              ${w.lokasi ? `<div class="jadwal-meta-item"><i data-lucide="map-pin"></i>${escapeHtml(w.lokasi)}</div>` : ''}
-              ${w.catatan ? `<div class="jadwal-meta-item note"><i data-lucide="file-text"></i><span>${escapeHtml(w.catatan)}</span></div>` : ''}
-            </div>
+            <span class="jadwal-day-count-badge">${unassigned.length} Latihan</span>
+          </div>
+          <div class="jadwal-day-items">
+            ${unassigned.map(w => renderWorkoutCardHtml(w, true, null)).join('')}
           </div>
         </div>
-        <div class="jadwal-actions">
-          <button type="button" class="action-btn check ${isCompletedToday ? 'done' : ''}" onclick="toggleOlahragaToday('${w.id}')" aria-pressed="${isCompletedToday}">
-            <i data-lucide="${isCompletedToday ? 'check-circle-2' : 'circle'}"></i>${isCompletedToday ? 'Selesai' : 'Tandai Selesai'}
-          </button>
-          <button type="button" class="action-btn edit" onclick="editOlahraga('${w.id}')">Edit</button>
-          <button type="button" class="action-btn delete" onclick="deleteOlahraga('${w.id}', event)">Hapus</button>
+      `;
+    }
+
+    if (renderedCount === 0) {
+      html = `
+        <div class="empty-state">
+          <i data-lucide="dumbbell"></i>
+          <h4>Belum Ada Rutin Olahraga</h4>
+          <p>Mulai catat jadwal latihan kamu dengan memilih hari latihan.</p>
+        </div>
+      `;
+    }
+  } else {
+    // Specific day selected (e.g. 'Senin')
+    const dayWorkouts = workouts
+      .filter(w => Array.isArray(w.hari) && w.hari.includes(currentWorkoutDay))
+      .sort((a, b) => (a.jam || '').localeCompare(b.jam || ''));
+
+    if (dayWorkouts.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="dumbbell"></i>
+          <h4>Belum Ada Rutin Olahraga</h4>
+          <p>Belum ada jadwal olahraga untuk hari ${currentWorkoutDay}.<br>Klik tombol + Tambah untuk memulai.</p>
+        </div>
+      `;
+      lucide.createIcons({ nodes: [container] });
+      return;
+    }
+
+    html = `
+      <div class="jadwal-day-group">
+        <div class="jadwal-day-header">
+          <div class="jadwal-day-title-wrap">
+            <span class="jadwal-day-dot"></span>
+            <span class="jadwal-day-name">${currentWorkoutDay}</span>
+          </div>
+          <span class="jadwal-day-count-badge">${dayWorkouts.length} Latihan</span>
+        </div>
+        <div class="jadwal-day-items">
+          ${dayWorkouts.map(w => renderWorkoutCardHtml(w, false, currentWorkoutDay)).join('')}
         </div>
       </div>
     `;
-  });
+  }
 
   container.innerHTML = html;
   lucide.createIcons({ nodes: [container] });
